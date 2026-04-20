@@ -189,4 +189,16 @@ class _SellerHubScreenState extends State<SellerHubScreen> {
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  ch
+                  children: [
+                    Text("\$${p['price']}", style: const TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.w900)),
+                    GestureDetector(onTap: () => context.push('/profile/add-product', extra: p), child: const Icon(Icons.edit_note, color: Colors.blue, size: 20)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
