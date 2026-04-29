@@ -43,7 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- HEADER PROFIL LUXE ---
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -97,7 +96,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             
             const SizedBox(height: 30),
 
-            // --- SECTIONS DE MENU ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -105,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const Text("GÉNÉRAL", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.5)),
                   const SizedBox(height: 15),
-                  _buildPremiumTile(Icons.person_outline_rounded, "Éditer le profil", Colors.blue, () {}),
+                  _buildPremiumTile(Icons.person_outline_rounded, "Éditer le profil", Colors.blue, () => context.push('/profile/edit')),
                   _buildPremiumTile(Icons.card_giftcard_rounded, "Parrainage & Gains", Colors.orange, () => context.push('/profile/referral')),
                   
                   const SizedBox(height: 25),
@@ -118,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text("PAIEMENT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.5)),
                   const SizedBox(height: 15),
                   _buildPremiumTile(Icons.account_balance_wallet_outlined, "Portefeuilles Crypto", Colors.deepPurple, () => context.push('/profile/payment-methods')),
-                  _buildPremiumTile(Icons.location_on_outlined, "Adresses de livraison", Colors.red, () {}),
+                  _buildPremiumTile(Icons.location_on_outlined, "Adresses de livraison", Colors.red, () => context.push('/profile/address')), // LIEN CORRIGÉ
                   
                   const SizedBox(height: 40),
                   SizedBox(

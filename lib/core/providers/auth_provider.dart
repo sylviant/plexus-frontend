@@ -38,6 +38,20 @@ class AuthProvider with ChangeNotifier {
     _userProvider = userProvider;
   }
 
+  // MÉTHODE POUR METTRE À JOUR LES DONNÉES LOCALES APRÈS ÉDITION
+  void updateLocalUserData(Map<String, dynamic> userData) {
+    if (_currentUser == null) return;
+    
+    _currentUser = ChatUser(
+      id: userData['id']?.toString() ?? _currentUser!.id,
+      firstName: userData['name'] ?? _currentUser!.firstName,
+      profileImage: userData['profileImage'] ?? _currentUser!.profileImage,
+    );
+    _isApproved = userData['isApproved'] ?? _isApproved;
+    
+    notifyListeners();
+  }
+
   Future<void> updateFcmToken(String fcmToken) async {
     if (_currentUser == null) return;
     try {
@@ -49,8 +63,7 @@ class AuthProvider with ChangeNotifier {
           'Authorization': 'Bearer $_token',
         },
         body: json.encode({'fcmToken': fcmToken}),
-      );
-      debugPrint("FCM Token synchronisé avec le serveur");
+      ).timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint("Erreur synchro Token: $e");
     }
@@ -79,16 +92,22 @@ class AuthProvider with ChangeNotifier {
   Future<void> login(String email, String password) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/login');
     try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': email, 'password': password}));
+      final response = await http.post(
+        url, 
+        headers: {'Content-Type': 'application/json'}, 
+        body: json.encode({'email': email, 'password': password})
+      ).timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 200) {
         await _handleAuthResponse(json.decode(response.body));
       } else {
         throw Exception(json.decode(response.body)['msg'] ?? 'Erreur');
       }
-    } catch (e) { rethrow; }
+    } catch (e) { 
+      throw Exception(ApiConfig.handleNetworkError(e));
+    }
   }
 
-  // --- AUTH GOOGLE (Gère Connexion ET Inscription avec Rôle) ---
   Future<void> signInWithGoogle({String? referralCode, String? role}) async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -113,19 +132,18 @@ class AuthProvider with ChangeNotifier {
             'uid': firebaseUser.uid,
             'photo': firebaseUser.photoURL,
             'referredByCode': referralCode,
-            'role': role ?? 'client', // ENVOI DU RÔLE AU BACKEND
+            'role': role ?? 'client',
           }),
-        );
+        ).timeout(const Duration(seconds: 15));
 
         if (response.statusCode == 200) {
           await _handleAuthResponse(json.decode(response.body));
         } else {
-          throw Exception('Erreur de synchronisation avec le serveur');
+          throw Exception('Le serveur PLEXUS a rejeté la connexion Google');
         }
       }
     } catch (e) {
-      debugPrint("Google Sign-In Error: $e");
-      rethrow;
+      throw Exception("Erreur Google Login: $e");
     }
   }
 
@@ -160,7 +178,7 @@ class AuthProvider with ChangeNotifier {
         if (selfie != null) request.files.add(await http.MultipartFile.fromPath('selfie', selfie.path));
       }
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 30));
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {
@@ -176,7 +194,7 @@ class AuthProvider with ChangeNotifier {
     if (_pendingEmail == null) return;
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/verify');
     try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail, 'code': code}));
+      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail, 'code': code})).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         _pendingEmail = null;
         notifyListeners();
@@ -190,7 +208,7 @@ class AuthProvider with ChangeNotifier {
     if (_pendingEmail == null) return;
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/resend-code');
     try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail}));
+      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail})).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         throw Exception(json.decode(response.body)['msg'] ?? 'Erreur lors du renvoi');
       }
@@ -200,7 +218,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> requestPasswordReset(String email) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password');
     try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': email}));
+      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': email})).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         _pendingEmail = email;
         notifyListeners();
@@ -218,7 +236,7 @@ class AuthProvider with ChangeNotifier {
         'email': _pendingEmail,
         'code': code,
         'newPassword': newPassword
-      }));
+      })).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         _pendingEmail = null;
         notifyListeners();

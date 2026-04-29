@@ -28,6 +28,8 @@ import 'package:plexus/presentation/screens/favorites_screen.dart';
 import 'package:plexus/presentation/screens/referral_screen.dart';
 import 'package:plexus/presentation/screens/dispute_screen.dart';
 import 'package:plexus/presentation/screens/add_product_screen.dart';
+import 'package:plexus/presentation/screens/edit_profile_screen.dart';
+import 'package:plexus/presentation/screens/shipping_address_screen.dart'; // IMPORT AJOUTÉ
 import 'package:plexus/presentation/scaffold_with_nav_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -39,8 +41,6 @@ GoRouter createRouter(BuildContext context) {
     refreshListenable: authProvider,
     redirect: (BuildContext context, GoRouterState state) {
       final bool loggedIn = authProvider.isAuthenticated;
-      
-      // Liste des routes accessibles sans être connecté
       final bool isAuthRoute = state.matchedLocation == '/login' || 
                                state.matchedLocation == '/signup' ||
                                state.matchedLocation == '/verify' ||
@@ -48,14 +48,10 @@ GoRouter createRouter(BuildContext context) {
                                state.matchedLocation == '/reset-password' ||
                                state.matchedLocation == '/splash';
 
-      // SI PAS CONNECTÉ et tente d'aller sur une page privée -> LOGIN
       if (!loggedIn && !isAuthRoute) return '/login';
-      
-      // SI CONNECTÉ et tente d'aller sur LOGIN/SIGNUP/SPLASH -> HOME
       if (loggedIn && (state.matchedLocation == '/login' || state.matchedLocation == '/signup' || state.matchedLocation == '/splash')) {
         return '/home';
       }
-
       return null;
     },
     routes: [
@@ -129,6 +125,8 @@ GoRouter createRouter(BuildContext context) {
                   return userType == UserType.seller ? const SellerHubScreen() : const ProfileScreen();
                 },
                 routes: [
+                  GoRoute(path: 'edit', builder: (context, state) => const EditProfileScreen()),
+                  GoRoute(path: 'address', builder: (context, state) => const ShippingAddressScreen()), // ROUTE AJOUTÉE
                   GoRoute(path: 'add-product', builder: (context, state) => AddProductScreen(initialProduct: state.extra as Map<String, dynamic>?)),
                   GoRoute(path: 'referral', builder: (context, state) => const ReferralScreen()),
                   GoRoute(path: 'orders', builder: (context, state) => const OrderHistoryScreen(), routes: [

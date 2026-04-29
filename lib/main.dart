@@ -75,41 +75,37 @@ class _PlexusAppState extends State<PlexusApp> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF1A237E);
+
     return MaterialApp.router(
       title: 'PLEXUS',
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.light, // Forcer le mode clair
+      
+      // --- THÈME PREMIUM (CLAIR UNIQUEMENT) ---
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1A237E),
-          primary: const Color(0xFF1A237E),
+          seedColor: primaryColor,
+          primary: primaryColor,
           secondary: const Color(0xFFFBC02D),
           surface: Colors.white,
         ),
-        // Typographie Moderne
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-          bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
-          labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        // Style des Cartes (Correction: CardThemeData au lieu de CardTheme)
         cardTheme: CardThemeData(
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           color: Colors.white,
           surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         ),
-        // Style des Boutons
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            backgroundColor: const Color(0xFF1A237E),
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
           ),
         ),
-        // Style des Inputs
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.grey[50],
@@ -117,14 +113,6 @@ class _PlexusAppState extends State<PlexusApp> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(color: Colors.grey[200]!),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.grey[200]!),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF1A237E), width: 2),
           ),
         ),
       ),

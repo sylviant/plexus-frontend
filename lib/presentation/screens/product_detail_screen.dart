@@ -67,12 +67,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           if (!snapshot.hasData) return const Center(child: Text("Erreur de chargement."));
 
           final product = snapshot.data!;
+          final String id = (product['_id'] ?? product['id']).toString(); // NORMALISATION ID
           final String title = product['title'] ?? 'Sans Titre';
           final double price = (product['price'] as num).toDouble();
           final List reviews = product['reviews'] ?? [];
           final bool isOwner = currentUser?.id == product['sellerId'];
 
-          // LOGIQUE TITRE DEUX STYLES
           String lightT = ''; String boldT = title;
           if (title.contains(' ')) {
             int idx = title.indexOf(' ');
@@ -120,7 +120,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: [
                         Expanded(child: ElevatedButton(onPressed: () { Provider.of<CartProvider>(context, listen: false).add(product); }, style: ElevatedButton.styleFrom(backgroundColor: primaryBlue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15)), child: const Text("AJOUTER AU PANIER"))),
                         const SizedBox(width: 15),
-                        Consumer<FavoriteProvider>(builder: (context, fav, child) => IconButton(icon: Icon(fav.isFavorite(product['_id']) ? Icons.favorite : Icons.favorite_border, color: Colors.red, size: 30), onPressed: () => fav.toggleFavorite(currentUser!.id, product['_id']))),
+                        // BOUTON FAVORIS CORRIGÉ
+                        Consumer<FavoriteProvider>(
+                          builder: (context, fav, child) {
+                            final isFav = fav.isFavorite(id);
+                            return IconButton(
+                              icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: Colors.red, size: 30),
+                              onPressed: () => fav.toggleFavorite(currentUser!.id, id),
+                            );
+                          }
+                        ),
                       ],
                     ),
                   ),

@@ -6,8 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
 import 'package:provider/provider.dart';
-import 'package:plexus/core/providers/socket_provider.dart';
-import 'package:plexus/core/providers/notification_provider.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
@@ -26,7 +24,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderVisible = true;
 
-  // SOUS-CATÉGORIES RESTAURÉES
   final Map<String, List<String>> _subCategoriesMap = {
     'Mode': ['Femme', 'Homme', 'Enfants', 'Accessoires'],
     'Électronique': ['Électricité', 'Quincaillerie', 'Smartphones', 'Informatique'],
@@ -56,21 +53,26 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   Future<void> _fetchCategoryProducts() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/products'));
+      final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/products')).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> all = (data['products'] ?? []) as List<dynamic>;
+        
         setState(() {
+          // FILTRAGE ULTRA-SOUPLE (Contient le mot-clé)
           final String target = widget.categoryName.toLowerCase().trim();
           _allCategoryProducts = all.where((p) {
             final String productCat = (p['category'] ?? '').toString().toLowerCase().trim();
-            return productCat == target;
+            // On vérifie si l'un contient l'autre pour éviter les erreurs de format
+            return productCat.contains(target) || target.contains(productCat);
           }).toList();
+          
           _applyFilters(); 
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint("Erreur Fetch: $e");
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -78,7 +80,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   void _applyFilters() {
     setState(() {
       _displayProducts = _allCategoryProducts.where((p) {
-        return _selectedSubCategory == "Tout" || (p['subCategory'] ?? '').toString() == _selectedSubCategory;
+        if (_selectedSubCategory == "Tout") return true;
+        final String sub = (p['subCategory'] ?? '').toString().toLowerCase().trim();
+        return sub == _selectedSubCategory.toLowerCase().trim();
       }).toList();
     });
   }
@@ -93,82 +97,57 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // BANNIÈRE AVEC IMAGE RESTAURÉE
           SliverAppBar(
-            expandedHeight: 220.0,
+            expandedHeight: 200.0,
             pinned: true,
             backgroundColor: primaryColor,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-              onPressed: () => context.pop(),
-            ),
+            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white), onPressed: () => context.pop()),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(
-                    'assets/categories/${widget.categoryName.toLowerCase()}.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(color: primaryColor),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 25, left: 20,
-                    child: Text(
-                      widget.categoryName.toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2),
-                    ),
-                  ),
+                  Image.asset('assets/categories/${widget.categoryName.toLowerCase()}.png', fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(color: primaryColor)),
+                  Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.8)]))),
+                  Positioned(bottom: 25, left: 20, child: Text(widget.categoryName.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2))),
                 ],
               ),
             ),
           ),
 
-          // BARRE DES SOUS-CATÉGORIES STABLE (PAS DE BLANC)
           if (subCats.isNotEmpty)
             SliverToBoxAdapter(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 height: _isHeaderVisible ? 60 : 0,
                 child: _isHeaderVisible 
-                    ? ListView(
+                    ? ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 15),
-                        children: [
-                          _buildSubCatChip("Tout"),
-                          ...subCats.map((s) => _buildSubCatChip(s)),
-                        ],
+                        itemCount: subCats.length + 1,
+                        itemBuilder: (context, index) {
+                          final label = index == 0 ? "Tout" : subCats[index - 1];
+                          return _buildSubCatChip(label);
+                        },
                       )
                     : const SizedBox.shrink(),
               ),
             ),
 
-          // LISTE DES PRODUITS
           _isLoading 
             ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator(color: primaryColor))))
             : _displayProducts.isEmpty 
-              ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(50), child: Text("Aucun produit disponible"))))
+              ? SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(50), child: Column(
+                  children: [
+                    const Icon(Icons.search_off, size: 50, color: Colors.grey),
+                    const SizedBox(height: 10),
+                    Text("Aucun article dans '${widget.categoryName}'", style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  ],
+                ))))
               : SliverPadding(
                   padding: const EdgeInsets.all(20),
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.72,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => ProductCard(product: _displayProducts[index]),
-                      childCount: _displayProducts.length,
-                    ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.72, crossAxisSpacing: 15, mainAxisSpacing: 15),
+                    delegate: SliverChildBuilderDelegate((context, index) => ProductCard(product: _displayProducts[index]), childCount: _displayProducts.length),
                   ),
                 ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -192,12 +171,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           border: Border.all(color: isSel ? Colors.transparent : Colors.grey[200]!),
           boxShadow: isSel ? [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
         ),
-        child: Center(
-          child: Text(
-            label, 
-            style: TextStyle(color: isSel ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: isSel ? FontWeight.bold : FontWeight.normal),
-          ),
-        ),
+        child: Center(child: Text(label, style: TextStyle(color: isSel ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: isSel ? FontWeight.bold : FontWeight.normal))),
       ),
     );
   }

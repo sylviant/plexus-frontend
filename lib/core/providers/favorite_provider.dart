@@ -14,7 +14,6 @@ class FavoriteProvider with ChangeNotifier {
 
   Future<void> fetchFavorites(String userId) async {
     if (userId.isEmpty) return;
-    
     _isLoading = true;
     notifyListeners();
 
@@ -24,18 +23,19 @@ class FavoriteProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
-        
         _favoriteIds.clear();
         _favoriteProducts.clear();
 
         for (var item in data) {
+          // On vérifie que productId existe et est bien un objet (grâce au populate du backend)
           final product = item['productId'];
-          if (product != null) {
-            _favoriteProducts.add(product);
+          if (product != null && product is Map) {
             final String id = (product['_id'] ?? product['id']).toString();
             _favoriteIds.add(id);
+            _favoriteProducts.add(product);
           }
         }
+        debugPrint("✅ Favoris chargés : ${_favoriteProducts.length}");
       }
     } catch (e) {
       debugPrint('🚨 Erreur récupération favoris: $e');
@@ -48,13 +48,12 @@ class FavoriteProvider with ChangeNotifier {
   Future<void> toggleFavorite(String userId, String productId) async {
     final String pIdStr = productId.toString();
     
-    // Optimisme UI : On change immédiatement l'icône
+    // UI réactive immédiate
     if (_favoriteIds.contains(pIdStr)) {
       _favoriteIds.remove(pIdStr);
       _favoriteProducts.removeWhere((p) => (p['_id'] ?? p['id']).toString() == pIdStr);
     } else {
       _favoriteIds.add(pIdStr);
-      // On attendra le fetch pour ajouter le produit complet à la liste
     }
     notifyListeners();
 
@@ -66,12 +65,16 @@ class FavoriteProvider with ChangeNotifier {
       );
       
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await fetchFavorites(userId); // Rechargement propre depuis le serveur
+        // On rafraîchit pour avoir les données complètes du produit
+        await fetchFavorites(userId);
       }
     } catch (e) {
-      debugPrint('🚨 Erreur toggle favoris: $e');
+      debugPrint('🚨 Erreur toggle: $e');
     }
   }
 
-  bool isFavorite(String productId) => _favoriteIds.contains(productId.toString());
+  bool isFavorite(String? productId) {
+    if (productId == null) return false;
+    return _favoriteIds.contains(productId.toString());
+  }
 }
