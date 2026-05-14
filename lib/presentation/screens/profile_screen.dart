@@ -16,116 +16,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
 
+  // ─── Palette ────────────────────────────────────────────────────────────────
+  static const Color _bg         = Color(0xFF0F1117);
+  static const Color _surface    = Color(0xFF1A1D27);
+  static const Color _surfaceAlt = Color(0xFF21253A);
+  static const Color _accent     = Color(0xFF4F6EF7);
+  static const Color _textPri    = Color(0xFFEBEDF5);
+  static const Color _textSec    = Color(0xFF7B8097);
+  static const Color _divider    = Color(0xFF252838);
+  static const Color _green      = Color(0xFF34C97B);
+  static const Color _red        = Color(0xFFEF5350);
+
   Future<void> _pickImage() async {
     final XFile? selected = await _picker.pickImage(source: ImageSource.gallery);
-    if (selected != null) {
-      setState(() => _imageFile = selected);
-    }
+    if (selected != null) setState(() => _imageFile = selected);
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1A237E);
     final auth = Provider.of<AuthProvider>(context);
     final user = auth.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text('MON COMPTE', style: TextStyle(color: primaryColor, fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 18)),
-        centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.settings_suggest_rounded, color: primaryColor), onPressed: () {}),
-        ],
-      ),
+      backgroundColor: _bg,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(50), bottomRight: Radius.circular(50)),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 30),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryColor.withOpacity(0.2), width: 2)),
-                        child: CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Colors.grey[100],
-                          backgroundImage: _imageFile != null
-                              ? FileImage(File(_imageFile!.path))
-                              : (user?.profileImage != null ? NetworkImage(user!.profileImage!) : null) as ImageProvider?,
-                          child: (_imageFile == null && user?.profileImage == null)
-                              ? const Icon(Icons.person_rounded, size: 50, color: primaryColor)
-                              : null,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0, right: 4,
-                        child: GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: primaryColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)]),
-                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Text(user?.firstName ?? 'Utilisateur PLEXUS', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: primaryColor)),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(10)),
-                    child: Text('PROFIL ACTIF', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green[700], letterSpacing: 1)),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 30),
+            // ── Hero Header ────────────────────────────────────────────────
+            _buildHeader(user, auth),
 
+            const SizedBox(height: 32),
+
+            // ── Menu Sections ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("GÉNÉRAL", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.5)),
-                  const SizedBox(height: 15),
-                  _buildPremiumTile(Icons.person_outline_rounded, "Éditer le profil", Colors.blue, () => context.push('/profile/edit')),
-                  _buildPremiumTile(Icons.card_giftcard_rounded, "Parrainage & Gains", Colors.orange, () => context.push('/profile/referral')),
-                  
-                  const SizedBox(height: 25),
-                  const Text("COMMANDES & ACHATS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.5)),
-                  const SizedBox(height: 15),
-                  _buildPremiumTile(Icons.shopping_bag_outlined, "Historique des achats", Colors.green, () => context.push('/profile/orders')),
-                  _buildPremiumTile(Icons.favorite_outline_rounded, "Mes Favoris", Colors.pink, () => context.push('/profile/favorites')),
-                  
-                  const SizedBox(height: 25),
-                  const Text("PAIEMENT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.5)),
-                  const SizedBox(height: 15),
-                  _buildPremiumTile(Icons.account_balance_wallet_outlined, "Portefeuilles Crypto", Colors.deepPurple, () => context.push('/profile/payment-methods')),
-                  _buildPremiumTile(Icons.location_on_outlined, "Adresses de livraison", Colors.red, () => context.push('/profile/address')), // LIEN CORRIGÉ
-                  
-                  const SizedBox(height: 40),
+                  _buildSectionLabel("Général"),
+                  const SizedBox(height: 12),
+                  _buildMenuGroup([
+                    _TileData(Icons.person_outline_rounded,       "Éditer le profil",       const Color(0xFF4F6EF7), () => context.push('/profile/edit')),
+                    _TileData(Icons.card_giftcard_rounded,         "Parrainage & Gains",     const Color(0xFFF5A623), () => context.push('/profile/referral')),
+                  ]),
+
+                  const SizedBox(height: 28),
+                  _buildSectionLabel("Commandes & Achats"),
+                  const SizedBox(height: 12),
+                  _buildMenuGroup([
+                    _TileData(Icons.shopping_bag_outlined,         "Historique des achats",  const Color(0xFF34C97B), () => context.push('/profile/orders')),
+                    _TileData(Icons.favorite_outline_rounded,      "Mes Favoris",            const Color(0xFFEF5350), () => context.push('/profile/favorites')),
+                  ]),
+
+                  const SizedBox(height: 28),
+                  _buildSectionLabel("Paiement"),
+                  const SizedBox(height: 12),
+                  _buildMenuGroup([
+                    _TileData(Icons.account_balance_wallet_outlined, "Portefeuilles Crypto", const Color(0xFF9B8EF7), () => context.push('/profile/payment-methods')),
+                    _TileData(Icons.location_on_outlined,           "Adresses de livraison", const Color(0xFFEF5350), () => context.push('/profile/address')), // LIEN CORRIGÉ
+                  ]),
+
+                  const SizedBox(height: 36),
+
+                  // ── Logout ───────────────────────────────────────────────
                   SizedBox(
                     width: double.infinity,
-                    child: TextButton.icon(
+                    height: 52,
+                    child: OutlinedButton.icon(
                       onPressed: () => auth.logout(),
-                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-                      label: const Text("DÉCONNEXION", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                      style: TextButton.styleFrom(padding: const EdgeInsets.all(20), backgroundColor: Colors.red.withOpacity(0.05), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                      icon: const Icon(Icons.logout_rounded, size: 18, color: _red),
+                      label: const Text("Déconnexion",
+                          style: TextStyle(
+                              color: _red,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              letterSpacing: 0.3)),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: _red.withOpacity(0.35)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 50),
@@ -138,25 +108,226 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPremiumTile(IconData icon, String title, Color color, VoidCallback onTap) {
+  // ─── Hero Header ─────────────────────────────────────────────────────────────
+  Widget _buildHeader(dynamic user, AuthProvider auth) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        color: _surface,
+        border: Border(bottom: BorderSide(color: _divider)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: color, size: 22),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            children: [
+              // ── Top Row ──────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Mon Compte',
+                    style: TextStyle(
+                      color: _textPri,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 38, height: 38,
+                      decoration: BoxDecoration(
+                        color: _surfaceAlt,
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(color: _divider),
+                      ),
+                      child: const Icon(Icons.settings_suggest_rounded,
+                          color: _textSec, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Avatar ────────────────────────────────────────────────
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4F6EF7), Color(0xFF9B8EF7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                          color: _surface, shape: BoxShape.circle),
+                      child: CircleAvatar(
+                        radius: 48,
+                        backgroundColor: _surfaceAlt,
+                        backgroundImage: _imageFile != null
+                            ? FileImage(File(_imageFile!.path))
+                            : (user?.profileImage != null
+                                ? NetworkImage(user!.profileImage!)
+                                : null) as ImageProvider?,
+                        child: (_imageFile == null && user?.profileImage == null)
+                            ? const Icon(Icons.person_rounded,
+                                size: 44, color: _textSec)
+                            : null,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 2, right: 2,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: 30, height: 30,
+                        decoration: BoxDecoration(
+                          color: _accent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _surface, width: 2),
+                        ),
+                        child: const Icon(Icons.camera_alt_rounded,
+                            color: Colors.white, size: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                user?.firstName ?? 'Utilisateur PLEXUS',
+                style: const TextStyle(
+                  color: _textPri,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _green.withOpacity(0.25)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6, height: 6,
+                      decoration: const BoxDecoration(
+                          color: _green, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text("Profil actif",
+                        style: TextStyle(
+                            color: _green,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
-        onTap: onTap,
       ),
     );
   }
+
+  // ─── Section Label ────────────────────────────────────────────────────────────
+  Widget _buildSectionLabel(String label) {
+    return Text(
+      label.toUpperCase(),
+      style: const TextStyle(
+          color: _textSec,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.4),
+    );
+  }
+
+  // ─── Menu Group ───────────────────────────────────────────────────────────────
+  Widget _buildMenuGroup(List<_TileData> tiles) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _divider),
+      ),
+      child: Column(
+        children: List.generate(tiles.length, (i) {
+          final t = tiles[i];
+          final isLast = i == tiles.length - 1;
+          return Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.vertical(
+                    top: i == 0 ? const Radius.circular(16) : Radius.zero,
+                    bottom: isLast ? const Radius.circular(16) : Radius.zero,
+                  ),
+                  onTap: t.onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38, height: 38,
+                          decoration: BoxDecoration(
+                            color: t.color.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(t.icon, color: t.color, size: 20),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(t.title,
+                              style: const TextStyle(
+                                  color: _textPri,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 13, color: _textSec),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (!isLast)
+                Container(
+                    height: 1,
+                    color: _divider,
+                    margin: const EdgeInsets.only(left: 68)),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _TileData {
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+  const _TileData(this.icon, this.title, this.color, this.onTap);
 }

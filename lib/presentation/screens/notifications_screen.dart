@@ -8,107 +8,48 @@ import 'package:go_router/go_router.dart';
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
+  // ─── Palette ────────────────────────────────────────────────────────────────
+  static const Color _bg         = Color(0xFF0F1117);
+  static const Color _surface    = Color(0xFF1A1D27);
+  static const Color _surfaceAlt = Color(0xFF21253A);
+  static const Color _accent     = Color(0xFF4F6EF7);
+  static const Color _textPri    = Color(0xFFEBEDF5);
+  static const Color _textSec    = Color(0xFF7B8097);
+  static const Color _divider    = Color(0xFF252838);
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0.5,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-      ),
+      backgroundColor: _bg,
+      appBar: _buildAppBar(context),
       body: RefreshIndicator(
-        onRefresh: () => Provider.of<NotificationProvider>(context, listen: false).fetchNotifications(auth.currentUser!.id),
+        color: _accent,
+        backgroundColor: _surface,
+        onRefresh: () => Provider.of<NotificationProvider>(context, listen: false)
+            .fetchNotifications(auth.currentUser!.id),
         child: Consumer<NotificationProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.notifications.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return _buildLoader();
             }
 
             if (provider.notifications.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.notifications_none, size: 100, color: Colors.grey[200]),
-                    const SizedBox(height: 20),
-                    const Text('Aucune alerte pour le moment', 
-                      style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  ],
-                ),
-              );
+              return _buildEmpty();
             }
 
+            // ── Group by date ──────────────────────────────────────────────
+            final grouped = _groupByDate(provider.notifications);
+            final keys = grouped.keys.toList();
+
             return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              itemCount: provider.notifications.length,
-              itemBuilder: (context, index) {
-                final notif = provider.notifications[index];
-                
-                DateTime date;
-                try {
-                  date = DateTime.parse(notif['createdAt'] ?? DateTime.now().toIso8601String());
-                } catch (e) {
-                  date = DateTime.now();
-                }
-
-                final bool isRead = notif['isRead'] ?? false;
-                final String notifId = (notif['_id'] ?? notif['id'] ?? "").toString();
-                final String? conversationId = notif['conversationId'];
-                final String? type = notif['type'];
-
-                return Container(
-                  color: isRead ? Colors.transparent : const Color(0xFFE3F2FD).withOpacity(0.3),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundColor: _getNotifColor(type).withOpacity(0.1),
-                      child: Icon(_getNotifIcon(type), color: _getNotifColor(type), size: 24),
-                    ),
-                    title: Text(
-                      notif['title'] ?? 'Alerte PLEXUS',
-                      style: TextStyle(
-                        fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          notif['message'] ?? '',
-                          style: TextStyle(color: isRead ? Colors.grey : Colors.black87),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          DateFormat('dd/MM à HH:mm').format(date),
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      if (!isRead && notifId.isNotEmpty) {
-                        provider.markAsRead(notifId);
-                      }
-
-                      // LOGIQUE DE REDIRECTION CORRIGÉE POUR LE ROUTER
-                      if (conversationId != null && conversationId.isNotEmpty) {
-                        // Utilisation du chemin complet défini dans router.dart
-                        context.push('/messages/chat/$conversationId', extra: {
-                          'otherName': 'Utilisateur',
-                        });
-                      } else if (type == 'sale' || type == 'shipping_offer') {
-                        context.go('/messages');
-                      }
-                    },
-                  ),
-                );
+              padding: const EdgeInsets.only(top: 8, bottom: 32),
+              itemCount: keys.length,
+              itemBuilder: (context, i) {
+                final label = keys[i];
+                final items = grouped[label]!;
+                return _buildGroup(context, label, items, provider);
               },
             );
           },
@@ -117,23 +58,294 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
+  // ─── AppBar ─────────────────────────────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: _bg,
+      elevation: 0,
+      centerTitle: false,
+      titleSpacing: 20,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Notifications',
+            style: TextStyle(
+              color: _textPri,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: _divider),
+      ),
+    );
+  }
+
+  // ─── Loader ──────────────────────────────────────────────────────────────────
+  Widget _buildLoader() {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: _accent,
+        strokeWidth: 2,
+      ),
+    );
+  }
+
+  // ─── Empty State ─────────────────────────────────────────────────────────────
+  Widget _buildEmpty() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: _surfaceAlt,
+                shape: BoxShape.circle,
+                border: Border.all(color: _divider, width: 1.5),
+              ),
+              child: const Icon(Icons.notifications_outlined,
+                  size: 38, color: _textSec),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Aucune notification',
+              style: TextStyle(
+                  color: _textPri, fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Vos alertes PLEXUS apparaîtront ici dès qu\'une activité est détectée.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _textSec, fontSize: 14, height: 1.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Date Group ──────────────────────────────────────────────────────────────
+  Widget _buildGroup(
+    BuildContext context,
+    String label,
+    List<Map<String, dynamic>> items,
+    NotificationProvider provider,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          child: Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              color: _textSec,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.4,
+            ),
+          ),
+        ),
+        ...items.map((notif) => _buildCard(context, notif, provider)),
+      ],
+    );
+  }
+
+  // ─── Notification Card ───────────────────────────────────────────────────────
+  Widget _buildCard(
+    BuildContext context,
+    Map<String, dynamic> notif,
+    NotificationProvider provider,
+  ) {
+    DateTime date;
+    try {
+      date = DateTime.parse(notif['createdAt'] ?? DateTime.now().toIso8601String());
+    } catch (_) {
+      date = DateTime.now();
+    }
+
+    final bool isRead          = notif['isRead'] ?? false;
+    final String notifId       = (notif['_id'] ?? notif['id'] ?? '').toString();
+    final String? conversationId = notif['conversationId'];
+    final String? type         = notif['type'];
+
+    final Color typeColor = _getNotifColor(type);
+    final IconData typeIcon = _getNotifIcon(type);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            if (!isRead && notifId.isNotEmpty) {
+              provider.markAsRead(notifId);
+            }
+            // LOGIQUE DE REDIRECTION CORRIGÉE POUR LE ROUTER
+            if (conversationId != null && conversationId.isNotEmpty) {
+              context.push('/messages/chat/$conversationId', extra: {
+                'otherName': 'Utilisateur',
+              });
+            } else if (type == 'sale' || type == 'shipping_offer') {
+              context.go('/messages');
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              color: isRead ? _surface : _surfaceAlt,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isRead ? _divider : typeColor.withOpacity(0.25),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Icon Badge ──────────────────────────────────────────
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: typeColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(typeIcon, color: typeColor, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+
+                  // ── Content ──────────────────────────────────────────────
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                notif['title'] ?? 'Alerte PLEXUS',
+                                style: TextStyle(
+                                  color: _textPri,
+                                  fontSize: 14.5,
+                                  fontWeight: isRead
+                                      ? FontWeight.w500
+                                      : FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Unread dot
+                            if (!isRead)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: typeColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          notif['message'] ?? '',
+                          style: TextStyle(
+                            color: isRead ? _textSec : _textPri.withOpacity(0.75),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time_rounded,
+                                size: 12, color: _textSec),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('dd/MM à HH:mm').format(date),
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: _textSec,
+                                  letterSpacing: 0.2),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────────
+  Map<String, List<Map<String, dynamic>>> _groupByDate(
+      List<Map<String, dynamic>> notifications) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final Map<String, List<Map<String, dynamic>>> groups = {};
+
+    for (final notif in notifications) {
+      DateTime date;
+      try {
+        date = DateTime.parse(
+            notif['createdAt'] ?? DateTime.now().toIso8601String());
+      } catch (_) {
+        date = DateTime.now();
+      }
+      final dateOnly = DateTime(date.year, date.month, date.day);
+
+      String label;
+      if (dateOnly == today) {
+        label = "Aujourd'hui";
+      } else if (dateOnly == yesterday) {
+        label = 'Hier';
+      } else {
+        label = DateFormat('dd MMMM yyyy', 'fr_FR').format(date);
+      }
+
+      groups.putIfAbsent(label, () => []).add(notif);
+    }
+    return groups;
+  }
+
   IconData _getNotifIcon(String? type) {
     switch (type) {
-      case 'sale': return Icons.shopping_cart;
+      case 'sale':           return Icons.shopping_cart;
       case 'shipping_offer': return Icons.local_shipping;
-      case 'payment': return Icons.account_balance_wallet;
-      case 'system': return Icons.info_outline;
-      default: return Icons.notifications;
+      case 'payment':        return Icons.account_balance_wallet;
+      case 'system':         return Icons.info_outline;
+      default:               return Icons.notifications;
     }
   }
 
   Color _getNotifColor(String? type) {
     switch (type) {
-      case 'sale': return Colors.green;
-      case 'shipping_offer': return Colors.blue;
-      case 'payment': return Colors.orange;
-      case 'system': return Colors.indigo;
-      default: return Colors.blueGrey;
+      case 'sale':           return const Color(0xFF34C97B);
+      case 'shipping_offer': return const Color(0xFF4F6EF7);
+      case 'payment':        return const Color(0xFFF5A623);
+      case 'system':         return const Color(0xFF9B8EF7);
+      default:               return const Color(0xFF7B8097);
     }
   }
 }

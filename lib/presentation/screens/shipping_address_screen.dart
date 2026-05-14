@@ -14,21 +14,57 @@ class ShippingAddressScreen extends StatefulWidget {
   State<ShippingAddressScreen> createState() => _ShippingAddressScreenState();
 }
 
-class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
+class _ShippingAddressScreenState extends State<ShippingAddressScreen>
+    with SingleTickerProviderStateMixin {
+  // ─── Votre Palette (Inchangée) ─────────────────────────
+  static const Color _navy = Color(0xFF0D1B4B);
+  static const Color _accent = Color(0xFF4A6CF7);
+  static const Color _surface = Color(0xFFF4F6FF);
+  static const Color _textMuted = Color(0xFF8A94B2);
+
   final _addressController = TextEditingController();
   bool _isLoading = false;
   bool _isGettingLocation = false;
+  bool _isFocused = false;
+
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
-    // Charger l'adresse actuelle au démarrage
-    _fetchCurrentAddress();
+    _animController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
+    _fadeAnim =
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _animController.forward();
+    _fetchCurrentAddress(); // Appel au chargement
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  // RÉCUPÉRATION DE L'ADRESSE DEPUIS LE BACKEND
   Future<void> _fetchCurrentAddress() async {
-    final user = Provider.of<AuthProvider>(context, listen: false).currentUser;
-    // On pourrait charger l'adresse depuis le serveur ici si elle n'est pas dans currentUser
+    final userId = Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
+    if (userId == null) return;
+    try {
+      final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/users/$userId'));
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body);
+        if (userData['address'] != null && mounted) {
+          setState(() {
+            _addressController.text = userData['address'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Erreur lors de la récupération de l'adresse: $e");
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -40,30 +76,36 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) throw 'Permissions refusées.';
+        if (permission == LocationPermission.denied)
+          throw 'Permissions refusées.';
       }
 
       Position position = await Geolocator.getCurrentPosition();
-      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude, position.longitude);
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
         setState(() {
-          _addressController.text = "${place.street}, ${place.locality}, ${place.country}";
+          _addressController.text =
+              "${place.street}, ${place.locality}, ${place.country}";
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isGettingLocation = false);
     }
   }
 
+  // SAUVEGARDE ET MISE À JOUR DE L'ÉTAT LOCAL
   Future<void> _saveAddress() async {
     if (_addressController.text.isEmpty) return;
     setState(() => _isLoading = true);
 
-    final userId = Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final userId = auth.currentUser?.id;
 
     try {
       final response = await http.put(
@@ -73,78 +115,341 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
       );
 
       if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        // Mise à jour de l'AuthProvider pour que l'app soit au courant du changement
+        auth.updateLocalUserData(responseData['user'] ?? responseData);
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Adresse enregistrée !"), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Adresse enregistrée !"),
+              backgroundColor: Color(0xFF00B386),
+            ),
+          );
           Navigator.pop(context);
         }
       }
     } catch (e) {
-      debugPrint("Erreur: $e");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur de sauvegarde.")));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  // ─── LE RESTE DU BUILD (VOTRE DESIGN) EST CONSERVÉ À 100% ────────────────
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1A237E);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        title: const Text("ADRESSE DE LIVRAISON", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(25.0),
+      backgroundColor: _surface,
+      appBar: _buildAppBar(),
+      body: FadeTransition(
+        opacity: _fadeAnim,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Où souhaitez-vous être livré ?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor)),
-            const SizedBox(height: 10),
-            const Text("Cette adresse sera utilisée par défaut pour vos futures commandes.", style: TextStyle(color: Colors.grey, fontSize: 14)),
-            const SizedBox(height: 30),
-            
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    _fieldLabel("ADRESSE COMPLÈTE"),
+                    const SizedBox(height: 10),
+                    _buildAddressField(),
+                    const SizedBox(height: 16),
+                    _buildLocationButton(),
+                    const SizedBox(height: 28),
+                    _buildTip(),
+                  ],
+                ),
               ),
-              child: TextField(
-                controller: _addressController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: "Saisissez votre adresse complète...",
-                  contentPadding: const EdgeInsets.all(20),
-                  border: InputBorder.none,
-                  suffixIcon: IconButton(
-                    icon: _isGettingLocation 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.my_location, color: primaryColor),
-                    onPressed: _getCurrentLocation,
+            ),
+            _buildConfirmButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      leading: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Container(
+          margin: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.arrow_back_ios_new_rounded,
+              size: 16, color: _navy),
+        ),
+      ),
+      title: const Text(
+        "ADRESSE DE LIVRAISON",
+        style: TextStyle(
+          color: _navy,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5,
+          fontSize: 13,
+        ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(color: const Color(0xFFE8ECF8), height: 1),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0D1B4B), Color(0xFF1A2E6E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.location_on_rounded,
+                color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Où souhaitez-vous\nêtre livré ?",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    height: 1.3,
                   ),
                 ),
-              ),
-            ),
-            
-            const Spacer(),
-            
-            SizedBox(
-              width: double.infinity, height: 60,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveAddress,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                const SizedBox(height: 4),
+                Text(
+                  "Adresse par défaut pour vos commandes",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 11,
+                  ),
                 ),
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text("CONFIRMER L'ADRESSE", style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String text) {
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 12,
+          decoration: BoxDecoration(
+            color: _accent,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            color: _textMuted,
+            letterSpacing: 1.8,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressField() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: _isFocused ? _accent : const Color(0xFFEBEFF8),
+          width: _isFocused ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _isFocused
+                ? _accent.withOpacity(0.08)
+                : Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Focus(
+        onFocusChange: (focused) => setState(() => _isFocused = focused),
+        child: TextField(
+          controller: _addressController,
+          maxLines: 4,
+          style: const TextStyle(
+            color: _navy,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+          ),
+          decoration: const InputDecoration(
+            hintText: "Ex: 12 Rue de la Paix, Yaoundé, Cameroun",
+            hintStyle: TextStyle(color: _textMuted, fontSize: 13),
+            contentPadding: EdgeInsets.all(20),
+            border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationButton() {
+    return GestureDetector(
+      onTap: _isGettingLocation ? null : _getCurrentLocation,
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFEBEFF8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isGettingLocation)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: _accent),
+              )
+            else
+              const Icon(Icons.my_location_rounded,
+                  size: 18, color: _accent),
+            const SizedBox(width: 10),
+            const Text(
+              "Utiliser ma position actuelle",
+              style: TextStyle(
+                color: _navy,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
             ),
-            const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTip() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _accent.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _accent.withOpacity(0.12)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline_rounded, size: 18, color: _accent.withOpacity(0.8)),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              "Cette adresse sera utilisée par défaut pour toutes vos commandes futures.",
+              style: TextStyle(
+                color: _textMuted,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFEBEFF8))),
+      ),
+      child: GestureDetector(
+        onTap: _isLoading ? null : _saveAddress,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [_navy, Color(0xFF2A4099)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: _navy.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Center(
+            child: _isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
+                  )
+                : const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_rounded,
+                          color: Colors.white, size: 18),
+                      SizedBox(width: 10),
+                      Text(
+                        "CONFIRMER L'ADRESSE",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );

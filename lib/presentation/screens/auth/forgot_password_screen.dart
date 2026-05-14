@@ -10,16 +10,50 @@ class ForgotPasswordScreen extends StatefulWidget {
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  // ─── Palette ─────────────────────────────────────────────────────────────
+  static const Color _primary    = Color(0xFF1A237E);
+  static const Color _primaryMid = Color(0xFF3949AB);
+  static const Color _accent     = Color(0xFF00B4D8);
+  static const Color _surface    = Color(0xFFF4F6FB);
+  static const Color _border     = Color(0xFFE2E8F0);
+  static const Color _textMain   = Color(0xFF0F172A);
+  static const Color _textSub    = Color(0xFF64748B);
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnim =
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut));
+    _animController.forward();
+  }
+
   @override
   void dispose() {
+    _animController.dispose();
     _emailController.dispose();
     super.dispose();
   }
+
+  // ─── Backend logic (unchanged) ───────────────────────────────────────────
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -29,14 +63,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await Provider.of<AuthProvider>(context, listen: false)
           .requestPasswordReset(_emailController.text);
-      
+
       if (mounted) {
         context.push('/reset-password');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    e.toString().replaceAll('Exception: ', ''),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     } finally {
@@ -44,61 +98,477 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  // ─── UI ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF283593);
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: Colors.white, elevation: 0, foregroundColor: Colors.black),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(30.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.lock_reset_rounded, size: 80, color: primaryColor),
-              const SizedBox(height: 30),
-              const Text(
-                'Mot de passe oublié',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Entrez votre email pour recevoir un code de réinitialisation.',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email_outlined, color: primaryColor),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+      backgroundColor: _surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: _primary.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-                validator: (v) => v!.isEmpty || !v.contains('@') ? 'Email invalide' : null,
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('ENVOYER LE CODE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
+              ],
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 16, color: _textMain),
           ),
+          onPressed: () => context.pop(),
         ),
       ),
+      body: Stack(
+        children: [
+          // ── Blobs ──────────────────────────────────────────────────────
+          Positioned(
+            top: -60,
+            right: -60,
+            child: _Blob(size: 240, color: _primaryMid.withOpacity(0.07)),
+          ),
+          Positioned(
+            bottom: 80,
+            left: -70,
+            child: _Blob(size: 200, color: _accent.withOpacity(0.06)),
+          ),
+
+          // ── Content ────────────────────────────────────────────────────
+          SafeArea(
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+
+                      // ── Header icon ──────────────────────────────────
+                      Center(
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [_primary, _primaryMid],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(22),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _primary.withOpacity(0.28),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.lock_reset_rounded,
+                                color: Colors.white,
+                                size: 34,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'PLEXUS',
+                              style: TextStyle(
+                                color: _primary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // ── Step indicator ────────────────────────────────
+                      _StepRow(),
+
+                      const SizedBox(height: 32),
+
+                      // ── Card ─────────────────────────────────────────
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _primary.withOpacity(0.07),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(28),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Mot de passe oublié',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: _textMain,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Entrez votre adresse e-mail pour recevoir un code de réinitialisation.',
+                                style: TextStyle(
+                                    fontSize: 13, color: _textSub),
+                              ),
+
+                              const SizedBox(height: 28),
+
+                              // Info banner
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: _accent.withOpacity(0.07),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: _accent.withOpacity(0.2),
+                                      width: 1.2),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.info_outline_rounded,
+                                        size: 16,
+                                        color: _accent.withOpacity(0.8)),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
+                                      child: Text(
+                                        'Un code à 6 chiffres sera envoyé à votre adresse e-mail.',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: _textSub,
+                                            height: 1.4),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Email field
+                              const _FieldLabel(label: 'Adresse e-mail'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                style: const TextStyle(
+                                    color: _textMain,
+                                    fontWeight: FontWeight.w500),
+                                decoration: InputDecoration(
+                                  hintText: 'exemple@domaine.com',
+                                  hintStyle: TextStyle(
+                                      color: _textSub.withOpacity(0.5),
+                                      fontSize: 14),
+                                  prefixIcon: const Icon(
+                                      Icons.alternate_email_rounded,
+                                      color: _textSub,
+                                      size: 20),
+                                  filled: true,
+                                  fillColor: _surface,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 16),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: _border, width: 1.5),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: _border, width: 1.5),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: _primaryMid, width: 2),
+                                  ),
+                                  errorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFEF4444),
+                                        width: 1.5),
+                                  ),
+                                  focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFEF4444), width: 2),
+                                  ),
+                                ),
+                                validator: (v) =>
+                                    v!.isEmpty || !v.contains('@')
+                                        ? 'Email invalide'
+                                        : null,
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // Submit button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: _isLoading
+                                        ? null
+                                        : const LinearGradient(
+                                            colors: [_primary, _primaryMid],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                    color: _isLoading ? _border : null,
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: _isLoading
+                                        ? []
+                                        : [
+                                            BoxShadow(
+                                              color:
+                                                  _primary.withOpacity(0.35),
+                                              blurRadius: 16,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? null : _submit,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14)),
+                                    ),
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2.5,
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Icon(
+                                                  Icons
+                                                      .send_rounded,
+                                                  color: Colors.white,
+                                                  size: 16),
+                                              SizedBox(width: 10),
+                                              Text(
+                                                'ENVOYER LE CODE',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: 1.5,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Back to login
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => context.go('/login'),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.arrow_back_rounded,
+                                  size: 14, color: _primaryMid),
+                              SizedBox(width: 6),
+                              Text(
+                                'Retour à la connexion',
+                                style: TextStyle(
+                                  color: _primaryMid,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Sub-widgets ──────────────────────────────────────────────────────────────
+
+class _StepRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _Step(number: '1', label: 'Email', active: true),
+        _StepLine(),
+        _Step(number: '2', label: 'Code', done: false),
+        _StepLine(),
+        _Step(number: '3', label: 'Nouveau MDP', done: false),
+      ],
+    );
+  }
+}
+
+class _Step extends StatelessWidget {
+  final String number;
+  final String label;
+  final bool done;
+  final bool active;
+
+  const _Step({
+    required this.number,
+    required this.label,
+    this.done = false,
+    this.active = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const Color _primary = Color(0xFF1A237E);
+    const Color _textSub = Color(0xFF64748B);
+
+    final bool highlighted = done || active;
+    final Color bg = highlighted ? _primary : const Color(0xFFE2E8F0);
+    final Color fg = highlighted ? Colors.white : _textSub;
+
+    return Column(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+            boxShadow: highlighted
+                ? [
+                    BoxShadow(
+                      color: _primary.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    )
+                  ]
+                : [],
+          ),
+          child: Center(
+            child: done && !active
+                ? const Icon(Icons.check_rounded,
+                    size: 14, color: Colors.white)
+                : Text(number,
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: fg)),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: highlighted ? _primary : _textSub,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StepLine extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 2,
+        margin: const EdgeInsets.only(bottom: 16, left: 4, right: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A237E).withOpacity(0.15),
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+  const _FieldLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF0F172A),
+        letterSpacing: 0.1,
+      ),
+    );
+  }
+}
+
+class _Blob extends StatelessWidget {
+  final double size;
+  final Color color;
+  const _Blob({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

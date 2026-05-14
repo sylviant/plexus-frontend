@@ -12,7 +12,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isGoogleLoading = false;
@@ -21,8 +22,35 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  static const Color _primary     = Color(0xFF1A237E);
+  static const Color _primaryMid  = Color(0xFF3949AB);
+  static const Color _surface     = Color(0xFFF4F6FB);
+  static const Color _border      = Color(0xFFE2E8F0);
+  static const Color _textMain    = Color(0xFF0F172A);
+  static const Color _textSub     = Color(0xFF64748B);
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
+    _animController.forward();
+  }
+
   @override
   void dispose() {
+    _animController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -58,8 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onLoginSuccess(AuthProvider auth) {
     if (auth.currentUser != null && mounted) {
       final userId = auth.currentUser!.id;
-      final notifProvider = Provider.of<NotificationProvider>(context, listen: false);
-      Provider.of<SocketProvider>(context, listen: false).connect(userId, notifProvider);
+      final notifProvider =
+          Provider.of<NotificationProvider>(context, listen: false);
+      Provider.of<SocketProvider>(context, listen: false)
+          .connect(userId, notifProvider);
       notifProvider.fetchNotifications(userId);
     }
   }
@@ -68,10 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(msg.replaceAll('Exception: ', '')), 
-          backgroundColor: Colors.black87,
+          content: Text(msg.replaceAll('Exception: ', '')),
+          backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -79,134 +108,148 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1A237E);
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 280,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, Color(0xFF3949AB)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
-              ),
+      backgroundColor: _surface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Hero(
-                    tag: 'logo',
-                    child: Image.asset(
-                      'assets/logo/logo.png',
-                      height: 80,
-                      errorBuilder: (context, error, stackTrace) => 
-                        const Icon(Icons.shopping_bag_rounded, size: 60, color: Colors.white),
+                  const SizedBox(height: 40),
+                  // LOGO
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80, height: 80,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [_primary, _primaryMid]),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          child: Image.asset('assets/logo/logo.png', errorBuilder: (c,e,s) => const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 40)),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text('PLEXUS', style: TextStyle(color: _primary, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 6)),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text('PLEXUS', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 4)),
+                  const SizedBox(height: 40),
+                  
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [BoxShadow(color: _primary.withOpacity(0.07), blurRadius: 30, offset: const Offset(0, 10))],
+                    ),
+                    padding: const EdgeInsets.all(28),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Connexion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: _textMain)),
+                          const SizedBox(height: 28),
+                          
+                          _styledField(_emailController, 'Adresse e-mail', Icons.alternate_email_rounded),
+                          const SizedBox(height: 20),
+                          
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: _inputDecoration(
+                              hint: 'Mot de passe',
+                              icon: Icons.lock_outline_rounded,
+                              suffix: IconButton(
+                                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: _textSub, size: 20),
+                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                          ),
+                          
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Mot de passe oublié ?', style: TextStyle(color: _primaryMid))),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          SizedBox(
+                            width: double.infinity, height: 55,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              style: ElevatedButton.styleFrom(backgroundColor: _primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                              child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('SE CONNECTER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 25),
+                          const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OU")), Expanded(child: Divider())]),
+                          const SizedBox(height: 25),
+
+                          // BOUTON GOOGLE CORRIGÉ (OVERFLOW + IMAGE)
+                          SizedBox(
+                            width: double.infinity, height: 55,
+                            child: OutlinedButton(
+                              onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+                              style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), side: const BorderSide(color: _border, width: 1.5)),
+                              child: _isGoogleLoading 
+                                ? const CircularProgressIndicator()
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.g_mobiledata_rounded, color: _primary, size: 30),
+                                      const SizedBox(width: 8),
+                                      const Flexible(
+                                        child: Text(
+                                          "Continuer avec Google",
+                                          style: TextStyle(color: _textMain, fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 30),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Connexion', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: primaryColor)),
-                    const SizedBox(height: 30),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.alternate_email_rounded)),
-                      validator: (v) => v!.isEmpty ? 'Veuillez saisir votre email' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Mot de passe',
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                        ),
-                      ),
-                    ),
-                    Align(alignment: Alignment.centerRight, child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Mot de passe oublié ?', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)))),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(backgroundColor: primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
-                          child: _isLoading 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('SE CONNECTER', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OU", style: TextStyle(color: Colors.grey, fontSize: 10))), Expanded(child: Divider())]),
-                    const SizedBox(height: 20),
-                    
-                    // --- BOUTON GOOGLE CORRIGÉ (OVERFLOW + IMAGE) ---
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: OutlinedButton(
-                        onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
-                        style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          side: BorderSide(color: Colors.grey[200]!, width: 2),
-                        ),
-                        child: _isGoogleLoading 
-                          ? const CircularProgressIndicator(strokeWidth: 2)
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min, // S'assure que le contenu reste centré
-                              children: [
-                                Image.network(
-                                  'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg', 
-                                  width: 20,
-                                  errorBuilder: (c,e,s) => const Icon(Icons.g_mobiledata, color: primaryColor), // Icône de secours
-                                ),
-                                const SizedBox(width: 10),
-                                const Flexible(
-                                  child: Text(
-                                    "Continuer avec Google", 
-                                    style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 30),
-                    Center(child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Text("Nouveau ici ? "), GestureDetector(onTap: () => context.go('/signup'), child: const Text('Inscrivez-vous', style: TextStyle(color: primaryColor, fontWeight: FontWeight.w900, decoration: TextDecoration.underline)))]))
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _styledField(TextEditingController c, String h, IconData i) {
+    return TextFormField(
+      controller: c,
+      decoration: _inputDecoration(hint: h, icon: i),
+      validator: (v) => v!.isEmpty ? 'Requis' : null,
+    );
+  }
+
+  InputDecoration _inputDecoration({required String hint, required IconData icon, Widget? suffix}) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, color: _textSub, size: 20),
+      suffixIcon: suffix,
+      filled: true, fillColor: _surface,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+    );
+  }
+}
+
+class _Blob extends StatelessWidget {
+  final double size; final Color color;
+  const _Blob({required this.size, required this.color});
+  @override Widget build(BuildContext context) => Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
 }

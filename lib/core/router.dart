@@ -29,7 +29,7 @@ import 'package:plexus/presentation/screens/referral_screen.dart';
 import 'package:plexus/presentation/screens/dispute_screen.dart';
 import 'package:plexus/presentation/screens/add_product_screen.dart';
 import 'package:plexus/presentation/screens/edit_profile_screen.dart';
-import 'package:plexus/presentation/screens/shipping_address_screen.dart'; // IMPORT AJOUTÉ
+import 'package:plexus/presentation/screens/shipping_address_screen.dart';
 import 'package:plexus/presentation/scaffold_with_nav_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -126,7 +126,7 @@ GoRouter createRouter(BuildContext context) {
                 },
                 routes: [
                   GoRoute(path: 'edit', builder: (context, state) => const EditProfileScreen()),
-                  GoRoute(path: 'address', builder: (context, state) => const ShippingAddressScreen()), // ROUTE AJOUTÉE
+                  GoRoute(path: 'address', builder: (context, state) => const ShippingAddressScreen()),
                   GoRoute(path: 'add-product', builder: (context, state) => AddProductScreen(initialProduct: state.extra as Map<String, dynamic>?)),
                   GoRoute(path: 'referral', builder: (context, state) => const ReferralScreen()),
                   GoRoute(path: 'orders', builder: (context, state) => const OrderHistoryScreen(), routes: [

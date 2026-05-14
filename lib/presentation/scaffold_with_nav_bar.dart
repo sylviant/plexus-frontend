@@ -11,88 +11,249 @@ class ScaffoldWithNavBar extends StatelessWidget {
     super.key,
   });
 
+  // ─── Palette ──────────────────────────────────────────────────────────────
+  static const Color _navy = Color(0xFF0D1B4B);
+  static const Color _accent = Color(0xFF4A6CF7);
+  static const Color _textMuted = Color(0xFF8A94B2);
+
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1A237E);
+    final int currentIndex = navigationShell.currentIndex;
+
+    final List<_NavItem> items = [
+      _NavItem(
+        label: 'Accueil',
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+      ),
+      _NavItem(
+        label: 'Catégories',
+        icon: Icons.grid_view_outlined,
+        activeIcon: Icons.grid_view_rounded,
+      ),
+      _NavItem(
+        label: 'Panier',
+        icon: Icons.shopping_bag_outlined,
+        activeIcon: Icons.shopping_bag_rounded,
+        isCenter: true,
+      ),
+      _NavItem(
+        label: 'Messages',
+        icon: Icons.chat_bubble_outline_rounded,
+        activeIcon: Icons.chat_bubble_rounded,
+        hasBadge: true,
+      ),
+      _NavItem(
+        label: 'Profil',
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+      ),
+    ];
 
     return Scaffold(
       body: navigationShell,
-      extendBody: true, // Permet au contenu de passer sous la barre si elle est transparente
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(20, 0, 20, 25), // Barre flottante
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+      extendBody: true,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+        child: Consumer<SocketProvider>(
+          builder: (context, socket, _) {
+            return Container(
+              height: 68,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [
+                  BoxShadow(
+                    color: _navy.withOpacity(0.10),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: _accent.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(items.length, (index) {
+                  final item = items[index];
+                  final bool isSelected = currentIndex == index;
+                  final int badgeCount =
+                      (item.hasBadge) ? socket.unreadCount : 0;
+
+                  return _NavBarItem(
+                    item: item,
+                    isSelected: isSelected,
+                    badgeCount: badgeCount,
+                    onTap: () => navigationShell.goBranch(index),
+                  );
+                }),
+              ),
+            );
+          },
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: NavigationBarTheme(
-            data: NavigationBarThemeData(
-              indicatorColor: primaryColor.withOpacity(0.1),
-              labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor);
-                }
-                return const TextStyle(fontSize: 12, color: Colors.grey);
-              }),
-              iconTheme: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return const IconThemeData(color: primaryColor, size: 26);
-                }
-                return const IconThemeData(color: Colors.grey, size: 24);
-              }),
+      ),
+    );
+  }
+}
+
+// ─── Modèle d'item ────────────────────────────────────────────────────────────
+class _NavItem {
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+  final bool isCenter;
+  final bool hasBadge;
+
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.activeIcon,
+    this.isCenter = false,
+    this.hasBadge = false,
+  });
+}
+
+// ─── Widget item de la nav bar ────────────────────────────────────────────────
+class _NavBarItem extends StatelessWidget {
+  final _NavItem item;
+  final bool isSelected;
+  final int badgeCount;
+  final VoidCallback onTap;
+
+  static const Color _navy = Color(0xFF0D1B4B);
+  static const Color _accent = Color(0xFF4A6CF7);
+  static const Color _textMuted = Color(0xFF8A94B2);
+
+  const _NavBarItem({
+    required this.item,
+    required this.isSelected,
+    required this.badgeCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Bouton central (Panier) traité différemment
+    if (item.isCenter) {
+      return GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isSelected
+                  ? [_navy, const Color(0xFF2A4099)]
+                  : [_accent, const Color(0xFF6B8EFF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: NavigationBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              height: 70,
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: (int index) {
-                navigationShell.goBranch(index);
-              },
-              destinations: [
-                const NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home_rounded),
-                  label: 'Accueil',
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: (isSelected ? _navy : _accent).withOpacity(0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(
+            isSelected ? item.activeIcon : item.icon,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+      );
+    }
+
+    // Items normaux
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icône avec indicateur
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? _accent.withOpacity(0.10)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isSelected ? item.activeIcon : item.icon,
+                    size: 22,
+                    color: isSelected ? _accent : _textMuted,
+                  ),
                 ),
-                const NavigationDestination(
-                  icon: Icon(Icons.grid_view_rounded),
-                  selectedIcon: Icon(Icons.grid_view_rounded),
-                  label: 'Catégories',
-                ),
-                const NavigationDestination(
-                  icon: Icon(Icons.shopping_bag_outlined),
-                  selectedIcon: Icon(Icons.shopping_bag_rounded),
-                  label: 'Panier',
-                ),
-                NavigationDestination(
-                  icon: Consumer<SocketProvider>(
-                    builder: (context, socket, child) => Badge(
-                      label: Text(socket.unreadCount.toString()),
-                      isLabelVisible: socket.unreadCount > 0,
-                      backgroundColor: Colors.redAccent,
-                      child: const Icon(Icons.chat_bubble_outline_rounded),
+
+                // Badge messages
+                if (badgeCount > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE53935),
+                        borderRadius: BorderRadius.circular(10),
+                        border:
+                            Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Text(
+                        badgeCount > 99 ? '99+' : badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
                   ),
-                  selectedIcon: const Icon(Icons.chat_bubble_rounded),
-                  label: 'Messages',
-                ),
-                const NavigationDestination(
-                  icon: Icon(Icons.person_outline_rounded),
-                  selectedIcon: Icon(Icons.person_rounded),
-                  label: 'Profil',
-                ),
               ],
             ),
-          ),
+
+            const SizedBox(height: 3),
+
+            // Label
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 220),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight:
+                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? _accent : _textMuted,
+              ),
+              child: Text(item.label),
+            ),
+
+            // Indicateur point actif
+            const SizedBox(height: 3),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: isSelected ? 4 : 0,
+              height: isSelected ? 4 : 0,
+              decoration: BoxDecoration(
+                color: _accent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -8,34 +8,64 @@ import 'package:intl/intl.dart';
 class ConversationsScreen extends StatelessWidget {
   const ConversationsScreen({super.key});
 
+  // ─── Palette ─────────────────────────────────────────────────────────────
+  static const Color _primary    = Color(0xFF1A237E);
+  static const Color _primaryMid = Color(0xFF3949AB);
+  static const Color _accent     = Color(0xFF00B4D8);
+  static const Color _surface    = Color(0xFFF4F6FB);
+  static const Color _border     = Color(0xFFE2E8F0);
+  static const Color _textMain   = Color(0xFF0F172A);
+  static const Color _textSub    = Color(0xFF64748B);
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final socket = Provider.of<SocketProvider>(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _surface,
       appBar: AppBar(
-        title: const Text('Discussions', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0.5,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        shadowColor: _primary.withOpacity(0.08),
+        title: const Text(
+          'Messages',
+          style: TextStyle(
+            color: _textMain,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            letterSpacing: -0.3,
+          ),
+        ),
+        centerTitle: true,
         actions: [
-          // Bouton pour forcer le rechargement des messages
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              if (auth.currentUser != null) {
-                socket.loadConversations(auth.currentUser!.id);
-              }
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _border, width: 1.2),
+                ),
+                child: const Icon(Icons.refresh_rounded,
+                    size: 16, color: _textMain),
+              ),
+              onPressed: () {
+                if (auth.currentUser != null) {
+                  socket.loadConversations(auth.currentUser!.id);
+                }
+              },
+            ),
           ),
         ],
       ),
       body: Consumer<SocketProvider>(
         builder: (context, socket, child) {
-          final conversationsList = socket.conversations.entries.toList();
+          final conversationsList =
+              socket.conversations.entries.toList();
 
           conversationsList.sort((a, b) {
             final DateTime dateA = a.value['message'].createdAt;
@@ -45,50 +75,89 @@ class ConversationsScreen extends StatelessWidget {
 
           return Column(
             children: [
-              // Indicateur de statut de connexion
+              // ── Offline banner ──────────────────────────────────
               if (!socket.isConnected)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.red[50],
-                  child: const Text(
-                    "🔴 Mode hors-ligne (Serveur introuvable)",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFEF2F2),
+                    border: Border(
+                        bottom: BorderSide(
+                            color: Color(0xFFFECACA), width: 1)),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.wifi_off_rounded,
+                          size: 14, color: Color(0xFFEF4444)),
+                      SizedBox(width: 8),
+                      Text(
+                        'Mode hors-ligne — Serveur introuvable',
+                        style: TextStyle(
+                          color: Color(0xFFEF4444),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
+              // ── List ─────────────────────────────────────────────
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                   children: [
+                    // Support tile
                     _buildSupportTile(context),
-                    const Divider(),
+
+                    const SizedBox(height: 8),
 
                     if (conversationsList.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 60.0),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Icon(Icons.chat_outlined, size: 50, color: Colors.grey),
-                              SizedBox(height: 10),
-                              Text('Aucune discussion active.', style: TextStyle(color: Colors.grey)),
-                            ],
-                          ),
+                      _buildEmptyState()
+                    else ...[
+                      // Section label
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(2, 12, 2, 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 3,
+                              height: 13,
+                              decoration: BoxDecoration(
+                                color: _primary,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Conversations récentes',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _textSub,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                    else
+                      ),
                       ...conversationsList.map((entry) {
                         final roomId = entry.key;
-                        if (roomId == "3") return const SizedBox.shrink(); 
+                        if (roomId == "3")
+                          return const SizedBox.shrink();
 
                         final info = entry.value;
                         final lastMsg = info['message'];
                         final String displayName = info['name'];
 
-                        return _buildConversationTile(context, roomId, displayName, lastMsg);
+                        return _buildConversationTile(
+                            context, roomId, displayName, lastMsg);
                       }),
+                    ],
                   ],
                 ),
               ),
@@ -100,47 +169,200 @@ class ConversationsScreen extends StatelessWidget {
   }
 
   Widget _buildSupportTile(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        radius: 28,
-        backgroundColor: Colors.blue[50],
-        child: const Icon(Icons.support_agent, color: Colors.blue, size: 30),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      title: const Text("Support PLEXUS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-      subtitle: const Text("Assistant IA disponible 24h/24", style: TextStyle(color: Colors.blue, fontSize: 13)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-      onTap: () => context.push('/messages/chat/3'), 
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [_accent, Color(0xFF0081A7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: _accent.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.support_agent_rounded,
+              color: Colors.white, size: 24),
+        ),
+        title: const Text(
+          'Support PLEXUS',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            color: _textMain,
+          ),
+        ),
+        subtitle: Text(
+          'Assistant IA disponible 24h/24',
+          style: TextStyle(
+              color: _accent, fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _border, width: 1),
+          ),
+          child: const Icon(Icons.arrow_forward_ios_rounded,
+              size: 12, color: _textSub),
+        ),
+        onTap: () => context.push('/messages/chat/3'),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
 
-  Widget _buildConversationTile(BuildContext context, String roomId, String name, dynamic lastMsg) {
-    return ListTile(
-      leading: CircleAvatar(
-        radius: 28,
-        backgroundColor: Colors.grey[100],
-        child: Text(name.isNotEmpty ? name[0].toUpperCase() : "?", 
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+  Widget _buildConversationTile(
+      BuildContext context, String roomId, String name, dynamic lastMsg) {
+    final String initial =
+        name.isNotEmpty ? name[0].toUpperCase() : '?';
+    final String time =
+        DateFormat('HH:mm').format(lastMsg.createdAt);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-      subtitle: Text(
-        lastMsg.text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: Colors.grey[600]),
-      ),
-      trailing: Text(
-        DateFormat('HH:mm').format(lastMsg.createdAt),
-        style: const TextStyle(fontSize: 12, color: Colors.grey),
-      ),
-      onTap: () {
-        context.push(
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                _primary.withOpacity(0.8),
+                _primaryMid,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              initial,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+        title: Text(
+          name,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            color: _textMain,
+          ),
+        ),
+        subtitle: Text(
+          lastMsg.text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: _textSub, fontSize: 12),
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              time,
+              style: const TextStyle(
+                fontSize: 11,
+                color: _textSub,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        onTap: () => context.push(
           '/messages/chat/$roomId',
           extra: {
             'otherName': name,
-            'productTitle': 'Discussion', 
+            'productTitle': 'Discussion',
           },
-        );
-      },
+        ),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 60),
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _primary.withOpacity(0.07),
+                    blurRadius: 20,
+                  )
+                ],
+              ),
+              child: const Icon(Icons.chat_outlined,
+                  size: 36, color: Color(0xFFCBD5E1)),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Aucune discussion active',
+              style: TextStyle(
+                  color: _textMain,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Vos échanges avec les vendeurs\napparaîtront ici.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: _textSub, fontSize: 12, height: 1.5),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

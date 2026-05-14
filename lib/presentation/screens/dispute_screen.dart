@@ -15,10 +15,11 @@ class DisputeScreen extends StatefulWidget {
   State<DisputeScreen> createState() => _DisputeScreenState();
 }
 
-class _DisputeScreenState extends State<DisputeScreen> {
+class _DisputeScreenState extends State<DisputeScreen>
+    with SingleTickerProviderStateMixin {
   final _descriptionController = TextEditingController();
   String _selectedMotif = 'Produit non conforme';
-  
+
   final List<XFile> _photoFiles = [];
   final List<Uint8List> _photoBytes = [];
   XFile? _videoFile;
@@ -26,9 +27,49 @@ class _DisputeScreenState extends State<DisputeScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+
+  // ─── Palette ─────────────────────────────────────────────────────────────
+  static const Color _primary    = Color(0xFF1A237E);
+  static const Color _primaryMid = Color(0xFF3949AB);
+  static const Color _danger     = Color(0xFFEF4444);
+  static const Color _dangerBg   = Color(0xFFFEF2F2);
+  static const Color _dangerBdr  = Color(0xFFFECACA);
+  static const Color _surface    = Color(0xFFF4F6FB);
+  static const Color _border     = Color(0xFFE2E8F0);
+  static const Color _textMain   = Color(0xFF0F172A);
+  static const Color _textSub    = Color(0xFF64748B);
+
+  static const List<String> _motifs = [
+    'Produit non conforme',
+    'Endommagé',
+    'Colis vide',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
+    _fadeAnim =
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  // ─── Backend logic (unchanged) ───────────────────────────────────────────
+
   Future<void> _pickImage() async {
     if (_photoFiles.length >= 3) return;
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery, imageQuality: 70);
     if (image != null) {
       final bytes = await image.readAsBytes();
       setState(() {
@@ -39,42 +80,42 @@ class _DisputeScreenState extends State<DisputeScreen> {
   }
 
   Future<void> _pickVideo() async {
-    final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
-    if (video != null) {
-      setState(() => _videoFile = video);
-    }
+    final XFile? video =
+        await _picker.pickVideo(source: ImageSource.gallery);
+    if (video != null) setState(() => _videoFile = video);
   }
 
   Future<void> _submitDispute() async {
     if (_descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("La description est obligatoire")));
+      _showSnack('La description est obligatoire', _danger,
+          Icons.warning_amber_rounded);
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final String orderId = (widget.order['_id'] ?? widget.order['id'] ?? "").toString();
-      
-      var request = http.MultipartRequest('POST', Uri.parse('${ApiConfig.baseUrl}/disputes'));
-      request.fields['orderId'] = orderId;
-      request.fields['motif'] = _selectedMotif;
-      request.fields['description'] = _descriptionController.text;
+      final String orderId =
+          (widget.order['_id'] ?? widget.order['id'] ?? '').toString();
 
-      // Envoi des photos
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('${ApiConfig.baseUrl}/disputes'));
+      request.fields['orderId']      = orderId;
+      request.fields['motif']        = _selectedMotif;
+      request.fields['description']  = _descriptionController.text;
+
       for (int i = 0; i < _photoFiles.length; i++) {
         request.files.add(http.MultipartFile.fromBytes(
-          'photos', // Le nom du champ doit correspondre au backend (upload.array('photos'))
+          'photos',
           _photoBytes[i],
           filename: 'photo_$i.jpg',
         ));
       }
 
-      // Envoi de la vidéo
       if (_videoFile != null) {
         final vBytes = await _videoFile!.readAsBytes();
         request.files.add(http.MultipartFile.fromBytes(
-          'video', 
+          'video',
           vBytes,
           filename: 'video.mp4',
         ));
@@ -86,100 +127,537 @@ class _DisputeScreenState extends State<DisputeScreen> {
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (mounted) {
           context.pop();
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Litige ouvert avec succès."), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(children: const [
+                Icon(Icons.check_circle_outline_rounded,
+                    color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text('Litige ouvert avec succès.',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w500)),
+              ]),
+              backgroundColor: const Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          );
         }
       } else {
-        // LOG POUR DEBUGGER LE 500
         debugPrint("SERVER ERROR 500 BODY: ${res.body}");
         throw Exception("Erreur ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       debugPrint("DISPUTE ERROR: $e");
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Échec : Vérifiez les logs backend")));
+      if (mounted)
+        _showSnack('Échec : Vérifiez les logs backend', _danger,
+            Icons.error_outline_rounded);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
+  void _showSnack(String msg, Color color, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(children: [
+          Icon(icon, color: Colors.white, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(msg,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w500))),
+        ]),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  // ─── UI ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Ouvrir un Litige"), backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Motif du litige", style: TextStyle(fontWeight: FontWeight.bold)),
-            DropdownButton<String>(
-              value: _selectedMotif,
-              isExpanded: true,
-              items: ['Produit non conforme', 'Endommagé', 'Colis vide'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (v) => setState(() => _selectedMotif = v!),
+      backgroundColor: _surface,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _border, width: 1.2),
             ),
-            const SizedBox(height: 20),
-            const Text("Description détaillée", style: TextStyle(fontWeight: FontWeight.bold)),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "Détaillez votre problème..."),
-            ),
-            const SizedBox(height: 20),
-            const Text("Preuves Photos (Max 3)", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              children: [
-                ...List.generate(_photoBytes.length, (index) => Stack(
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 15, color: _textMain),
+          ),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Ouvrir un Litige',
+          style: TextStyle(
+            color: _textMain,
+            fontWeight: FontWeight.w800,
+            fontSize: 17,
+            letterSpacing: -0.3,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Warning banner ──────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: _dangerBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _dangerBdr, width: 1.2),
+                ),
+                child: Row(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.memory(_photoBytes[index], width: 80, height: 80, fit: BoxFit.cover),
-                    ),
-                    Positioned(
-                      right: -10, top: -10,
-                      child: IconButton(icon: const Icon(Icons.cancel, color: Colors.red), onPressed: () => setState(() {
-                        _photoFiles.removeAt(index);
-                        _photoBytes.removeAt(index);
-                      })),
+                    const Icon(Icons.gavel_rounded,
+                        color: _danger, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Procédure de Litige',
+                            style: TextStyle(
+                              color: _danger,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Les fonds sont bloqués pendant l\'instruction. PLEXUS tranchera sous 72h.',
+                            style: TextStyle(
+                                color: _danger,
+                                fontSize: 11,
+                                height: 1.4),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                )),
-                if (_photoFiles.length < 3)
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.add_a_photo, color: Colors.grey),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text("Preuve Vidéo", style: TextStyle(fontWeight: FontWeight.bold)),
-            if (_videoFile != null)
-              ListTile(
-                leading: const Icon(Icons.video_collection, color: Colors.blue),
-                title: Text(_videoFile!.name, style: const TextStyle(fontSize: 12)),
-                trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => setState(() => _videoFile = null)),
-              )
-            else
-              ElevatedButton.icon(onPressed: _pickVideo, icon: const Icon(Icons.videocam), label: const Text("Ajouter une vidéo")),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitDispute,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: _isSubmitting ? const CircularProgressIndicator(color: Colors.white) : const Text("ENVOYER LE LITIGE", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              // ── Form card ───────────────────────────────────────────
+              _Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _SectionLabel(label: 'Motif du litige'),
+                    const SizedBox(height: 10),
+
+                    // Motif chips
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _motifs.map((motif) {
+                        final bool selected = _selectedMotif == motif;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedMotif = motif),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 9),
+                            decoration: BoxDecoration(
+                              color: selected ? _danger : _surface,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color:
+                                    selected ? _danger : _border,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Text(
+                              motif,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: selected
+                                    ? Colors.white
+                                    : _textSub,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    const _SectionLabel(label: 'Description détaillée'),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 5,
+                      style: const TextStyle(
+                          color: _textMain,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText:
+                            'Décrivez précisément le problème rencontré...',
+                        hintStyle: TextStyle(
+                            color: _textSub.withOpacity(0.5),
+                            fontSize: 13),
+                        filled: true,
+                        fillColor: _surface,
+                        contentPadding: const EdgeInsets.all(14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                              const BorderSide(color: _border, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                              const BorderSide(color: _border, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                              color: _danger, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Photo evidence card ─────────────────────────────────
+              _Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const _SectionLabel(label: 'Preuves photos'),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _photoBytes.length >= 3
+                                ? _danger.withOpacity(0.10)
+                                : _surface,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${_photoBytes.length}/3',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: _photoBytes.length >= 3
+                                  ? _danger
+                                  : _textSub,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ajoutez jusqu\'à 3 photos comme preuves.',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: _textSub.withOpacity(0.8)),
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        ...List.generate(
+                          _photoBytes.length,
+                          (index) => Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.memory(
+                                  _photoBytes[index],
+                                  width: 82,
+                                  height: 82,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: GestureDetector(
+                                  onTap: () => setState(() {
+                                    _photoFiles.removeAt(index);
+                                    _photoBytes.removeAt(index);
+                                  }),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      color: _danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.white,
+                                        size: 12),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_photoFiles.length < 3)
+                          GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              width: 82,
+                              height: 82,
+                              decoration: BoxDecoration(
+                                color: _surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border:
+                                    Border.all(color: _border, width: 1.5),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.add_photo_alternate_outlined,
+                                      color: _textSub, size: 24),
+                                  SizedBox(height: 4),
+                                  Text('Ajouter',
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: _textSub,
+                                          fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Video evidence card ─────────────────────────────────
+              _Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _SectionLabel(label: 'Preuve vidéo (optionnel)'),
+                    const SizedBox(height: 14),
+                    if (_videoFile != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border:
+                              Border.all(color: _border, width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6)
+                                    .withOpacity(0.10),
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: const Icon(
+                                  Icons.video_file_outlined,
+                                  color: Color(0xFF3B82F6),
+                                  size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _videoFile!.name,
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: _textMain,
+                                    fontWeight: FontWeight.w500),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _videoFile = null),
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                    color: _dangerBg,
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.close_rounded,
+                                    color: _danger, size: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: _pickVideo,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16),
+                          decoration: BoxDecoration(
+                            color: _surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: _border,
+                                width: 1.5,
+                                style: BorderStyle.solid),
+                          ),
+                          child: Column(
+                            children: const [
+                              Icon(Icons.videocam_outlined,
+                                  color: _textSub, size: 26),
+                              SizedBox(height: 6),
+                              Text('Appuyez pour ajouter une vidéo',
+                                  style: TextStyle(
+                                      color: _textSub,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Submit button ───────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _isSubmitting ? _border : _danger,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: _isSubmitting
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: _danger.withOpacity(0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitDispute,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2.5),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.gavel_rounded,
+                                  color: Colors.white, size: 17),
+                              SizedBox(width: 10),
+                              Text(
+                                'ENVOYER LE LITIGE',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Sub-widgets ──────────────────────────────────────────────────────────────
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  const _Card({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1A237E).withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: child,
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String label;
+  const _SectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF0F172A),
+        letterSpacing: 0.1,
       ),
     );
   }
