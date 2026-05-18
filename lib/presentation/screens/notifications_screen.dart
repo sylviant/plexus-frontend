@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
-  // ─── Palette ────────────────────────────────────────────────────────────────
   static const Color _bg         = Color(0xFF0F1117);
   static const Color _surface    = Color(0xFF1A1D27);
   static const Color _surfaceAlt = Color(0xFF21253A);
@@ -39,7 +38,7 @@ class NotificationsScreen extends StatelessWidget {
               return _buildEmpty();
             }
 
-            // ── Group by date ──────────────────────────────────────────────
+            // CORRECTION TYPE ICI : On force le cast en List<dynamic>
             final grouped = _groupByDate(provider.notifications);
             final keys = grouped.keys.toList();
 
@@ -58,26 +57,15 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  // ─── AppBar ─────────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: _bg,
       elevation: 0,
       centerTitle: false,
       titleSpacing: 20,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'Notifications',
-            style: TextStyle(
-              color: _textPri,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ],
+      title: const Text(
+        'Notifications',
+        style: TextStyle(color: _textPri, fontSize: 22, fontWeight: FontWeight.w700),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
@@ -86,266 +74,94 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  // ─── Loader ──────────────────────────────────────────────────────────────────
-  Widget _buildLoader() {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: _accent,
-        strokeWidth: 2,
-      ),
-    );
-  }
+  Widget _buildLoader() => const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2));
 
-  // ─── Empty State ─────────────────────────────────────────────────────────────
   Widget _buildEmpty() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: _surfaceAlt,
-                shape: BoxShape.circle,
-                border: Border.all(color: _divider, width: 1.5),
-              ),
-              child: const Icon(Icons.notifications_outlined,
-                  size: 38, color: _textSec),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Aucune notification',
-              style: TextStyle(
-                  color: _textPri, fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Vos alertes PLEXUS apparaîtront ici dès qu\'une activité est détectée.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: _textSec, fontSize: 14, height: 1.5),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.notifications_outlined, size: 38, color: _textSec),
+          const SizedBox(height: 24),
+          const Text('Aucune notification', style: TextStyle(color: _textPri, fontSize: 18, fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }
 
-  // ─── Date Group ──────────────────────────────────────────────────────────────
-  Widget _buildGroup(
-    BuildContext context,
-    String label,
-    List<Map<String, dynamic>> items,
-    NotificationProvider provider,
-  ) {
+  Widget _buildGroup(BuildContext context, String label, List<dynamic> items, NotificationProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-          child: Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              color: _textSec,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-            ),
-          ),
+          child: Text(label.toUpperCase(), style: const TextStyle(color: _textSec, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.4)),
         ),
         ...items.map((notif) => _buildCard(context, notif, provider)),
       ],
     );
   }
 
-  // ─── Notification Card ───────────────────────────────────────────────────────
-  Widget _buildCard(
-    BuildContext context,
-    Map<String, dynamic> notif,
-    NotificationProvider provider,
-  ) {
-    DateTime date;
-    try {
-      date = DateTime.parse(notif['createdAt'] ?? DateTime.now().toIso8601String());
-    } catch (_) {
-      date = DateTime.now();
-    }
-
-    final bool isRead          = notif['isRead'] ?? false;
-    final String notifId       = (notif['_id'] ?? notif['id'] ?? '').toString();
-    final String? conversationId = notif['conversationId'];
-    final String? type         = notif['type'];
-
+  Widget _buildCard(BuildContext context, dynamic notif, NotificationProvider provider) {
+    final bool isRead = notif['isRead'] ?? false;
+    final String type = notif['type'] ?? 'system';
     final Color typeColor = _getNotifColor(type);
-    final IconData typeIcon = _getNotifIcon(type);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            if (!isRead && notifId.isNotEmpty) {
-              provider.markAsRead(notifId);
-            }
-            // LOGIQUE DE REDIRECTION CORRIGÉE POUR LE ROUTER
-            if (conversationId != null && conversationId.isNotEmpty) {
-              context.push('/messages/chat/$conversationId', extra: {
-                'otherName': 'Utilisateur',
-              });
-            } else if (type == 'sale' || type == 'shipping_offer') {
-              context.go('/messages');
-            }
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              color: isRead ? _surface : _surfaceAlt,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isRead ? _divider : typeColor.withOpacity(0.25),
-                width: 1,
+      child: InkWell(
+        onTap: () {
+          if (!isRead) provider.markAsRead(notif['_id'] ?? notif['id']);
+          if (notif['conversationId'] != null) {
+            context.push('/messages/chat/${notif['conversationId']}', extra: {'otherName': 'Utilisateur'});
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: isRead ? _surface : _surfaceAlt,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: isRead ? _divider : typeColor.withOpacity(0.25)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(_getNotifIcon(type), color: typeColor),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(notif['title'] ?? '', style: TextStyle(color: _textPri, fontWeight: isRead ? FontWeight.w500 : FontWeight.bold)),
+                    Text(notif['message'] ?? '', style: TextStyle(color: _textSec, fontSize: 13)),
+                  ],
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Icon Badge ──────────────────────────────────────────
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(typeIcon, color: typeColor, size: 22),
-                  ),
-                  const SizedBox(width: 14),
-
-                  // ── Content ──────────────────────────────────────────────
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                notif['title'] ?? 'Alerte PLEXUS',
-                                style: TextStyle(
-                                  color: _textPri,
-                                  fontSize: 14.5,
-                                  fontWeight: isRead
-                                      ? FontWeight.w500
-                                      : FontWeight.w700,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Unread dot
-                            if (!isRead)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: typeColor,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          notif['message'] ?? '',
-                          style: TextStyle(
-                            color: isRead ? _textSec : _textPri.withOpacity(0.75),
-                            fontSize: 13,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time_rounded,
-                                size: 12, color: _textSec),
-                            const SizedBox(width: 4),
-                            Text(
-                              DateFormat('dd/MM à HH:mm').format(date),
-                              style: const TextStyle(
-                                  fontSize: 11,
-                                  color: _textSec,
-                                  letterSpacing: 0.2),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────────
-  Map<String, List<Map<String, dynamic>>> _groupByDate(
-      List<Map<String, dynamic>> notifications) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    final Map<String, List<Map<String, dynamic>>> groups = {};
-
+  Map<String, List<dynamic>> _groupByDate(List<dynamic> notifications) {
+    final Map<String, List<dynamic>> groups = {};
     for (final notif in notifications) {
-      DateTime date;
-      try {
-        date = DateTime.parse(
-            notif['createdAt'] ?? DateTime.now().toIso8601String());
-      } catch (_) {
-        date = DateTime.now();
-      }
-      final dateOnly = DateTime(date.year, date.month, date.day);
-
-      String label;
-      if (dateOnly == today) {
-        label = "Aujourd'hui";
-      } else if (dateOnly == yesterday) {
-        label = 'Hier';
-      } else {
-        label = DateFormat('dd MMMM yyyy', 'fr_FR').format(date);
-      }
-
+      final date = DateTime.parse(notif['createdAt'] ?? DateTime.now().toIso8601String());
+      final label = DateFormat('dd MMMM yyyy').format(date);
       groups.putIfAbsent(label, () => []).add(notif);
     }
     return groups;
   }
 
   IconData _getNotifIcon(String? type) {
-    switch (type) {
-      case 'sale':           return Icons.shopping_cart;
-      case 'shipping_offer': return Icons.local_shipping;
-      case 'payment':        return Icons.account_balance_wallet;
-      case 'system':         return Icons.info_outline;
-      default:               return Icons.notifications;
-    }
+    if (type == 'sale') return Icons.shopping_cart;
+    if (type == 'shipping_offer') return Icons.local_shipping;
+    return Icons.notifications;
   }
 
   Color _getNotifColor(String? type) {
-    switch (type) {
-      case 'sale':           return const Color(0xFF34C97B);
-      case 'shipping_offer': return const Color(0xFF4F6EF7);
-      case 'payment':        return const Color(0xFFF5A623);
-      case 'system':         return const Color(0xFF9B8EF7);
-      default:               return const Color(0xFF7B8097);
-    }
+    if (type == 'sale') return const Color(0xFF34C97B);
+    if (type == 'shipping_offer') return const Color(0xFF4F6EF7);
+    return const Color(0xFF7B8097);
   }
 }

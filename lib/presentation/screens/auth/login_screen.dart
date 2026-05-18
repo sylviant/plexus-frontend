@@ -101,6 +101,8 @@ class _LoginScreenState extends State<LoginScreen>
           content: Text(msg.replaceAll('Exception: ', '')),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -120,7 +122,6 @@ class _LoginScreenState extends State<LoginScreen>
               child: Column(
                 children: [
                   const SizedBox(height: 40),
-                  // LOGO
                   Center(
                     child: Column(
                       children: [
@@ -153,16 +154,23 @@ class _LoginScreenState extends State<LoginScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Connexion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: _textMain)),
+                          const SizedBox(height: 4),
+                          const Text('Bienvenue ! Identifiez-vous pour continuer.', style: TextStyle(fontSize: 13, color: _textSub)),
                           const SizedBox(height: 28),
                           
-                          _styledField(_emailController, 'Adresse e-mail', Icons.alternate_email_rounded),
+                          _styledLabel('Adresse e-mail'),
+                          const SizedBox(height: 8),
+                          _styledField(_emailController, 'exemple@domaine.com', Icons.alternate_email_rounded),
                           const SizedBox(height: 20),
                           
+                          _styledLabel('Mot de passe'),
+                          const SizedBox(height: 8),
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
+                            style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
                             decoration: _inputDecoration(
-                              hint: 'Mot de passe',
+                              hint: '••••••••',
                               icon: Icons.lock_outline_rounded,
                               suffix: IconButton(
                                 icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: _textSub, size: 20),
@@ -173,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
                           
                           Align(
                             alignment: Alignment.centerRight,
-                            child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Mot de passe oublié ?', style: TextStyle(color: _primaryMid))),
+                            child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Mot de passe oublié ?', style: TextStyle(color: _primaryMid, fontWeight: FontWeight.w600))),
                           ),
                           
                           const SizedBox(height: 20),
@@ -188,17 +196,16 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                           
                           const SizedBox(height: 25),
-                          const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OU")), Expanded(child: Divider())]),
+                          const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OU", style: TextStyle(fontSize: 12, color: _textSub))), Expanded(child: Divider())]),
                           const SizedBox(height: 25),
 
-                          // BOUTON GOOGLE CORRIGÉ (OVERFLOW + IMAGE)
                           SizedBox(
                             width: double.infinity, height: 55,
                             child: OutlinedButton(
                               onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
                               style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), side: const BorderSide(color: _border, width: 1.5)),
                               child: _isGoogleLoading 
-                                ? const CircularProgressIndicator()
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: _primary))
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -219,6 +226,24 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  // --- BOUTON S'INSCRIRE RÉINTÉGRÉ ---
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Pas encore de compte ? ', style: TextStyle(color: _textSub, fontSize: 14)),
+                        GestureDetector(
+                          onTap: () => context.go('/signup'),
+                          child: const Text(
+                            'S\'inscrire',
+                            style: TextStyle(color: _primary, fontWeight: FontWeight.w700, fontSize: 14, decoration: TextDecoration.underline),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -228,9 +253,12 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  Widget _styledLabel(String text) => Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textMain));
+
   Widget _styledField(TextEditingController c, String h, IconData i) {
     return TextFormField(
       controller: c,
+      style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
       decoration: _inputDecoration(hint: h, icon: i),
       validator: (v) => v!.isEmpty ? 'Requis' : null,
     );
@@ -241,9 +269,10 @@ class _LoginScreenState extends State<LoginScreen>
       hintText: hint,
       prefixIcon: Icon(icon, color: _textSub, size: 20),
       suffixIcon: suffix,
-      filled: true, fillColor: _surface,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      filled: true, fillColor: Colors.white,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _border)),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
     );
   }
 }

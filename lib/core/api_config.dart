@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   // --- CONFIGURATION SERVEUR NORTHFLANK ---
-  // REMPLACEZ CETTE URL PAR VOTRE URL RÉELLE NORTHFLANK
-  static const String serverUrl = 'site--plexus-backend--pgpb968tdsqh.code.run';
+  // CORRIGÉ : Ajout du protocole https://
+  static const String serverUrl = 'https://site--plexus-backend--pgpb968tdsqh.code.run';
 
   static const String baseUrl = '$serverUrl/api';
   static const String socketUrl = serverUrl;

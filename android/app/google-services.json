@@ -1,44 +1,26 @@
 {
   "project_info": {
-    "project_number": "717379042432",
-    "project_id": "plexus-7d092",
-    "storage_bucket": "plexus-7d092.firebasestorage.app"
+    "project_number": "1092400721832",
+    "project_id": "amazing-office-419810",
+    "storage_bucket": "amazing-office-419810.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:717379042432:android:9663d08f9f143dbc2cfa65",
+        "mobilesdk_app_id": "1:1092400721832:android:4e4222506723b99b56f79d",
         "android_client_info": {
           "package_name": "com.plexus.app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "717379042432-ue7s5aavrgrg9mgconp8ucikd4g17fm9.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.plexus.app",
-            "certificate_hash": "32061dc720d5be9d2c2a2f6daa3f56c39711c05d"
-          }
-        },
-        {
-          "client_id": "717379042432-nc05qldgha0frll80ta4ob2452lvs586.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAnpsxTf4GLf0RNBvEVFqYaXzCJIMuqBpU"
+          "current_key": "AIzaSyC5saYdNypVcsXivugWuKQpTpUKwPCtN4o"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "717379042432-nc05qldgha0frll80ta4ob2452lvs586.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

@@ -11,13 +11,26 @@ import 'package:plexus/core/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/date_symbol_data_local.dart'; // AJOUTÉ
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialisation des dates pour éviter les crashs sur Notifications
+  await initializeDateFormatting('fr_FR', null);
+
   try {
-    await Firebase.initializeApp();
-    await NotificationService.init();
+await Firebase.initializeApp(
+  options: kIsWeb ? const FirebaseOptions(
+    apiKey: "AIzaSyCDmt7Zk59s1i6xwO7TVSoBmlpnZgUA1L4",
+    authDomain: "plexus-7d092.firebaseapp.com",
+    projectId: "plexus-7d092",
+    storageBucket: "plexus-7d092.firebasestorage.app",
+    messagingSenderId: "717379042432",
+    appId: "1:717379042432:web:e422d40a743c978a2cfa65",
+    measurementId: "G-4TGV4HBBTX",
+  ) : null,
+);    await NotificationService.init();
   } catch (e) {
     debugPrint("Firebase init error: $e");
   }
@@ -80,9 +93,7 @@ class _PlexusAppState extends State<PlexusApp> {
     return MaterialApp.router(
       title: 'PLEXUS',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light, // Forcer le mode clair
-      
-      // --- THÈME PREMIUM (CLAIR UNIQUEMENT) ---
+      themeMode: ThemeMode.light,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

@@ -50,6 +50,7 @@ class _SignupScreenState extends State<SignupScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
+  // ─── Palette ─────────────────────────────────────────────────────────────
   static const Color _primary    = Color(0xFF1A237E);
   static const Color _primaryMid = Color(0xFF3949AB);
   static const Color _accent     = Color(0xFF00B4D8);
@@ -552,9 +553,9 @@ class _SignupScreenState extends State<SignupScreen>
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              // LOGO GOOGLE FIABLE
+                                              // --- CORRECTION GOOGLE FIABLE ---
                                               const Icon(Icons.g_mobiledata_rounded, color: _primary, size: 30),
-                                              const SizedBox(width: 8),
+                                              const SizedBox(width: 12),
                                               const Flexible(
                                                 child: Text(
                                                   'Continuer avec Google',
@@ -749,7 +750,6 @@ class _SignupScreenState extends State<SignupScreen>
                                             !_obscurePassword),
                                   ),
                                 ),
-                                validator: (v) => v!.length < 6 ? "Minimum 6 caractères" : null,
                               ),
 
                               const SizedBox(height: 18),

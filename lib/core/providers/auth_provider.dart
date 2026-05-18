@@ -38,54 +38,13 @@ class AuthProvider with ChangeNotifier {
     _userProvider = userProvider;
   }
 
-  // MÉTHODE POUR METTRE À JOUR LES DONNÉES LOCALES APRÈS ÉDITION
   void updateLocalUserData(Map<String, dynamic> userData) {
     if (_currentUser == null) return;
-    
     _currentUser = ChatUser(
       id: userData['id']?.toString() ?? _currentUser!.id,
       firstName: userData['name'] ?? _currentUser!.firstName,
       profileImage: userData['profileImage'] ?? _currentUser!.profileImage,
     );
-    _isApproved = userData['isApproved'] ?? _isApproved;
-    
-    notifyListeners();
-  }
-
-  Future<void> updateFcmToken(String fcmToken) async {
-    if (_currentUser == null) return;
-    try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/users/${_currentUser!.id}/fcm-token');
-      await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-        body: json.encode({'fcmToken': fcmToken}),
-      ).timeout(const Duration(seconds: 5));
-    } catch (e) {
-      debugPrint("Erreur synchro Token: $e");
-    }
-  }
-
-  Future<void> _handleAuthResponse(Map<String, dynamic> responseData) async {
-    _token = responseData['token'] ?? _token;
-    final user = responseData['user'];
-
-    if (user != null) {
-      final String userId = (user['_id'] ?? user['id']).toString();
-      _currentUser = ChatUser(id: userId, firstName: user['name'], profileImage: user['profileImage']);
-      _isApproved = user['isApproved'] ?? false;
-      _myReferralCode = user['referralCode'];
-      _referralEarnings = (user['totalReferralEarnings'] ?? 0.0).toDouble();
-      _referralSavings = (user['totalReferralSavings'] ?? 0.0).toDouble();
-
-      if (user['role'] != null) {
-        final roleString = user['role'];
-        _userProvider.setUserType(roleString == 'seller' ? UserType.seller : UserType.client);
-      }
-    }
     notifyListeners();
   }
 
@@ -96,12 +55,12 @@ class AuthProvider with ChangeNotifier {
         url, 
         headers: {'Content-Type': 'application/json'}, 
         body: json.encode({'email': email, 'password': password})
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30)); // AUGMENTÉ À 30S
 
       if (response.statusCode == 200) {
         await _handleAuthResponse(json.decode(response.body));
       } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Erreur');
+        throw Exception(json.decode(response.body)['msg'] ?? 'Identifiants incorrects');
       }
     } catch (e) { 
       throw Exception(ApiConfig.handleNetworkError(e));
@@ -134,7 +93,7 @@ class AuthProvider with ChangeNotifier {
             'referredByCode': referralCode,
             'role': role ?? 'client',
           }),
-        ).timeout(const Duration(seconds: 15));
+        ).timeout(const Duration(seconds: 30)); // AUGMENTÉ À 30S
 
         if (response.statusCode == 200) {
           await _handleAuthResponse(json.decode(response.body));
@@ -143,22 +102,28 @@ class AuthProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      throw Exception("Erreur Google Login: $e");
+      throw Exception("Erreur Google : ${e.toString()}");
     }
   }
 
-  Future<void> signUp(
-    String name, 
-    String email, 
-    String password, 
-    String role, {
-    String? phone, 
-    String? address, 
-    File? idFront, 
-    File? idBack,
-    File? selfie,
-    String? referralCode,
-  }) async {
+  Future<void> _handleAuthResponse(Map<String, dynamic> responseData) async {
+    _token = responseData['token'] ?? _token;
+    final user = responseData['user'];
+    if (user != null) {
+      final String userId = (user['_id'] ?? user['id']).toString();
+      _currentUser = ChatUser(id: userId, firstName: user['name'], profileImage: user['profileImage']);
+      _isApproved = user['isApproved'] ?? false;
+      _myReferralCode = user['referralCode'];
+      _referralEarnings = (user['totalReferralEarnings'] ?? 0.0).toDouble();
+      _referralSavings = (user['totalReferralSavings'] ?? 0.0).toDouble();
+      if (user['role'] != null) {
+        _userProvider.setUserType(user['role'] == 'seller' ? UserType.seller : UserType.client);
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> signUp(String name, String email, String password, String role, {String? phone, String? address, File? idFront, File? idBack, File? selfie, String? referralCode}) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/register');
     try {
       var request = http.MultipartRequest('POST', url);
@@ -166,10 +131,7 @@ class AuthProvider with ChangeNotifier {
       request.fields['email'] = email;
       request.fields['password'] = password;
       request.fields['role'] = role;
-      if (referralCode != null && referralCode.isNotEmpty) {
-        request.fields['referredByCode'] = referralCode;
-      }
-
+      if (referralCode != null) request.fields['referredByCode'] = referralCode;
       if (role == 'seller') {
         request.fields['phone'] = phone ?? '';
         request.fields['address'] = address ?? '';
@@ -177,10 +139,8 @@ class AuthProvider with ChangeNotifier {
         if (idBack != null) request.files.add(await http.MultipartFile.fromPath('idBack', idBack.path));
         if (selfie != null) request.files.add(await http.MultipartFile.fromPath('selfie', selfie.path));
       }
-
-      var streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 45)); // TEMPS SUPPLÉMENTAIRE POUR LES IMAGES
       var response = await http.Response.fromStream(streamedResponse);
-
       if (response.statusCode == 201) {
         _pendingEmail = email; 
         notifyListeners();
@@ -190,66 +150,8 @@ class AuthProvider with ChangeNotifier {
     } catch (e) { rethrow; }
   }
 
-  Future<void> verifyCode(String code) async {
-    if (_pendingEmail == null) return;
-    final url = Uri.parse('${ApiConfig.baseUrl}/auth/verify');
-    try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail, 'code': code})).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        _pendingEmail = null;
-        notifyListeners();
-      } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Code invalide');
-      }
-    } catch (e) { rethrow; }
-  }
-
-  Future<void> resendVerificationCode() async {
-    if (_pendingEmail == null) return;
-    final url = Uri.parse('${ApiConfig.baseUrl}/auth/resend-code');
-    try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': _pendingEmail})).timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Erreur lors du renvoi');
-      }
-    } catch (e) { rethrow; }
-  }
-
-  Future<void> requestPasswordReset(String email) async {
-    final url = Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password');
-    try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({'email': email})).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        _pendingEmail = email;
-        notifyListeners();
-      } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Email inconnu');
-      }
-    } catch (e) { rethrow; }
-  }
-
-  Future<void> resetPassword(String code, String newPassword) async {
-    if (_pendingEmail == null) return;
-    final url = Uri.parse('${ApiConfig.baseUrl}/auth/reset-password');
-    try {
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode({
-        'email': _pendingEmail,
-        'code': code,
-        'newPassword': newPassword
-      })).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        _pendingEmail = null;
-        notifyListeners();
-      } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Code invalide');
-      }
-    } catch (e) { rethrow; }
-  }
-
   Future<void> logout() async {
     _token = null; _currentUser = null;
-    _myReferralCode = null; _referralEarnings = 0.0; _referralSavings = 0.0;
-    _userProvider.setUserType(UserType.undefined);
     await _googleSignIn.signOut();
     notifyListeners();
   }
