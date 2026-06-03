@@ -228,7 +228,8 @@ class ConversationsScreen extends StatelessWidget {
           child: const Icon(Icons.arrow_forward_ios_rounded,
               size: 12, color: _textSub),
         ),
-        onTap: () => context.push('/messages/chat/3'),
+        // REDIRECTION VERS L'IA ASSISTANCE MODIFIÉE ICI
+        onTap: () => context.push('/ai-chat'),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

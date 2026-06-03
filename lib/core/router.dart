@@ -32,6 +32,8 @@ import 'package:plexus/presentation/screens/edit_profile_screen.dart';
 import 'package:plexus/presentation/screens/shipping_address_screen.dart';
 import 'package:plexus/presentation/scaffold_with_nav_bar.dart';
 import 'package:provider/provider.dart';
+import '../presentation/screens/ai_chat_screen.dart';
+
 
 GoRouter createRouter(BuildContext context) {
   final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -61,7 +63,11 @@ GoRouter createRouter(BuildContext context) {
       GoRoute(path: '/verify', builder: (context, state) => const VerificationScreen()),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/reset-password', builder: (context, state) => const ResetPasswordScreen()),
-      
+GoRoute(
+  path: '/ai-chat',
+  builder: (context, state) => const AiChatScreen(),
+),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);

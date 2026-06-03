@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:plexus_admin/screens/dashboard_screen.dart';
 import 'package:plexus_admin/screens/login_screen.dart';
-import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart'; // AJOUTÉ
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialisation des dates pour éviter les erreurs de formatage
+  await initializeDateFormatting('fr_FR', null);
+  
   runApp(const PlexusAdminApp());
 }
 
@@ -13,10 +18,10 @@ class PlexusAdminApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PLEXUS Admin',
+      title: 'PLEXUS Control Center',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A237E)),
         useMaterial3: true,
         brightness: Brightness.light,
       ),

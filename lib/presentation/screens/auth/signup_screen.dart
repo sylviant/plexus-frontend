@@ -50,7 +50,7 @@ class _SignupScreenState extends State<SignupScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  // ─── Palette ─────────────────────────────────────────────────────────────
+  // ─── Palette (identique au LoginScreen) ─────────────────────────────────
   static const Color _primary    = Color(0xFF1A237E);
   static const Color _primaryMid = Color(0xFF3949AB);
   static const Color _accent     = Color(0xFF00B4D8);
@@ -87,6 +87,8 @@ class _SignupScreenState extends State<SignupScreen>
     _referralController.dispose();
     super.dispose();
   }
+
+  // ─── Backend logic ───────────────────────────────────────────
 
   void _showLegalDocs() {
     showDialog(
@@ -288,7 +290,7 @@ class _SignupScreenState extends State<SignupScreen>
         notifP.fetchNotifications(userId);
       }
     } catch (e) {
-      _showError("Erreur Google");
+      _showError("Échec de la connexion Google");
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -357,6 +359,7 @@ class _SignupScreenState extends State<SignupScreen>
     }
   }
 
+  // ─── UI ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     bool isSeller = _selectedRole.first == UserRole.seller;
@@ -365,6 +368,7 @@ class _SignupScreenState extends State<SignupScreen>
       backgroundColor: _surface,
       body: Stack(
         children: [
+          // ── Decorative blobs ─────────────────────────────────────────────
           Positioned(
             top: -80,
             right: -60,
@@ -376,6 +380,7 @@ class _SignupScreenState extends State<SignupScreen>
             child: _Blob(size: 240, color: _accent.withOpacity(0.06)),
           ),
 
+          // ── Main content ─────────────────────────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               padding:
@@ -389,6 +394,7 @@ class _SignupScreenState extends State<SignupScreen>
                     children: [
                       const SizedBox(height: 20),
 
+                      // ── Logo + Brand ─────────────────────────────────────
                       Center(
                         child: Column(
                           children: [
@@ -448,6 +454,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 32),
 
+                      // ── Role selector ─────────────────────────────────────
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -485,6 +492,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 24),
 
+                      // ── Main card ─────────────────────────────────────────
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -525,6 +533,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                               const SizedBox(height: 28),
 
+                              // Google (client only)
                               if (!isSeller) ...[
                                 SizedBox(
                                   width: double.infinity,
@@ -594,6 +603,7 @@ class _SignupScreenState extends State<SignupScreen>
                                 const SizedBox(height: 20),
                               ],
 
+                              // Nom complet
                               const _FieldLabel(label: 'Nom complet'),
                               const SizedBox(height: 8),
                               _styledField(
@@ -603,6 +613,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                               const SizedBox(height: 18),
 
+                              // Email
                               const _FieldLabel(label: 'Adresse e-mail'),
                               const SizedBox(height: 8),
                               _styledField(
@@ -611,6 +622,7 @@ class _SignupScreenState extends State<SignupScreen>
                                   icon: Icons.alternate_email_rounded,
                                   keyboardType: TextInputType.emailAddress),
 
+                              // Seller-specific fields
                               if (isSeller) ...[
                                 const SizedBox(height: 18),
                                 const _FieldLabel(label: 'Téléphone'),
@@ -659,6 +671,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                                 const SizedBox(height: 28),
 
+                                // KYC section
                                 Row(children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -726,6 +739,7 @@ class _SignupScreenState extends State<SignupScreen>
                                 const SizedBox(height: 24),
                               ],
 
+                              // Password
                               const _FieldLabel(label: 'Mot de passe'),
                               const SizedBox(height: 8),
                               TextFormField(
@@ -754,6 +768,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                               const SizedBox(height: 18),
 
+                              // Referral
                               const _FieldLabel(
                                   label: 'Code parrainage (optionnel)'),
                               const SizedBox(height: 8),
@@ -766,10 +781,12 @@ class _SignupScreenState extends State<SignupScreen>
                                   hint: 'XXXX-XXXX',
                                   icon: Icons.card_giftcard_rounded,
                                 ),
+                                validator: null,
                               ),
 
                               const SizedBox(height: 24),
 
+                              // Terms
                               Container(
                                 decoration: BoxDecoration(
                                   color: _acceptedTerms
@@ -818,6 +835,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                               const SizedBox(height: 28),
 
+                              // Submit button
                               SizedBox(
                                 width: double.infinity,
                                 height: 54,
@@ -886,6 +904,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 28),
 
+                      // Login link
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -923,6 +942,8 @@ class _SignupScreenState extends State<SignupScreen>
       ),
     );
   }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
   Widget _styledField({
     required TextEditingController controller,
@@ -979,32 +1000,205 @@ class _SignupScreenState extends State<SignupScreen>
   }
 }
 
+// ─── Sub-widgets ──────────────────────────────────────────────────────────────
+
 class _FieldLabel extends StatelessWidget {
   final String label;
   const _FieldLabel({required this.label});
+
   @override
-  Widget build(BuildContext context) => Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A), letterSpacing: 0.1));
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF0F172A),
+        letterSpacing: 0.1,
+      ),
+    );
+  }
 }
 
 class _RoleTab extends StatelessWidget {
-  final String label; final IconData icon; final bool isSelected; final VoidCallback onTap;
-  const _RoleTab({required this.label, required this.icon, required this.isSelected, required this.onTap});
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RoleTab({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
   @override
-  Widget build(BuildContext context) => Expanded(child: GestureDetector(onTap: onTap, child: AnimatedContainer(duration: const Duration(milliseconds: 200), padding: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: isSelected ? const Color(0xFF1A237E) : Colors.transparent, borderRadius: BorderRadius.circular(12), boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4))] : []), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16, color: isSelected ? Colors.white : const Color(0xFF64748B)), const SizedBox(width: 6), Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: isSelected ? Colors.white : const Color(0xFF64748B)))]))));
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF1A237E) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF1A237E).withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 16,
+                  color: isSelected
+                      ? Colors.white
+                      : const Color(0xFF64748B)),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                  color: isSelected
+                      ? Colors.white
+                      : const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _UploadBox extends StatelessWidget {
-  final String label; final String sublabel; final IconData icon; final Uint8List? bytes; final VoidCallback onTap;
-  const _UploadBox({required this.label, required this.sublabel, required this.icon, required this.bytes, required this.onTap});
+  final String label;
+  final String sublabel;
+  final IconData icon;
+  final Uint8List? bytes;
+  final VoidCallback onTap;
+
+  const _UploadBox({
+    required this.label,
+    required this.sublabel,
+    required this.icon,
+    required this.bytes,
+    required this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
     final bool hasImage = bytes != null;
-    return GestureDetector(onTap: onTap, child: AnimatedContainer(duration: const Duration(milliseconds: 200), height: 100, decoration: BoxDecoration(color: hasImage ? Colors.transparent : const Color(0xFFF4F6FB), borderRadius: BorderRadius.circular(14), border: Border.all(color: hasImage ? const Color(0xFF3949AB).withOpacity(0.4) : const Color(0xFFE2E8F0), width: hasImage ? 2 : 1.5)), child: hasImage ? ClipRRect(borderRadius: BorderRadius.circular(13), child: Stack(fit: StackFit.expand, children: [Image.memory(bytes!, fit: BoxFit.cover), Positioned(bottom: 0, left: 0, right: 0, child: Container(padding: const EdgeInsets.symmetric(vertical: 4), decoration: BoxDecoration(gradient: LinearGradient(colors: [Colors.black.withOpacity(0.5), Colors.transparent], begin: Alignment.bottomCenter, end: Alignment.topCenter)), child: Text(label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.8))))])) : Column(mainAxisAlignment: MainAxisAlignment.center, children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF1A237E).withOpacity(0.07), shape: BoxShape.circle), child: Icon(icon, size: 20, color: const Color(0xFF1A237E).withOpacity(0.5))), const SizedBox(height: 6), Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF1A237E), letterSpacing: 0.8)), Text(sublabel, style: const TextStyle(fontSize: 8, color: Color(0xFF64748B)))])));
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 100,
+        decoration: BoxDecoration(
+          color: hasImage ? Colors.transparent : const Color(0xFFF4F6FB),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: hasImage
+                ? const Color(0xFF3949AB).withOpacity(0.4)
+                : const Color(0xFFE2E8F0),
+            width: hasImage ? 2 : 1.5,
+          ),
+        ),
+        child: hasImage
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(13),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.memory(bytes!, fit: BoxFit.cover),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.5),
+                              Colors.transparent
+                            ],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A237E).withOpacity(0.07),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon,
+                        size: 20,
+                        color: const Color(0xFF1A237E).withOpacity(0.5)),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1A237E),
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  Text(
+                    sublabel,
+                    style: const TextStyle(
+                        fontSize: 8, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 }
 
 class _Blob extends StatelessWidget {
-  final double size; final Color color;
+  final double size;
+  final Color color;
   const _Blob({required this.size, required this.color});
-  @override Widget build(BuildContext context) => Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
 }

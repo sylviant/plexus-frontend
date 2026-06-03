@@ -9,6 +9,7 @@ class ApiConfig {
   static const String socketUrl = serverUrl;
   static const String mediaUrl = '$serverUrl/uploads/';
 
+
   // FONCTION DE RÉPARATION D'URLS (Indispensable pour l'affichage des images)
   static String getImageUrl(String? rawUrl) {
     if (rawUrl == null || rawUrl.isEmpty) return '';

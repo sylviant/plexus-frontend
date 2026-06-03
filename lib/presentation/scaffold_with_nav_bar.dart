@@ -12,8 +12,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
   });
 
   // ─── Palette ──────────────────────────────────────────────────────────────
-  static const Color _navy = Color(0xFF0D1B4B);
-  static const Color _accent = Color(0xFF4A6CF7);
+  static const Color _navy      = Color(0xFF0D1B4B);
+  static const Color _accent    = Color(0xFF4A6CF7);
   static const Color _textMuted = Color(0xFF8A94B2);
 
   @override
@@ -21,38 +21,48 @@ class ScaffoldWithNavBar extends StatelessWidget {
     final int currentIndex = navigationShell.currentIndex;
 
     final List<_NavItem> items = [
-      _NavItem(
+      const _NavItem(
         label: 'Accueil',
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
       ),
-      _NavItem(
+      const _NavItem(
         label: 'Catégories',
         icon: Icons.grid_view_outlined,
         activeIcon: Icons.grid_view_rounded,
       ),
-      _NavItem(
+      const _NavItem(
         label: 'Panier',
         icon: Icons.shopping_bag_outlined,
         activeIcon: Icons.shopping_bag_rounded,
         isCenter: true,
       ),
-      _NavItem(
+      const _NavItem(
         label: 'Messages',
         icon: Icons.chat_bubble_outline_rounded,
         activeIcon: Icons.chat_bubble_rounded,
         hasBadge: true,
       ),
-      _NavItem(
+      const _NavItem(
         label: 'Profil',
         icon: Icons.person_outline_rounded,
         activeIcon: Icons.person_rounded,
       ),
     ];
 
+    // Hauteur totale barre : 68 (barre) + 22 (padding bas) = 90
+    // Injectée dans le MediaQuery pour que les Scrollable réservent l'espace.
+    const double navBarTotalHeight = 90.0;
+
     return Scaffold(
-      body: navigationShell,
-      extendBody: true,
+      body: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          padding: MediaQuery.of(context).padding.copyWith(
+            bottom: MediaQuery.of(context).padding.bottom + navBarTotalHeight,
+          ),
+        ),
+        child: navigationShell,
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
         child: Consumer<SocketProvider>(
@@ -80,8 +90,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                 children: List.generate(items.length, (index) {
                   final item = items[index];
                   final bool isSelected = currentIndex == index;
-                  final int badgeCount =
-                      (item.hasBadge) ? socket.unreadCount : 0;
+                  final int badgeCount = item.hasBadge ? socket.unreadCount : 0;
 
                   return _NavBarItem(
                     item: item,
@@ -100,6 +109,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
 }
 
 // ─── Modèle d'item ────────────────────────────────────────────────────────────
+
 class _NavItem {
   final String label;
   final IconData icon;
@@ -117,14 +127,15 @@ class _NavItem {
 }
 
 // ─── Widget item de la nav bar ────────────────────────────────────────────────
+
 class _NavBarItem extends StatelessWidget {
   final _NavItem item;
   final bool isSelected;
   final int badgeCount;
   final VoidCallback onTap;
 
-  static const Color _navy = Color(0xFF0D1B4B);
-  static const Color _accent = Color(0xFF4A6CF7);
+  static const Color _navy      = Color(0xFF0D1B4B);
+  static const Color _accent    = Color(0xFF4A6CF7);
   static const Color _textMuted = Color(0xFF8A94B2);
 
   const _NavBarItem({
@@ -136,7 +147,7 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bouton central (Panier) traité différemment
+    // Bouton central (Panier)
     if (item.isCenter) {
       return GestureDetector(
         onTap: onTap,
@@ -180,7 +191,6 @@ class _NavBarItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icône avec indicateur
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -201,7 +211,7 @@ class _NavBarItem extends StatelessWidget {
                   ),
                 ),
 
-                // Badge messages
+                // Badge non lu
                 if (badgeCount > 0)
                   Positioned(
                     top: -2,
@@ -212,8 +222,7 @@ class _NavBarItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFE53935),
                         borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(color: Colors.white, width: 1.5),
+                        border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       child: Text(
                         badgeCount > 99 ? '99+' : badgeCount.toString(),
@@ -230,26 +239,26 @@ class _NavBarItem extends StatelessWidget {
 
             const SizedBox(height: 3),
 
-            // Label
+            // Label animé
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
               style: TextStyle(
                 fontSize: 10,
-                fontWeight:
-                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? _accent : _textMuted,
               ),
               child: Text(item.label),
             ),
 
-            // Indicateur point actif
             const SizedBox(height: 3),
+
+            // Point indicateur actif
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               width: isSelected ? 4 : 0,
               height: isSelected ? 4 : 0,
-              decoration: BoxDecoration(
-                color: _accent,
+              decoration: const BoxDecoration(
+                color: Color(0xFF4A6CF7),
                 shape: BoxShape.circle,
               ),
             ),

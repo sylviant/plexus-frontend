@@ -170,14 +170,6 @@ class _AddProductScreenState extends State<AddProductScreen>
       return;
     }
 
-    if (_userWallets.isEmpty) {
-      _showSnack(
-          'Enregistrez un portefeuille dans votre profil pour publier.',
-          const Color(0xFFEF4444),
-          Icons.account_balance_wallet_outlined);
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
@@ -199,7 +191,7 @@ class _AddProductScreenState extends State<AddProductScreen>
       request.fields['subCategory']    = _selectedSubCategory ?? '';
       request.fields['sellerId']       = auth.currentUser!.id;
       request.fields['sellerName']     = auth.currentUser!.firstName ?? 'Vendeur';
-      request.fields['sellerWallet']   = _selectedWalletAddress!;
+      if (_selectedWalletAddress != null) request.fields['sellerWallet'] = _selectedWalletAddress!;
 
       if (_pickedFile != null) {
         if (kIsWeb) {
@@ -336,17 +328,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                           color: const Color(0xFFF59E0B),
                           bgColor: const Color(0xFFFFFBEB),
                           borderColor: const Color(0xFFFDE68A),
-                        ),
-
-                      // ── No wallet banner ──────────────────────────
-                      if (_userWallets.isEmpty)
-                        _Banner(
-                          icon: Icons.account_balance_wallet_outlined,
-                          message:
-                              'Aucun portefeuille enregistré. Ajoutez-en un dans votre profil pour publier.',
-                          color: const Color(0xFFEF4444),
-                          bgColor: const Color(0xFFFEF2F2),
-                          borderColor: const Color(0xFFFECACA),
                         ),
 
                       // ── Image picker ──────────────────────────────
@@ -639,11 +620,11 @@ class _AddProductScreenState extends State<AddProductScreen>
                                       decoration: _inputDecoration(
                                         hint: '0',
                                         icon: Icons.sell_outlined,
-                                        prefix: const Text(r'$  ',
-                                            style: TextStyle(
-                                                color: _primary,
-                                                fontWeight:
-                                                    FontWeight.w700)),
+                                        prefixText: '\$ ',
+                                        prefixStyle: const TextStyle(
+                                            color: _primary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 14),
                                       ),
                                       validator: (v) =>
                                           v!.isEmpty ? 'Requis' : null,
@@ -673,11 +654,11 @@ class _AddProductScreenState extends State<AddProductScreen>
                                       decoration: _inputDecoration(
                                         hint: '0',
                                         icon: Icons.money_off_outlined,
-                                        prefix: Text(r'$  ',
-                                            style: TextStyle(
-                                                color: _textSub,
-                                                fontWeight:
-                                                    FontWeight.w600)),
+                                        prefixText: '\$ ',
+                                        prefixStyle: TextStyle(
+                                            color: _textSub,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14),
                                       ),
                                     ),
                                   ],
@@ -853,7 +834,8 @@ class _AddProductScreenState extends State<AddProductScreen>
   InputDecoration _inputDecoration({
     required String hint,
     required IconData icon,
-    Widget? prefix,
+    String? prefixText,
+    TextStyle? prefixStyle,
     Widget? suffix,
   }) {
     return InputDecoration(
@@ -861,7 +843,8 @@ class _AddProductScreenState extends State<AddProductScreen>
       hintStyle:
           TextStyle(color: _textSub.withOpacity(0.5), fontSize: 14),
       prefixIcon: Icon(icon, color: _textSub, size: 20),
-      prefix: prefix,
+      prefixText: prefixText,
+      prefixStyle: prefixStyle,
       suffixIcon: suffix,
       filled: true,
       fillColor: _surface,

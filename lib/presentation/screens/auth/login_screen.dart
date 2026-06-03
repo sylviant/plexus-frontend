@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                   const SizedBox(height: 40),
-                  
+
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -157,12 +157,12 @@ class _LoginScreenState extends State<LoginScreen>
                           const SizedBox(height: 4),
                           const Text('Bienvenue ! Identifiez-vous pour continuer.', style: TextStyle(fontSize: 13, color: _textSub)),
                           const SizedBox(height: 28),
-                          
+
                           _styledLabel('Adresse e-mail'),
                           const SizedBox(height: 8),
                           _styledField(_emailController, 'exemple@domaine.com', Icons.alternate_email_rounded),
                           const SizedBox(height: 20),
-                          
+
                           _styledLabel('Mot de passe'),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -178,14 +178,14 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                           ),
-                          
+
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(onPressed: () => context.push('/forgot-password'), child: const Text('Mot de passe oublié ?', style: TextStyle(color: _primaryMid, fontWeight: FontWeight.w600))),
                           ),
-                          
+
                           const SizedBox(height: 20),
-                          
+
                           SizedBox(
                             width: double.infinity, height: 55,
                             child: ElevatedButton(
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen>
                               child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('SE CONNECTER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                             ),
                           ),
-                          
+
                           const SizedBox(height: 25),
                           const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OU", style: TextStyle(fontSize: 12, color: _textSub))), Expanded(child: Divider())]),
                           const SizedBox(height: 25),
@@ -204,8 +204,8 @@ class _LoginScreenState extends State<LoginScreen>
                             child: OutlinedButton(
                               onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
                               style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), side: const BorderSide(color: _border, width: 1.5)),
-                              child: _isGoogleLoading 
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: _primary))
+                              child: _isGoogleLoading
+                                ? const CircularProgressIndicator(color: _primary)
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -227,7 +227,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // --- BOUTON S'INSCRIRE RÉINTÉGRÉ ---
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

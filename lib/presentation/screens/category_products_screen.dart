@@ -68,7 +68,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
         });
       }
     } catch (e) {
-      debugPrint("Erreur Fetch: $e");
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -109,7 +108,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ),
           ),
-
           if (subCats.isNotEmpty)
             SliverToBoxAdapter(
               child: AnimatedContainer(
@@ -128,17 +126,10 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                     : const SizedBox.shrink(),
               ),
             ),
-
           _isLoading 
             ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator(color: primaryColor))))
             : _displayProducts.isEmpty 
-              ? SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(50), child: Column(
-                  children: [
-                    const Icon(Icons.search_off, size: 50, color: Colors.grey),
-                    const SizedBox(height: 10),
-                    Text("Aucun article dans '${widget.categoryName}'", style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                  ],
-                ))))
+              ? SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(50), child: Text("Aucun produit disponible"))))
               : SliverPadding(
                   padding: const EdgeInsets.all(20),
                   sliver: SliverGrid(
@@ -165,7 +156,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           color: isSel ? primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: isSel ? Colors.transparent : Colors.grey[200]!),
-          boxShadow: isSel ? [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
         ),
         child: Center(child: Text(label, style: TextStyle(color: isSel ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: isSel ? FontWeight.bold : FontWeight.normal))),
       ),

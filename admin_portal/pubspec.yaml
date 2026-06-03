@@ -14,7 +14,7 @@ dependencies:
   go_router: ^14.1.2
   intl: ^0.19.0
   url_launcher: ^6.3.0
-  shared_preferences: ^2.2.3 # AJOUTÉ POUR RÉPARER L'ERREUR
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +23,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - web/_redirects
