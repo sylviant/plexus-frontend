@@ -60,12 +60,21 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
 
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${auth.token}',
+    };
+
     try {
       String? idToFetch = widget.orderId;
       if (idToFetch == null || idToFetch.isEmpty) {
         final res = await http
-            .get(Uri.parse(
-                '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'))
+            .get(
+              Uri.parse(
+                  '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'),
+              headers: headers,
+            )
             .timeout(const Duration(seconds: 5));
         if (res.statusCode == 200) {
           final order = json.decode(res.body);
@@ -75,7 +84,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (idToFetch != null) {
         final res = await http
-            .get(Uri.parse('${ApiConfig.baseUrl}/orders/$idToFetch'))
+            .get(
+              Uri.parse('${ApiConfig.baseUrl}/orders/$idToFetch'),
+              headers: headers,
+            )
             .timeout(const Duration(seconds: 5));
         if (res.statusCode == 200) {
           final order = json.decode(res.body);
@@ -97,7 +109,10 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final res = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/receive'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${auth.token}',
+        },
         body: json.encode({
           'senderName': auth.currentUser?.firstName ?? "L'acheteur"
         }),
@@ -134,7 +149,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final res = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/status'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${auth.token}',
+        },
         body: json.encode(body),
       );
 

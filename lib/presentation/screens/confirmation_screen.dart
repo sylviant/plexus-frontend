@@ -27,7 +27,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
   static const Color _border     = Color(0xFFE2E8F0);
   static const Color _textMain   = Color(0xFF0F172A);
   static const Color _textSub    = Color(0xFF64748B);
-  static const Color _success    = Color(0xFF10B981);
+  static const Color _pending    = Color(0xFFF59E0B);
 
   @override
   void initState() {
@@ -97,7 +97,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
           Positioned(
             top: 160,
             left: -40,
-            child: _Blob(size: 130, color: _success.withOpacity(0.06)),
+            child: _Blob(size: 130, color: _pending.withOpacity(0.06)),
           ),
 
           // ── Content ─────────────────────────────────────────────────
@@ -109,7 +109,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                 children: [
                   const Spacer(),
 
-                  // ── Animated check icon ────────────────────────────
+                  // ── Animated pending icon ──────────────────────────
                   FadeTransition(
                     opacity: _checkOpacity,
                     child: ScaleTransition(
@@ -123,7 +123,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             height: 130,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _success.withOpacity(0.08),
+                              color: _pending.withOpacity(0.08),
                             ),
                           ),
                           // Middle ring
@@ -132,7 +132,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             height: 104,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _success.withOpacity(0.14),
+                              color: _pending.withOpacity(0.14),
                             ),
                           ),
                           // Inner circle
@@ -141,12 +141,12 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             height: 80,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _success,
+                              color: _pending,
                             ),
                             child: const Icon(
-                              Icons.check_rounded,
+                              Icons.hourglass_top_rounded,
                               color: Colors.white,
-                              size: 42,
+                              size: 38,
                             ),
                           ),
                         ],
@@ -164,7 +164,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                       child: Column(
                         children: [
                           const Text(
-                            'Paiement Réussi !',
+                            'Paiement en attente',
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
@@ -175,7 +175,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Votre commande a été validée et enregistrée dans la Blockchain.',
+                            'Votre commande a été enregistrée et est en attente de confirmation sur la Blockchain.',
                             style: const TextStyle(
                               fontSize: 14,
                               color: _textSub,
@@ -247,15 +247,15 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: _success.withOpacity(0.10),
+                                    color: _pending.withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Text(
-                                    'VALIDÉE',
+                                    'EN ATTENTE',
                                     style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
-                                      color: _success,
+                                      color: _pending,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
@@ -285,7 +285,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                     color: _accent.withOpacity(0.8)),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Transaction enregistrée sur la Blockchain PLEXUS',
+                                  'Confirmation en cours sur la Blockchain PLEXUS',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: _textSub,

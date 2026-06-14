@@ -746,24 +746,18 @@ class _AddProductScreenState extends State<AddProductScreen>
                         height: 54,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            gradient: (_isLoading ||
-                                    _userWallets.isEmpty ||
-                                    !auth.isApproved)
+                            gradient: (_isLoading || !auth.isApproved)
                                 ? null
                                 : const LinearGradient(
                                     colors: [_primary, _primaryMid],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
-                            color: (_isLoading ||
-                                    _userWallets.isEmpty ||
-                                    !auth.isApproved)
+                            color: (_isLoading || !auth.isApproved)
                                 ? _border
                                 : null,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: (_isLoading ||
-                                    _userWallets.isEmpty ||
-                                    !auth.isApproved)
+                            boxShadow: (_isLoading || !auth.isApproved)
                                 ? []
                                 : [
                                     BoxShadow(
@@ -774,9 +768,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                                   ],
                           ),
                           child: ElevatedButton(
-                            onPressed: (_isLoading ||
-                                    _userWallets.isEmpty ||
-                                    !auth.isApproved)
+                            onPressed: (_isLoading || !auth.isApproved)
                                 ? null
                                 : _submitProduct,
                             style: ElevatedButton.styleFrom(
