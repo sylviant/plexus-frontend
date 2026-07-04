@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart'; // Import indispensable ajouté
+import 'package:flutter/scheduler.dart'; // Import indispensable ajouté pour SchedulerPhase
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
 
 class NotificationProvider with ChangeNotifier {
   List<dynamic> _notifications = [];
   int _unreadCount = 0;
-  bool _isLoading = false; // Ajouté pour corriger l'erreur de compilation
+  bool _isLoading = false;
 
   List<dynamic> get notifications => _notifications;
   int get unreadCount => _unreadCount;
-  bool get isLoading => _isLoading; // Ajouté
+  bool get isLoading => _isLoading;
 
+  // Méthode de notification sécurisée pour éviter les crashs pendant le build
   void safeNotify() {
     if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.idle) {
       notifyListeners();

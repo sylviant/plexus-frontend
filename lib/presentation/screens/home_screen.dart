@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
 
                               const SliverToBoxAdapter(
-                                  child: SizedBox(height: 100)),
+                                  child: SizedBox(height: 10)),
                             ],
                           ),
                         ),
@@ -503,20 +503,20 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  static const List<Map<String, dynamic>> _banners = [
-    {
-      'title': 'Nouvelle Collection',
-      'sub': 'Électronique 2K & 4K',
-      'icon': Icons.devices_outlined,
-      'colors': [Color(0xFF1A237E), Color(0xFF3949AB)],
-    },
-    {
-      'title': 'Flash Sale 🔥',
-      'sub': "Jusqu'à -50% aujourd'hui",
-      'icon': Icons.local_fire_department_outlined,
-      'colors': [Color(0xFFBF360C), Color(0xFFEF6C00)],
-    },
-  ];
+static const List<Map<String, dynamic>> _banners = [
+  {
+    'title': 'Nouvelle Collection',
+    'sub': 'Électronique 2K & 4K',
+    'image': 'assets/images/pub1.png',
+    'colors': [Color(0xFF1A237E), Color(0xFF3949AB)],
+  },
+  {
+    'title': 'Flash Sale 🔥',
+    'sub': "Jusqu'à -50% aujourd'hui",
+    'image': 'assets/images/pub1.png',
+    'colors': [Color(0xFFBF360C), Color(0xFFEF6C00)],
+  },
+];
 
   @override
   void dispose() {
@@ -539,7 +539,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
               return _PromoCard(
                 title: b['title'] as String,
                 sub: b['sub'] as String,
-                icon: b['icon'] as IconData,
+                imagePath: b['image'] as String,
                 gradientColors: b['colors'] as List<Color>,
               );
             },
@@ -573,13 +573,13 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
 class _PromoCard extends StatelessWidget {
   final String title;
   final String sub;
-  final IconData icon;
+  final String imagePath;
   final List<Color> gradientColors;
 
   const _PromoCard({
     required this.title,
     required this.sub,
-    required this.icon,
+    required this.imagePath,
     required this.gradientColors,
   });
 
@@ -604,12 +604,19 @@ class _PromoCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Background icon
+          // Background image (remplace l'icône)
           Positioned(
             right: -10,
             top: -10,
-            child: Icon(icon, size: 120,
-                color: Colors.white.withOpacity(0.06)),
+            child: Opacity(
+              opacity: 0.15,
+              child: Image.asset(
+                imagePath,
+                width: 140,
+                height: 140,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(22),

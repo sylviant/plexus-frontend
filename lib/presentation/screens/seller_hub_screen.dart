@@ -71,6 +71,90 @@ class _SellerHubScreenState extends State<SellerHubScreen>
     }
   }
 
+  // ── NOUVEAU : Suppression d'un produit ────────────────────────────────────
+  Future<void> deleteProduct(String id) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Supprimer l\'article',
+          style: TextStyle(
+              fontWeight: FontWeight.w800, color: _navy, fontSize: 16),
+        ),
+        content: const Text(
+          'Voulez-vous vraiment supprimer cet article ?',
+          style: TextStyle(color: _textMuted, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler',
+                style: TextStyle(color: _textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53935),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Supprimer',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiConfig.baseUrl}/products/$id'),
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(children: const [
+                Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text("Produit supprimé avec succès"),
+              ]),
+              backgroundColor: const Color(0xFF00B386),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+          _fetchSellerData(); // Rafraîchit la liste des produits
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Erreur lors de la suppression"),
+              backgroundColor: Color(0xFFE53935),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Erreur : $e"),
+            backgroundColor: const Color(0xFFE53935),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -522,6 +606,9 @@ class _SellerHubScreenState extends State<SellerHubScreen>
   }
 
   Widget _buildSellerProductCard(dynamic p) {
+    // ID du produit, compatible avec _id (Mongo) ou id
+    final String productId = (p['_id'] ?? p['id'] ?? '').toString();
+
     return Container(
       decoration: BoxDecoration(
         color: _card,
@@ -576,6 +663,29 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                         ),
                         child: const Icon(Icons.edit_rounded,
                             size: 13, color: _accent),
+                      ),
+                    ),
+                  ),
+                  // ── NOUVEAU : Bouton de suppression (icône poubelle) ──────
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: GestureDetector(
+                      onTap: () => deleteProduct(productId),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            size: 13, color: Color(0xFFE53935)),
                       ),
                     ),
                   ),

@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 
 class PaymentScreen extends StatefulWidget {
-  final Map<String, dynamic>? productData; 
+  final Map<String, dynamic>? productData;
 
   const PaymentScreen({this.productData, super.key});
 
@@ -19,7 +19,7 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final _hashController = TextEditingController();
-  final _addressController = TextEditingController(); 
+  final _addressController = TextEditingController();
   bool _isSubmitting = false;
   String _selectedCrypto = "USDT";
 
@@ -60,20 +60,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     try {
       final bool isFromChat = widget.productData?['orderId'] != null;
-      
+      // ✅ FIX : détecte si c'est un paiement de frais de livraison uniquement
+      final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
+
       if (isFromChat) {
         // --- CAS CHAT : On met à jour le statut ET on enregistre l'adresse ---
         final String orderId = widget.productData?['orderId'] ?? '';
-        await http.put(
-          Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/status'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'status': 'PAID',
-            'transactionHash': _hashController.text,
-            'cryptoType': _selectedCrypto,
-            'deliveryAddress': _addressController.text, // On envoie l'adresse ici aussi
-          }),
-        );
+
+        if (isShippingOnly) {
+          // ✅ FIX : paiement frais de livraison → statut PAID sur la commande existante
+          await http.put(
+            Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/approve'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'transactionHash': _hashController.text,
+              'cryptoType': _selectedCrypto,
+              'deliveryAddress': _addressController.text,
+            }),
+          );
+        } else {
+          // Paiement classique depuis le chat (cas précédent conservé)
+          await http.put(
+            Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/status'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'status': 'PAID',
+              'transactionHash': _hashController.text,
+              'cryptoType': _selectedCrypto,
+              'deliveryAddress': _addressController.text,
+            }),
+          );
+        }
+
         if (mounted) context.go('/profile/orders');
       } else {
         // --- CAS PANIER : Nouvelle commande ---
@@ -103,11 +121,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final dynamic passedPriceRaw = widget.productData?['price'];
     final double passedPrice = (passedPriceRaw != null) ? double.parse(passedPriceRaw.toString()) : 0.0;
     final bool isFromChat = widget.productData?['orderId'] != null;
-    final double displayPrice = isFromChat ? passedPrice : cart.totalPrice;
+    // ✅ FIX : si isShippingOnly, on affiche uniquement le prix passé (fee)
+    // sinon on affiche le total du panier comme avant
+    final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
+    final double displayPrice = (isFromChat || isShippingOnly) ? passedPrice : cart.totalPrice;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('PAIEMENT SÉCURISÉ', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)), centerTitle: true),
+      appBar: AppBar(
+        // ✅ FIX : titre adapté selon le mode de paiement
+        title: Text(
+          isShippingOnly ? 'FRAIS DE LIVRAISON' : 'PAIEMENT SÉCURISÉ',
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+        ),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -115,11 +143,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Container(
               width: double.infinity, padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(color: primaryColor, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))]),
-              child: Text('\$${displayPrice.toStringAsFixed(2)} $_selectedCrypto', textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
+              child: Column(
+                children: [
+                  // ✅ FIX : libellé contextuel selon le mode
+                  if (isShippingOnly)
+                    const Text(
+                      'FRAIS DE LIVRAISON',
+                      style: TextStyle(color: Colors.white60, fontSize: 12, letterSpacing: 1.5),
+                    ),
+                  if (isShippingOnly) const SizedBox(height: 6),
+                  Text(
+                    '\$${displayPrice.toStringAsFixed(2)} $_selectedCrypto',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 30),
-            
-            // ADRESSE DE LIVRAISON (Toujours visible pour être sûr)
+
+            // ADRESSE DE LIVRAISON
             const Align(alignment: Alignment.centerLeft, child: Text("ADRESSE DE LIVRAISON", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))),
             const SizedBox(height: 10),
             TextField(controller: _addressController, decoration: const InputDecoration(hintText: "Saisissez votre adresse de réception")),
@@ -140,7 +183,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildWarningBanner(),
             const SizedBox(height: 30),
 
-            // AFFICHAGE DES IMAGES QR CODE (Noms corrigés selon vos assets)
+            // AFFICHAGE DES IMAGES QR CODE
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -195,7 +238,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _confirmTransfer,
                 style: ElevatedButton.styleFrom(backgroundColor: primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
-                child: _isSubmitting ? const CircularProgressIndicator(color: Colors.white) : const Text('CONFIRMER LE PAIEMENT', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    // ✅ FIX : texte du bouton adapté selon le mode
+                    : Text(
+                        isShippingOnly ? 'CONFIRMER LES FRAIS DE LIVRAISON' : 'CONFIRMER LE PAIEMENT',
+                        style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      ),
               ),
             ),
           ],
@@ -211,7 +260,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: Row(children: [
         const Icon(Icons.info_outline, color: Colors.orange, size: 24),
         const SizedBox(width: 12),
-        Expanded(child: Text(_selectedCrypto == "USDT" ? "N’envoyez que des Tether USD (BEP20) à cette adresse. Les autres actifs seront perdus à jamais." : "N’envoyez que des BNB pegged USD Coin (BEP20) à cette adresse. Les autres actifs seront perdus à jamais.", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500))),
+        Expanded(child: Text(_selectedCrypto == "USDT" ? "N'envoyez que des Tether USD (BEP20) à cette adresse. Les autres actifs seront perdus à jamais." : "N'envoyez que des BNB pegged USD Coin (BEP20) à cette adresse. Les autres actifs seront perdus à jamais.", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500))),
       ]),
     );
   }

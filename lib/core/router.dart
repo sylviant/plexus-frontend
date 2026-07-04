@@ -18,6 +18,7 @@ import 'package:plexus/presentation/screens/home_screen.dart';
 import 'package:plexus/presentation/screens/messages_screen.dart';
 import 'package:plexus/presentation/screens/order_history_screen.dart';
 import 'package:plexus/presentation/screens/order_detail_screen.dart';
+import 'package:plexus/presentation/screens/order_success_screen.dart';
 import 'package:plexus/presentation/screens/payment_methods_screen.dart';
 import 'package:plexus/presentation/screens/payment_screen.dart';
 import 'package:plexus/presentation/screens/product_detail_screen.dart';
@@ -43,7 +44,7 @@ GoRouter createRouter(BuildContext context) {
     refreshListenable: authProvider,
     redirect: (BuildContext context, GoRouterState state) {
       final bool loggedIn = authProvider.isAuthenticated;
-      final bool isAuthRoute = state.matchedLocation == '/login' || 
+      final bool isAuthRoute = state.matchedLocation == '/login' ||
                                state.matchedLocation == '/signup' ||
                                state.matchedLocation == '/verify' ||
                                state.matchedLocation == '/forgot-password' ||
@@ -63,10 +64,19 @@ GoRouter createRouter(BuildContext context) {
       GoRoute(path: '/verify', builder: (context, state) => const VerificationScreen()),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(path: '/reset-password', builder: (context, state) => const ResetPasswordScreen()),
-GoRoute(
-  path: '/ai-chat',
-  builder: (context, state) => const AiChatScreen(),
-),
+      GoRoute(
+        path: '/ai-chat',
+        builder: (context, state) => const AiChatScreen(),
+      ),
+
+      // ✅ NOUVEAU : Page de succès de commande pour l'acheteur
+      GoRoute(
+        path: '/order-success/:orderId',
+        builder: (context, state) => OrderSuccessScreen(
+          orderId: state.pathParameters['orderId']!,
+          extra: state.extra as Map<String, dynamic>?,
+        ),
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -75,8 +85,8 @@ GoRoute(
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(
-              path: '/home', 
-              builder: (context, state) => const HomeScreen(), 
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
               routes: [
                 GoRoute(path: 'product/:id', builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['id']!)),
                 GoRoute(path: 'notifications', builder: (context, state) => const NotificationsScreen()),
@@ -103,16 +113,19 @@ GoRoute(
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/messages', 
-                builder: (context, state) => const ConversationsScreen(), 
+                path: '/messages',
+                builder: (context, state) => const ConversationsScreen(),
                 routes: [
                   GoRoute(
-                    path: 'chat/:id', 
+                    path: 'chat/:id',
                     builder: (context, state) {
                       final extra = state.extra as Map<String, dynamic>?;
+                      final String rawId = state.pathParameters['id']!;
+                      final String conversationId = extra?['conversationId'] as String?
+                          ?? Uri.decodeComponent(rawId);
                       return ChatScreen(
-                        conversationId: state.pathParameters['id']!, 
-                        otherName: extra?['otherName'], 
+                        conversationId: conversationId,
+                        otherName: extra?['otherName'],
                         productTitle: extra?['productTitle'],
                         orderId: extra?['orderId'],
                       );

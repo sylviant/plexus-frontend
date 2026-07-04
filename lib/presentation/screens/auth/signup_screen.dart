@@ -50,7 +50,7 @@ class _SignupScreenState extends State<SignupScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  // ─── Palette (identique au LoginScreen) ─────────────────────────────────
+  // ─── Palette ────────────────────────────────────────────────────────────
   static const Color _primary    = Color(0xFF1A237E);
   static const Color _primaryMid = Color(0xFF3949AB);
   static const Color _accent     = Color(0xFF00B4D8);
@@ -88,7 +88,7 @@ class _SignupScreenState extends State<SignupScreen>
     super.dispose();
   }
 
-  // ─── Backend logic ───────────────────────────────────────────
+  // ─── Backend logic ───────────────────────────────────────────────────────
 
   void _showLegalDocs() {
     showDialog(
@@ -99,30 +99,25 @@ class _SignupScreenState extends State<SignupScreen>
         title: const Text(
           "Documents Légaux — PLEXUS",
           style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: _primary,
-              fontSize: 16),
+              fontWeight: FontWeight.w800, color: _primary, fontSize: 16),
         ),
         content: const SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("1. MENTIONS LÉGALES",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 12)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
               Text("© 2026 PLEXUS GLOBAL SOLUTIONS FZ-LLC.\n",
                   style: TextStyle(fontSize: 13)),
               Text("2. CONDITIONS GÉNÉRALES (CGV)",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 12)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
               Text(
                   "- Paiement Escrow sécurisé.\n- Commission de 3% sur les ventes.\n- Livraison responsable du vendeur.\n",
                   style: TextStyle(fontSize: 13)),
               Text("3. CONFIDENTIALITÉ",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 12)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
               Text("PLEXUS ne stocke jamais vos clés privées.",
                   style: TextStyle(fontSize: 13)),
@@ -132,8 +127,7 @@ class _SignupScreenState extends State<SignupScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("FERMER",
-                style: TextStyle(color: _textSub)),
+            child: const Text("FERMER", style: TextStyle(color: _textSub)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -213,8 +207,7 @@ class _SignupScreenState extends State<SignupScreen>
                     style: const TextStyle(fontWeight: FontWeight.w500)),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(isFront, ImageSource.camera,
-                      isSelfie: isSelfie);
+                  _pickImage(isFront, ImageSource.camera, isSelfie: isSelfie);
                 },
               ),
               if (!isSelfie)
@@ -271,6 +264,7 @@ class _SignupScreenState extends State<SignupScreen>
     }
   }
 
+  // ✅ Inchangé — délègue au AuthProvider qui gère Web/Mobile
   Future<void> _handleGoogleSignIn() async {
     if (!_acceptedTerms) {
       _showError("Veuillez accepter les conditions légales");
@@ -315,8 +309,8 @@ class _SignupScreenState extends State<SignupScreen>
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -454,7 +448,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 32),
 
-                      // ── Role selector ─────────────────────────────────────
+                      // ── Role selector ────────────────────────────────────
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -492,7 +486,7 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 24),
 
-                      // ── Main card ─────────────────────────────────────────
+                      // ── Main card ────────────────────────────────────────
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -512,9 +506,7 @@ class _SignupScreenState extends State<SignupScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isSeller
-                                    ? 'Compte Vendeur'
-                                    : 'Compte Client',
+                                isSeller ? 'Compte Vendeur' : 'Compte Client',
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -562,8 +554,10 @@ class _SignupScreenState extends State<SignupScreen>
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              // --- CORRECTION GOOGLE FIABLE ---
-                                              const Icon(Icons.g_mobiledata_rounded, color: _primary, size: 30),
+                                              const Icon(
+                                                  Icons.g_mobiledata_rounded,
+                                                  color: _primary,
+                                                  size: 30),
                                               const SizedBox(width: 12),
                                               const Flexible(
                                                 child: Text(
@@ -573,7 +567,8 @@ class _SignupScreenState extends State<SignupScreen>
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 14,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -651,10 +646,9 @@ class _SignupScreenState extends State<SignupScreen>
                                             child: SizedBox(
                                               width: 18,
                                               height: 18,
-                                              child:
-                                                  CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: _primary),
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: _primary),
                                             ),
                                           )
                                         : IconButton(
@@ -678,8 +672,7 @@ class _SignupScreenState extends State<SignupScreen>
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
                                       color: _primary.withOpacity(0.08),
-                                      borderRadius:
-                                          BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text(
                                       'DOCUMENTS KYC REQUIS',
@@ -695,8 +688,8 @@ class _SignupScreenState extends State<SignupScreen>
                                 const SizedBox(height: 6),
                                 const Text(
                                   'Ces documents sont nécessaires pour valider votre boutique.',
-                                  style: TextStyle(
-                                      fontSize: 11, color: _textSub),
+                                  style:
+                                      TextStyle(fontSize: 11, color: _textSub),
                                 ),
                                 const SizedBox(height: 16),
                                 Row(
@@ -705,7 +698,8 @@ class _SignupScreenState extends State<SignupScreen>
                                       child: _UploadBox(
                                         label: "SELFIE",
                                         sublabel: "Votre visage",
-                                        icon: Icons.face_retouching_natural,
+                                        icon:
+                                            Icons.face_retouching_natural,
                                         bytes: _selfieBytes,
                                         onTap: () =>
                                             _showImagePickerOptions(false,
@@ -760,8 +754,7 @@ class _SignupScreenState extends State<SignupScreen>
                                       size: 20,
                                     ),
                                     onPressed: () => setState(() =>
-                                        _obscurePassword =
-                                            !_obscurePassword),
+                                        _obscurePassword = !_obscurePassword),
                                   ),
                                 ),
                               ),
@@ -804,8 +797,8 @@ class _SignupScreenState extends State<SignupScreen>
                                   children: [
                                     Checkbox(
                                       value: _acceptedTerms,
-                                      onChanged: (v) => setState(
-                                          () => _acceptedTerms = v!),
+                                      onChanged: (v) =>
+                                          setState(() => _acceptedTerms = v!),
                                       activeColor: _primary,
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
@@ -841,28 +834,29 @@ class _SignupScreenState extends State<SignupScreen>
                                 height: 54,
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
-                                    gradient: (_isLoading || !_acceptedTerms)
-                                        ? null
-                                        : const LinearGradient(
-                                            colors: [_primary, _primaryMid],
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                          ),
-                                    color:
+                                    gradient:
                                         (_isLoading || !_acceptedTerms)
-                                            ? _border
-                                            : null,
+                                            ? null
+                                            : const LinearGradient(
+                                                colors: [_primary, _primaryMid],
+                                                begin: Alignment.centerLeft,
+                                                end: Alignment.centerRight,
+                                              ),
+                                    color: (_isLoading || !_acceptedTerms)
+                                        ? _border
+                                        : null,
                                     borderRadius: BorderRadius.circular(14),
-                                    boxShadow: (_isLoading || !_acceptedTerms)
-                                        ? []
-                                        : [
-                                            BoxShadow(
-                                              color:
-                                                  _primary.withOpacity(0.35),
-                                              blurRadius: 16,
-                                              offset: const Offset(0, 6),
-                                            ),
-                                          ],
+                                    boxShadow:
+                                        (_isLoading || !_acceptedTerms)
+                                            ? []
+                                            : [
+                                                BoxShadow(
+                                                  color: _primary
+                                                      .withOpacity(0.35),
+                                                  blurRadius: 16,
+                                                  offset: const Offset(0, 6),
+                                                ),
+                                              ],
                                   ),
                                   child: ElevatedButton(
                                     onPressed:
@@ -954,7 +948,8 @@ class _SignupScreenState extends State<SignupScreen>
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
+      style:
+          const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
       decoration: _inputDecoration(hint: hint, icon: icon),
       validator: (v) => v!.isEmpty ? 'Requis' : null,
     );
@@ -994,7 +989,8 @@ class _SignupScreenState extends State<SignupScreen>
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+        borderSide:
+            const BorderSide(color: Color(0xFFEF4444), width: 2),
       ),
     );
   }
@@ -1042,7 +1038,9 @@ class _RoleTab extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF1A237E) : Colors.transparent,
+            color: isSelected
+                ? const Color(0xFF1A237E)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             boxShadow: isSelected
                 ? [
@@ -1106,7 +1104,8 @@ class _UploadBox extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         height: 100,
         decoration: BoxDecoration(
-          color: hasImage ? Colors.transparent : const Color(0xFFF4F6FB),
+          color:
+              hasImage ? Colors.transparent : const Color(0xFFF4F6FB),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: hasImage
@@ -1127,7 +1126,8 @@ class _UploadBox extends StatelessWidget {
                       left: 0,
                       right: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -1159,7 +1159,8 @@ class _UploadBox extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A237E).withOpacity(0.07),
+                      color:
+                          const Color(0xFF1A237E).withOpacity(0.07),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(icon,

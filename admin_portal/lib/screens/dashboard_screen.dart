@@ -48,7 +48,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     if (mounted) Navigator.pushReplacementNamed(context, '/login');
   }
 
-  // Headers propres pour Northflank
   Map<String, String> get _headers => {
     'Authorization': 'Bearer $_adminToken',
     'Accept': 'application/json',
@@ -63,7 +62,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
 
     try {
-      // Test sur la route utilisateurs (Admin)
       final usersRes = await http.get(Uri.parse('${AdminConfig.baseUrl}/users'), headers: _headers);
       
       if (usersRes.statusCode == 200) {
@@ -88,23 +86,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
           });
         }
       } else {
-        String serverMsg = "Accès refusé (${usersRes.statusCode})";
-        try {
-          final errBody = json.decode(usersRes.body);
-          serverMsg = errBody['msg'] ?? errBody['message'] ?? serverMsg;
-        } catch (_) {}
-
-        setState(() { _debugMessage = serverMsg; _isLoading = false; });
-        if (usersRes.statusCode == 401 || usersRes.statusCode == 403) {
-           Future.delayed(const Duration(seconds: 3), _logout);
-        }
+        setState(() { _debugMessage = "Erreur session"; _isLoading = false; });
+        if (usersRes.statusCode == 401) _logout();
       }
     } catch (e) {
-      if (mounted) setState(() { _debugMessage = "Backend injoignable : $e"; _isLoading = false; });
+      if (mounted) setState(() { _debugMessage = "Erreur: $e"; _isLoading = false; });
     }
   }
 
-  // --- ACTIONS LOGIQUES ---
+  // Action pour valider une commande
+  Future<void> _validateOrder(String orderId) async {
+    try {
+      final res = await http.put(
+        Uri.parse('${AdminConfig.baseUrl}/admin/orders/$orderId/validate'), 
+        headers: _headers
+      );
+      if (res.statusCode == 200) {
+        _fetchData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Paiement validé ! Vendeur notifié."), backgroundColor: Colors.green),
+        );
+      }
+    } catch(e) { debugPrint(e.toString()); }
+  }
+
   Future<void> _approveSeller(String userId) async {
     try {
       final res = await http.put(Uri.parse('${AdminConfig.baseUrl}/admin/approve-seller/$userId'), headers: _headers);
@@ -156,12 +161,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildStatusBar() {
-    bool isError = _debugMessage.toLowerCase().contains("refusé") || _debugMessage.contains("Erreur");
     return Container(
-      width: double.infinity, color: isError ? Colors.red[900] : const Color(0xFF1A237E),
+      width: double.infinity, color: const Color(0xFF1A237E),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-      child: Text("SÉCURITÉ : ${_adminToken != null ? 'Token Actif' : 'Token Manquant'} | $_debugMessage", 
-        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+      child: Text("PLEXUS SECURITY : $_debugMessage", style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -173,6 +176,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 3: return _buildCategoriesView();
       case 4: return _buildUsersView();
       case 5: return _buildDisputesView();
+      case 6: return _buildOrdersView(); // NOUVEL ONGLET DÉDIÉ
       default: return _buildDashboardView();
     }
   }
@@ -188,16 +192,71 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             _buildStatBox("Volume Escrow", "\$${total.toStringAsFixed(2)}", Icons.account_balance_wallet, Colors.blue),
             const SizedBox(width: 20),
-            _buildStatBox("Utilisateurs", "${_allUsers.length}", Icons.people_rounded, Colors.purple),
+            _buildStatBox("Ventes à valider", "${_orders.where((o) => o['status'] == 'PENDING_ADMIN').length}", Icons.notification_important, Colors.orange),
             const SizedBox(width: 20),
-            _buildStatBox("Produits Live", "${_allProducts.length}", Icons.inventory_2_rounded, Colors.orange),
+            _buildStatBox("Produits Live", "${_allProducts.length}", Icons.inventory_2_rounded, Colors.teal),
             const SizedBox(width: 20),
             _buildStatBox("Litiges", "${_disputes.length}", Icons.gavel_rounded, Colors.red),
           ],
         ),
         const SizedBox(height: 40),
-        _buildOrdersTable(),
+        const Text("Dernières activités", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 20),
+        _buildMiniOrdersList(),
       ],
+    );
+  }
+
+  Widget _buildOrdersView() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text("Gestion des Commandes & Escrow", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 25),
+      Container(
+        width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text('DATE')),
+            DataColumn(label: Text('CLIENT')),
+            DataColumn(label: Text('MONTANT')),
+            DataColumn(label: Text('HASH (TXID)')),
+            DataColumn(label: Text('STATUT')),
+            DataColumn(label: Text('ACTION')),
+          ],
+          rows: _orders.map((o) {
+            final String status = o['status'] ?? 'PENDING';
+            final bool isPending = status == 'PENDING_ADMIN' || status == 'En attente de vérification';
+            return DataRow(cells: [
+              DataCell(Text(o['createdAt']?.toString().substring(0, 10) ?? '')),
+              DataCell(Text(o['buyerName'] ?? 'Anonyme')),
+              DataCell(Text("${o['totalAmount']}\$")),
+              DataCell(Text(o['transactionHash']?.toString() ?? 'N/A', style: const TextStyle(fontSize: 10, color: Colors.blue))),
+              DataCell(Text(status, style: TextStyle(color: isPending ? Colors.orange : Colors.green, fontWeight: FontWeight.bold, fontSize: 11))),
+              DataCell(
+                isPending
+                ? ElevatedButton(
+                    onPressed: () => _validateOrder(o['_id']),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                    child: const Text("VALIDER PAIEMENT", style: TextStyle(fontSize: 9)),
+                  )
+                : const Icon(Icons.check_circle, color: Colors.green, size: 20)
+              ),
+            ]);
+          }).toList(),
+        ),
+      )
+    ]);
+  }
+
+  Widget _buildMiniOrdersList() {
+    return Container(
+      width: double.infinity, padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+      child: Column(children: _orders.take(5).map((o) => ListTile(
+        leading: const Icon(Icons.shopping_cart_outlined),
+        title: Text("Commande #${o['_id']?.toString().substring(0,8)}"),
+        subtitle: Text("Client: ${o['buyerName'] ?? 'Anonyme'}"),
+        trailing: Text("${o['totalAmount']}\$", style: const TextStyle(fontWeight: FontWeight.bold)),
+      )).toList()),
     );
   }
 
@@ -212,23 +271,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Text(v, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           Text(t.toUpperCase(), style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
         ]),
-      ),
-    );
-  }
-
-  Widget _buildOrdersTable() {
-    if (_orders.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(40), child: Text("Aucune transaction enregistrée.")));
-    return Container(
-      width: double.infinity, padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-      child: DataTable(
-        columns: const [DataColumn(label: Text('ID')), DataColumn(label: Text('CLIENT')), DataColumn(label: Text('MONTANT')), DataColumn(label: Text('STATUT'))],
-        rows: _orders.map((o) => DataRow(cells: [
-          DataCell(Text(o['_id']?.toString().substring(0, 8) ?? 'N/A')),
-          DataCell(Text(o['buyerName'] ?? 'Anonyme')),
-          DataCell(Text("${o['totalAmount']}\$")),
-          DataCell(Text(o['status'] ?? 'PENDING')),
-        ])).toList(),
       ),
     );
   }
@@ -366,7 +408,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       title: const Text("Ajouter une catégorie"),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Nom")),
-        TextField(controller: urlCtrl, decoration: const InputDecoration(labelText: "Chemin Image (ex: uploads/categories/xxx.png)")),
+        TextField(controller: urlCtrl, decoration: const InputDecoration(labelText: "Chemin Image")),
       ]),
       actions: [
         TextButton(onPressed: () => Navigator.pop(c), child: const Text("ANNULER")),
@@ -384,6 +426,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Column(children: [
         const Padding(padding: EdgeInsets.all(30), child: Text("PLEXUS ADMIN", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF1A237E)))),
         _sidebarItem(Icons.dashboard_rounded, "Dashboard", 0),
+        _sidebarItem(Icons.shopping_cart_rounded, "Commandes", 6), // NOUVEAU : Index 6
         _sidebarItem(Icons.verified_user_rounded, "Vendeurs KYC", 1),
         _sidebarItem(Icons.inventory_2_rounded, "Catalogue", 2),
         _sidebarItem(Icons.category_rounded, "Catégories", 3),

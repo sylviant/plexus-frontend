@@ -50,8 +50,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
       ),
     ];
 
-    // Hauteur totale barre : 68 (barre) + 22 (padding bas) = 90
-    // Injectée dans le MediaQuery pour que les Scrollable réservent l'espace.
     const double navBarTotalHeight = 90.0;
 
     return Scaffold(
@@ -126,17 +124,13 @@ class _NavItem {
   });
 }
 
-// ─── Widget item de la nav bar ────────────────────────────────────────────────
+// ─── Widget item de la nav bar (NOUVEAU : animations de tap enrichies) ───────
 
-class _NavBarItem extends StatelessWidget {
+class _NavBarItem extends StatefulWidget {
   final _NavItem item;
   final bool isSelected;
   final int badgeCount;
   final VoidCallback onTap;
-
-  static const Color _navy      = Color(0xFF0D1B4B);
-  static const Color _accent    = Color(0xFF4A6CF7);
-  static const Color _textMuted = Color(0xFF8A94B2);
 
   const _NavBarItem({
     required this.item,
@@ -146,95 +140,223 @@ class _NavBarItem extends StatelessWidget {
   });
 
   @override
+  State<_NavBarItem> createState() => _NavBarItemState();
+}
+
+class _NavBarItemState extends State<_NavBarItem>
+    with SingleTickerProviderStateMixin {
+  static const Color _navy      = Color(0xFF0D1B4B);
+  static const Color _accent    = Color(0xFF4A6CF7);
+  static const Color _textMuted = Color(0xFF8A94B2);
+
+  late AnimationController _controller;
+  late Animation<double> _scaleAnim;   // léger "press down" puis rebond
+  late Animation<double> _bounceAnim;  // petit saut vertical à la sélection
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+
+    // Scale : 1.0 → 0.85 (au tap down) → 1.08 (rebond) → 1.0
+    _scaleAnim = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.82)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.82, end: 1.12)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.12, end: 1.0)
+            .chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 40,
+      ),
+    ]).animate(_controller);
+
+    // Petit "saut" vertical pour accompagner le rebond
+    _bounceAnim = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 0.0),
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: -6.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: -6.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 40,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    _controller.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Bouton central (Panier)
+    final item = widget.item;
+    final isSelected = widget.isSelected;
+    final badgeCount = widget.badgeCount;
+
+    // ── Bouton central (Panier) ────────────────────────────────────────────
     if (item.isCenter) {
       return GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isSelected
-                  ? [_navy, const Color(0xFF2A4099)]
-                  : [_accent, const Color(0xFF6B8EFF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: (isSelected ? _navy : _accent).withOpacity(0.35),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        onTap: _handleTap,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _bounceAnim.value),
+              child: Transform.scale(
+                scale: _scaleAnim.value,
+                child: child,
               ),
-            ],
-          ),
-          child: Icon(
-            isSelected ? item.activeIcon : item.icon,
-            color: Colors.white,
-            size: 24,
+            );
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isSelected
+                    ? [_navy, const Color(0xFF2A4099)]
+                    : [_accent, const Color(0xFF6B8EFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: (isSelected ? _navy : _accent).withOpacity(0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              isSelected ? item.activeIcon : item.icon,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
         ),
       );
     }
 
-    // Items normaux
+    // ── Items normaux ───────────────────────────────────────────────────────
     return GestureDetector(
-      onTap: onTap,
+      onTap: _handleTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 60,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? _accent.withOpacity(0.10)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _bounceAnim.value),
+                  child: Transform.scale(
+                    scale: _scaleAnim.value,
+                    child: child,
                   ),
-                  child: Icon(
-                    isSelected ? item.activeIcon : item.icon,
-                    size: 22,
-                    color: isSelected ? _accent : _textMuted,
+                );
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? _accent.withOpacity(0.10)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.elasticOut,
+                      tween: Tween(begin: 0.7, end: isSelected ? 1.0 : 1.0),
+                      builder: (context, rotValue, _) {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          transitionBuilder: (child, anim) {
+                            return ScaleTransition(
+                              scale: anim,
+                              child: RotationTransition(
+                                turns: Tween<double>(begin: 1.15, end: 1.0)
+                                    .animate(anim),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            isSelected ? item.activeIcon : item.icon,
+                            key: ValueKey(isSelected),
+                            size: 22,
+                            color: isSelected ? _accent : _textMuted,
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                // Badge non lu
-                if (badgeCount > 0)
-                  Positioned(
-                    top: -2,
-                    right: -2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE53935),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      child: Text(
-                        badgeCount > 99 ? '99+' : badgeCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
+                  // Badge non lu (avec petit "pop" d'apparition)
+                  if (badgeCount > 0)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.elasticOut,
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        builder: (context, value, child) {
+                          return Transform.scale(scale: value, child: child);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE53935),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          child: Text(
+                            badgeCount > 99 ? '99+' : badgeCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
 
             const SizedBox(height: 3),
@@ -252,15 +374,21 @@ class _NavBarItem extends StatelessWidget {
 
             const SizedBox(height: 3),
 
-            // Point indicateur actif
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              width: isSelected ? 4 : 0,
-              height: isSelected ? 4 : 0,
-              decoration: const BoxDecoration(
-                color: Color(0xFF4A6CF7),
-                shape: BoxShape.circle,
-              ),
+            // Point indicateur actif (avec léger overshoot)
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.elasticOut,
+              tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
+              builder: (context, value, child) {
+                return Container(
+                  width: 4 * value,
+                  height: 4 * value,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4A6CF7),
+                    shape: BoxShape.circle,
+                  ),
+                );
+              },
             ),
           ],
         ),

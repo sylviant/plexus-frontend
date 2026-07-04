@@ -60,38 +60,42 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
 
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${auth.token}',
-    };
-
     try {
-      String? idToFetch = widget.orderId;
-      if (idToFetch == null || idToFetch.isEmpty) {
+      String? idToFetch = (widget.orderId != null && widget.orderId!.isNotEmpty)
+          ? widget.orderId
+          : null;
+
+      // Si orderId non fourni, on interroge le backend via le conversationId
+      if (idToFetch == null) {
         final res = await http
-            .get(
-              Uri.parse(
-                  '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'),
-              headers: headers,
-            )
-            .timeout(const Duration(seconds: 5));
+            .get(Uri.parse(
+                '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'))
+            .timeout(const Duration(seconds: 8));
+
         if (res.statusCode == 200) {
-          final order = json.decode(res.body);
-          if (order != null) idToFetch = order['_id'];
+          final dynamic decoded = json.decode(res.body);
+          if (decoded != null) {
+            // La route peut retourner un objet direct ou un tableau
+            if (decoded is List && decoded.isNotEmpty) {
+              idToFetch = decoded.first['_id'];
+            } else if (decoded is Map<String, dynamic>) {
+              idToFetch = decoded['_id'];
+            }
+          }
         }
       }
 
-      if (idToFetch != null) {
+      // Une fois l'ID connu, on charge les détails complets de la commande
+      if (idToFetch != null && idToFetch.isNotEmpty) {
         final res = await http
-            .get(
-              Uri.parse('${ApiConfig.baseUrl}/orders/$idToFetch'),
-              headers: headers,
-            )
-            .timeout(const Duration(seconds: 5));
+            .get(Uri.parse('${ApiConfig.baseUrl}/orders/$idToFetch'))
+            .timeout(const Duration(seconds: 8));
+
         if (res.statusCode == 200) {
           final order = json.decode(res.body);
-          if (mounted) setState(() => _currentOrder = order);
+          if (mounted) {
+            setState(() => _currentOrder = order);
+          }
         }
       }
     } catch (e) {
@@ -109,10 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final res = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/receive'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${auth.token}',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'senderName': auth.currentUser?.firstName ?? "L'acheteur"
         }),
@@ -149,10 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final res = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/status'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${auth.token}',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: json.encode(body),
       );
 
@@ -666,11 +664,12 @@ class _ChatScreenState extends State<ChatScreen> {
           (rawFee != null && rawFee.toString() == "0");
 
       return _ActionButton(
+        // ✅ FIX : affiche uniquement les frais de livraison
         label: !isPriceLoaded
             ? 'ATTENTE PRIX...'
-            : 'PAYER ${totalToPay.toStringAsFixed(2)}\$',
+            : 'PAYER LIVRAISON ${fee.toStringAsFixed(2)}\$',
         icon: isPriceLoaded
-            ? Icons.lock_outline_rounded
+            ? Icons.local_shipping_outlined
             : Icons.hourglass_top_rounded,
         color: isPriceLoaded
             ? const Color(0xFF10B981)
@@ -679,12 +678,14 @@ class _ChatScreenState extends State<ChatScreen> {
             ? null
             : () => context.push('/cart/payment', extra: {
                   'orderId': _currentOrder?['_id'],
-                  'title': 'Paiement Commande PLEXUS',
-                  'price': totalToPay,
+                  'title': 'Frais de Livraison PLEXUS',
+                  // ✅ FIX : on envoie uniquement le fee, pas le total
+                  'price': fee,
                   'sellerId': _currentOrder?['sellerId'],
                   'sellerWallet':
                       _currentOrder?['sellerWallet'] ?? '',
-                  'isShippingOnly': false,
+                  // ✅ FIX : isShippingOnly = true
+                  'isShippingOnly': true,
                 }),
       );
     }
