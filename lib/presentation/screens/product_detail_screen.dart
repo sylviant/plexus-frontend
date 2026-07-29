@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/cart_provider.dart';
@@ -7,6 +8,7 @@ import 'package:plexus/core/providers/favorite_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/presentation/widgets/related_product_card.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -24,6 +26,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   // Carrousel images
   final PageController _pageController = PageController();
   int _currentImageIndex = 0;
+
+  // Produits similaires
+  Future<List<dynamic>>? _relatedFuture;
+  String? _relatedCategory;
 
   // ─── Palette (light - style "After") ──────────────────────────────────────
   static const Color _bg        = Color(0xFFFFFFFF);
@@ -58,6 +64,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         Uri.parse('${ApiConfig.baseUrl}/products/${widget.productId}'));
     if (response.statusCode == 200) return json.decode(response.body);
     throw Exception('Produit non trouve.');
+  }
+
+  // ─── Produits similaires (même catégorie) ─────────────────────────────────
+  Future<List<dynamic>> _fetchRelatedProducts(
+      String category, String currentId) async {
+    try {
+      final response =
+          await http.get(Uri.parse('${ApiConfig.baseUrl}/products'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List all = data['products'] as List<dynamic>;
+        return all.where((p) {
+          final String pid = (p['_id'] ?? p['id']).toString();
+          final String pcat = (p['category'] ?? '').toString();
+          return pcat == category && pid != currentId;
+        }).toList();
+      }
+    } catch (e) {
+      debugPrint('Erreur produits similaires: $e');
+    }
+    return [];
   }
 
   Future<void> _submitReview() async {
@@ -146,6 +173,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               : null;
           final bool isOwner    = currentUser?.id == product['sellerId'];
           final List<String> images = _getImages(product);
+
+          // Déclenche le chargement des produits similaires une seule fois
+          // par catégorie (évite de refaire la requête à chaque rebuild)
+          final String categoryForRelated =
+              (product['category'] ?? '').toString();
+          if (_relatedCategory != categoryForRelated) {
+            _relatedCategory = categoryForRelated;
+            _relatedFuture = _fetchRelatedProducts(categoryForRelated, id);
+          }
 
           // Calcul réduction
           final bool hasDiscount = oldPrice > price && oldPrice > 0;
@@ -455,61 +491,125 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                       const SizedBox(height: 24),
 
-                      // ── Boutons Panier + Favoris ──────────────────────
+                      // ── Boutons Ajouter au panier + Commander ─────────
                       if (!isOwner)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
                             children: [
-                              // ADD TO CART
-                              SizedBox(
-                                width: double.infinity,
-                                height: 54,
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _primary.withOpacity(0.30),
-                                        blurRadius: 14,
-                                        offset: const Offset(0, 5),
+                              Row(
+                                children: [
+                                  // Ajouter au panier — contour bleu
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 54,
+                                      child: OutlinedButton(
+                                        onPressed: () =>
+                                            Provider.of<CartProvider>(
+                                                    context,
+                                                    listen: false)
+                                                .add(product),
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(
+                                              color: _primary, width: 1.5),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14)),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(Icons.shopping_cart_outlined,
+                                                color: _primary, size: 18),
+                                            SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                'Ajouter au panier',
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: _primary,
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                  child: ElevatedButton(
-                                    onPressed: () =>
-                                        Provider.of<CartProvider>(context, listen: false)
-                                            .add(product),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14)),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.shopping_cart_outlined,
-                                            color: Colors.white, size: 18),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          'ADD TO CART  •  \$${price.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
-                                            letterSpacing: 0.3,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  // Commander — plein bleu
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 54,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF1A237E),
+                                              Color(0xFF3949AB)
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color:
+                                                  _primary.withOpacity(0.30),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 5),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: () => context.push(
+                                              '/cart/payment',
+                                              extra: {
+                                                'singleProduct': product,
+                                              }),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        14)),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Icon(Icons.bolt_rounded,
+                                                  color: Colors.white,
+                                                  size: 18),
+                                              SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  'Commander',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.w700,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
 
                               const SizedBox(height: 10),
@@ -823,6 +923,56 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ...reviews.map((r) => _ReviewCard(review: r)),
                           ],
                         ),
+                      ),
+
+                      // ── Articles similaires ────────────────────────────
+                      const SizedBox(height: 12),
+                      _Divider(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                        child: _SectionTitle(title: 'Articles similaires'),
+                      ),
+                      const SizedBox(height: 16),
+                      FutureBuilder<List<dynamic>>(
+                        future: _relatedFuture,
+                        builder: (context, relatedSnap) {
+                          if (relatedSnap.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                    color: _accent, strokeWidth: 2),
+                              ),
+                            );
+                          }
+                          final related = relatedSnap.data ?? [];
+                          if (related.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              child: Text(
+                                'Aucun article similaire pour le moment.',
+                                style:
+                                    TextStyle(color: _textSub, fontSize: 13),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20),
+                            child: MasonryGridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              itemCount: related.length,
+                              itemBuilder: (context, i) =>
+                                  RelatedProductCard(product: related[i]),
+                            ),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 40),

@@ -107,8 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
+        bottom: false, // ← empêche SafeArea de réserver un espace fixe en bas
         child: Column(
           children: [
             // ── Header ─────────────────────────────────────────────────
@@ -293,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
 
                               const SliverToBoxAdapter(
-                                  child: SizedBox(height: 10)),
+                                  child: SizedBox(height: 100)),
                             ],
                           ),
                         ),
@@ -301,11 +302,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: Consumer<UserProvider>(
-        builder: (context, user, child) {
-          if (user.userType != UserType.seller)
-            return const SizedBox.shrink();
-          return Container(
+floatingActionButton: Padding(
+  padding: const EdgeInsets.only(bottom: 100), // hauteur nav bar (90) + petit espace
+  child: Consumer<UserProvider>(
+    builder: (context, user, child) {
+      if (user.userType != UserType.seller)
+        return const SizedBox.shrink();
+      return Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [_primary, _primaryMid],
@@ -337,6 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+     ),
     );
   }
 
@@ -507,13 +511,13 @@ static const List<Map<String, dynamic>> _banners = [
   {
     'title': 'Nouvelle Collection',
     'sub': 'Électronique 2K & 4K',
-    'image': 'assets/images/pub1.png',
+    'image': 'assets/images/pub2.png',
     'colors': [Color(0xFF1A237E), Color(0xFF3949AB)],
   },
   {
     'title': 'Flash Sale 🔥',
     'sub': "Jusqu'à -50% aujourd'hui",
-    'image': 'assets/images/pub1.png',
+    'image': 'assets/images/pub2.png',
     'colors': [Color(0xFFBF360C), Color(0xFFEF6C00)],
   },
 ];
@@ -587,6 +591,7 @@ class _PromoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      clipBehavior: Clip.antiAlias, // empêche l'image de déborder des coins arrondis
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,
@@ -609,7 +614,7 @@ class _PromoCard extends StatelessWidget {
             right: -10,
             top: -10,
             child: Opacity(
-              opacity: 0.15,
+              opacity: 0.35,
               child: Image.asset(
                 imagePath,
                 width: 140,

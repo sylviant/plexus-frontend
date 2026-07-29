@@ -99,7 +99,7 @@ class _PlexusAppState extends State<PlexusApp> {
         colorScheme: ColorScheme.fromSeed(
           seedColor: primaryColor,
           primary: primaryColor,
-          secondary: const Color(0xFFFBC02D),
+          secondary: const Color(0xFF4A6CF7),
           surface: Colors.white,
         ),
         cardTheme: CardThemeData(
