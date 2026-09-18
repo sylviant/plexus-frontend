@@ -2,7 +2,7 @@ name: plexus
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.1+2
+version: 1.0.1+5
 
 environment:
   sdk: ^3.11.0
@@ -38,11 +38,14 @@ dependencies:
   animate_do: ^3.3.4
   rive: ^0.13.0
   native_glass_navbar: ^1.0.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+http_parser: ^4.0.2
 
 flutter:
   uses-material-design: true
@@ -50,3 +53,6 @@ flutter:
     - assets/images/
     - assets/categories/
     - assets/logo/ # AJOUTÉ
+    - assets/wallets/
+photo_view: ^0.15.0
+shimmer: ^3.0.0

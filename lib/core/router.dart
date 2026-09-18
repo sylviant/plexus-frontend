@@ -34,7 +34,9 @@ import 'package:plexus/presentation/screens/shipping_address_screen.dart';
 import 'package:plexus/presentation/scaffold_with_nav_bar.dart';
 import 'package:provider/provider.dart';
 import '../presentation/screens/ai_chat_screen.dart';
-
+import 'package:plexus/presentation/screens/seller_profile_screen.dart';
+import 'package:plexus/presentation/screens/complete_products_screen.dart';
+import 'package:plexus/presentation/screens/shipping_config_screen.dart';
 
 GoRouter createRouter(BuildContext context) {
   final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -45,11 +47,11 @@ GoRouter createRouter(BuildContext context) {
     redirect: (BuildContext context, GoRouterState state) {
       final bool loggedIn = authProvider.isAuthenticated;
       final bool isAuthRoute = state.matchedLocation == '/login' ||
-                               state.matchedLocation == '/signup' ||
-                               state.matchedLocation == '/verify' ||
-                               state.matchedLocation == '/forgot-password' ||
-                               state.matchedLocation == '/reset-password' ||
-                               state.matchedLocation == '/splash';
+          state.matchedLocation == '/signup' ||
+          state.matchedLocation == '/verify' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/reset-password' ||
+          state.matchedLocation == '/splash';
 
       if (!loggedIn && !isAuthRoute) return '/login';
       if (loggedIn && (state.matchedLocation == '/login' || state.matchedLocation == '/signup' || state.matchedLocation == '/splash')) {
@@ -78,6 +80,15 @@ GoRouter createRouter(BuildContext context) {
         ),
       ),
 
+      // ✅ NOUVEAU (point 4) : Écran de complétion obligatoire (statut + pays)
+      GoRoute(
+        path: '/complete-products',
+        builder: (context, state) {
+          final sellerId = state.extra as String;
+          return CompleteProductsScreen(sellerId: sellerId);
+        },
+      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -85,12 +96,12 @@ GoRouter createRouter(BuildContext context) {
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(
-              path: '/home',
-              builder: (context, state) => const HomeScreen(),
-              routes: [
-                GoRoute(path: 'product/:id', builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['id']!)),
-                GoRoute(path: 'notifications', builder: (context, state) => const NotificationsScreen()),
-              ]
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+                routes: [
+                  GoRoute(path: 'product/:id', builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['id']!)),
+                  GoRoute(path: 'notifications', builder: (context, state) => const NotificationsScreen()),
+                ]
             )
           ]),
           StatefulShellBranch(routes: [
@@ -111,29 +122,29 @@ GoRouter createRouter(BuildContext context) {
             ],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/messages',
-                builder: (context, state) => const ConversationsScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'chat/:id',
-                    builder: (context, state) {
-                      final extra = state.extra as Map<String, dynamic>?;
-                      final String rawId = state.pathParameters['id']!;
-                      final String conversationId = extra?['conversationId'] as String?
-                          ?? Uri.decodeComponent(rawId);
-                      return ChatScreen(
-                        conversationId: conversationId,
-                        otherName: extra?['otherName'],
-                        productTitle: extra?['productTitle'],
-                        orderId: extra?['orderId'],
-                      );
-                    }
-                  )
-                ]
-              )
-            ]
+              routes: [
+                GoRoute(
+                    path: '/messages',
+                    builder: (context, state) => const ConversationsScreen(),
+                    routes: [
+                      GoRoute(
+                          path: 'chat/:id',
+                          builder: (context, state) {
+                            final extra = state.extra as Map<String, dynamic>?;
+                            final String rawId = state.pathParameters['id']!;
+                            final String conversationId = extra?['conversationId'] as String?
+                                ?? Uri.decodeComponent(rawId);
+                            return ChatScreen(
+                              conversationId: conversationId,
+                              otherName: extra?['otherName'],
+                              productTitle: extra?['productTitle'],
+                              orderId: extra?['orderId'],
+                            );
+                          }
+                      )
+                    ]
+                )
+              ]
           ),
           StatefulShellBranch(
             routes: [
@@ -146,6 +157,7 @@ GoRouter createRouter(BuildContext context) {
                 routes: [
                   GoRoute(path: 'edit', builder: (context, state) => const EditProfileScreen()),
                   GoRoute(path: 'address', builder: (context, state) => const ShippingAddressScreen()),
+                  GoRoute(path: 'shipping-config', builder: (context, state) => const ShippingConfigScreen()),
                   GoRoute(path: 'add-product', builder: (context, state) => AddProductScreen(initialProduct: state.extra as Map<String, dynamic>?)),
                   GoRoute(path: 'referral', builder: (context, state) => const ReferralScreen()),
                   GoRoute(path: 'orders', builder: (context, state) => const OrderHistoryScreen(), routes: [
@@ -159,6 +171,11 @@ GoRouter createRouter(BuildContext context) {
           ),
         ],
       ),
+      GoRoute(
+        path: '/seller/:id',
+        builder: (context, state) => SellerProfileScreen(sellerId: state.pathParameters['id']!),
+      ),
+
       GoRoute(path: '/dispute', builder: (context, state) => DisputeScreen(order: state.extra as Map<String, dynamic>)),
     ],
   );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../admin_config.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -560,45 +561,402 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildCategoriesView() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Text("Gestion des Catégories", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        ElevatedButton.icon(onPressed: () => _showAddCategoryDialog(), icon: const Icon(Icons.add), label: const Text("NOUVELLE CATÉGORIE")),
+        const Text("Gestion des Catégories",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        ElevatedButton.icon(
+          onPressed: _showAddCategoryDialog,
+          icon: const Icon(Icons.add),
+          label: const Text("NOUVELLE CATÉGORIE"),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A237E),
+              foregroundColor: Colors.white),
+        ),
       ]),
       const SizedBox(height: 20),
       GridView.builder(
         shrinkWrap: true,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 6, crossAxisSpacing: 15, mainAxisSpacing: 15),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+            childAspectRatio: 0.85),
         itemCount: _categories.length,
         itemBuilder: (context, i) {
           final cat = _categories[i];
-          return Card(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Image.network(AdminConfig.getImageUrl(cat['imageUrl']), height: 40, errorBuilder: (c, e, s) => const Icon(Icons.category)),
-            const SizedBox(height: 5),
-            Text(cat['name'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-            IconButton(icon: const Icon(Icons.delete, size: 16, color: Colors.red), onPressed: () => _deleteItem('categories', cat['_id'])),
-          ]));
+          final List<dynamic> subs = cat['subCategories'] ?? [];
+          return Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  AdminConfig.getImageUrl(cat['imageUrl']),
+                  height: 60, width: 60, fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) =>
+                      const Icon(Icons.category, size: 40, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(cat['name'] ?? '',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center),
+              if (subs.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text('${subs.length} sous-catégorie(s)',
+                    style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              ],
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 16, color: Color(0xFF1A237E)),
+                  onPressed: () => _showEditCategoryDialog(cat),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, size: 16, color: Colors.red),
+                  onPressed: () => _deleteItem('categories', cat['_id']),
+                ),
+              ]),
+            ]),
+          );
         },
       ),
     ]);
   }
 
-  void _showAddCategoryDialog() {
-    final nameCtrl = TextEditingController();
-    final urlCtrl  = TextEditingController();
-    showDialog(context: context, builder: (c) => AlertDialog(
-      title: const Text("Ajouter une catégorie"),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Nom")),
-        TextField(controller: urlCtrl,  decoration: const InputDecoration(labelText: "URL Image")),
-      ]),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(c), child: const Text("ANNULER")),
-        ElevatedButton(onPressed: () async {
-          final res = await http.post(Uri.parse('${AdminConfig.baseUrl}/categories'), headers: _headers, body: json.encode({'name': nameCtrl.text, 'imageUrl': urlCtrl.text}));
-          if (res.statusCode == 201) { _fetchData(); Navigator.pop(c); }
-        }, child: const Text("CRÉER")),
-      ],
-    ));
-  }
+void _showAddCategoryDialog() {
+  final nameCtrl = TextEditingController();
+  String? selectedImagePath;
+  String? selectedImageBytes;
+
+  showDialog(
+    context: context,
+    builder: (c) => StatefulBuilder(
+      builder: (context, setStateDialog) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(children: [
+          Icon(Icons.category_rounded, color: Color(0xFF1A237E), size: 20),
+          SizedBox(width: 8),
+          Text("Nouvelle catégorie",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+        ]),
+        content: SizedBox(
+          width: 400,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: InputDecoration(
+                labelText: "Nom de la catégorie",
+                prefixIcon: const Icon(Icons.label_outline, size: 18),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Zone upload image
+            GestureDetector(
+              onTap: () async {
+                // Sur web on utilise les bytes
+                final picker = ImagePicker();
+                final picked = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  maxWidth: 500,
+                  maxHeight: 500,
+                );
+                if (picked != null) {
+                  final bytes = await picked.readAsBytes();
+                  setStateDialog(() {
+                    selectedImagePath  = picked.path;
+                    selectedImageBytes = base64Encode(bytes);
+                  });
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F6FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selectedImagePath != null
+                        ? const Color(0xFF1A237E)
+                        : Colors.grey[300]!,
+                    width: 2,
+                  ),
+                ),
+                child: selectedImageBytes != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          base64Decode(selectedImageBytes!),
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_upload_outlined,
+                              size: 36, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text("Cliquer pour choisir une image",
+                              style: TextStyle(
+                                  color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+              ),
+            ),
+          ]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text("ANNULER"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text("Le nom est requis"),
+                  backgroundColor: Colors.orange,
+                ));
+                return;
+              }
+
+              // Upload via multipart
+              final uri = Uri.parse(
+                  '${AdminConfig.baseUrl}/categories');
+              final request = http.MultipartRequest('POST', uri);
+              request.headers.addAll(_headers
+                ..remove('Content-Type'));
+              request.fields['name'] = nameCtrl.text.trim();
+
+              if (selectedImagePath != null &&
+                  selectedImageBytes != null) {
+                final bytes = base64Decode(selectedImageBytes!);
+                request.files.add(http.MultipartFile.fromBytes(
+                  'image',
+                  bytes,
+                  filename: 'category.png',
+                ));
+              }
+
+              final response = await request.send();
+              if (response.statusCode == 201) {
+                _fetchData();
+                Navigator.pop(c);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Catégorie créée avec succès !"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A237E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("CRÉER"),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
+void _showEditCategoryDialog(Map<String, dynamic> cat) {
+  final nameCtrl = TextEditingController(text: cat['name'] ?? '');
+  final subCtrl  = TextEditingController();
+  String? selectedImageBytes;
+  List<String> subs = List<String>.from(cat['subCategories'] ?? []);
+
+  showDialog(
+    context: context,
+    builder: (c) => StatefulBuilder(
+      builder: (context, setStateDialog) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(children: [
+          Icon(Icons.edit, color: Color(0xFF1A237E), size: 20),
+          SizedBox(width: 8),
+          Text("Modifier la catégorie",
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+        ]),
+        content: SizedBox(
+          width: 450,
+          child: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+
+              // ── Nom ──────────────────────────────────────────────────
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: "Nom de la catégorie",
+                  prefixIcon: const Icon(Icons.label_outline, size: 18),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Image ────────────────────────────────────────────────
+              GestureDetector(
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final picked = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    maxWidth: 500, maxHeight: 500,
+                  );
+                  if (picked != null) {
+                    final bytes = await picked.readAsBytes();
+                    setStateDialog(() => selectedImageBytes = base64Encode(bytes));
+                  }
+                },
+                child: Container(
+                  width: double.infinity, height: 100,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: selectedImageBytes != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            base64Decode(selectedImageBytes!),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : cat['imageUrl'] != null && cat['imageUrl'] != ''
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                AdminConfig.getImageUrl(cat['imageUrl']),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.cloud_upload_outlined,
+                                    size: 30, color: Colors.grey),
+                                SizedBox(height: 6),
+                                Text("Changer l'image",
+                                    style: TextStyle(color: Colors.grey, fontSize: 11)),
+                              ],
+                            ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Sous-catégories existantes ────────────────────────────
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("SOUS-CATÉGORIES",
+                    style: TextStyle(fontSize: 11,
+                        fontWeight: FontWeight.bold, color: Colors.grey)),
+              ),
+              const SizedBox(height: 8),
+              if (subs.isEmpty)
+                const Text("Aucune sous-catégorie",
+                    style: TextStyle(color: Colors.grey, fontSize: 12))
+              else
+                Wrap(
+                  spacing: 8, runSpacing: 8,
+                  children: subs.map((s) => Chip(
+                    label: Text(s, style: const TextStyle(fontSize: 11)),
+                    deleteIcon: const Icon(Icons.close, size: 14),
+                    onDeleted: () => setStateDialog(() => subs.remove(s)),
+                    backgroundColor: const Color(0xFFF0F3FF),
+                  )).toList(),
+                ),
+              const SizedBox(height: 12),
+
+              // ── Ajouter sous-catégorie ───────────────────────────────
+              Row(children: [
+                Expanded(
+                  child: TextField(
+                    controller: subCtrl,
+                    decoration: InputDecoration(
+                      hintText: "Nouvelle sous-catégorie",
+                      hintStyle: const TextStyle(fontSize: 12),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    if (subCtrl.text.trim().isNotEmpty) {
+                      setStateDialog(() {
+                        subs.add(subCtrl.text.trim());
+                        subCtrl.clear();
+                      });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A237E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                  ),
+                  child: const Text("Ajouter"),
+                ),
+              ]),
+            ]),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text("ANNULER"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final uri = Uri.parse(
+                  '${AdminConfig.baseUrl}/categories/${cat['_id']}');
+              final request = http.MultipartRequest('PUT', uri);
+              request.headers.addAll({
+                'Authorization': 'Bearer $_adminToken',
+              });
+              request.fields['name']          = nameCtrl.text.trim();
+              request.fields['subCategories'] = json.encode(subs);
+
+              if (selectedImageBytes != null) {
+                final bytes = base64Decode(selectedImageBytes!);
+                request.files.add(http.MultipartFile.fromBytes(
+                  'image', bytes, filename: 'category.png',
+                ));
+              }
+
+              final response = await request.send();
+              if (response.statusCode == 200) {
+                _fetchData();
+                Navigator.pop(c);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Catégorie mise à jour !"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A237E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("SAUVEGARDER"),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
 
   // ─── Sidebar ──────────────────────────────────────────────────────────────
   Widget _buildSidebar() {

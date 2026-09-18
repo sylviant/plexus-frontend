@@ -5,6 +5,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/blockchain/escrow_contract.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -17,6 +18,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   late String _status;
   bool _isUpdating = false;
+  final EscrowContract _escrowContract = EscrowContract();
 
   static const Color _bg         = Color(0xFF0F1117);
   static const Color _surface    = Color(0xFF1A1D27);
@@ -32,31 +34,53 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     super.initState();
     _status = widget.order['status']?.toString() ?? "PENDING_SHIPPING";
   }
+  @override
+  void dispose() {
+    _escrowContract.dispose();
+    super.dispose();
+  }
 
   Future<void> _confirmReceipt() async {
     setState(() => _isUpdating = true);
     try {
+      // ── Étape 1 : Appel smart contract si escrowId existe ─────────────────
+      final String? escrowId = widget.order['escrowId']?.toString();
+      if (escrowId != null && escrowId != 'null') {
+        try {
+          await _escrowContract.confirmerLivraison(
+            privateKey: '',  // géré par WalletConnect
+            commandeId: int.parse(escrowId),
+          );
+        } catch (e) {
+          debugPrint('⚠️ Escrow non disponible, confirmation backend seulement: $e');
+        }
+      }
+
+      // ── Étape 2 : Appel backend (toujours) ────────────────────────────────
       final response = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/orders/${widget.order['_id']}/receive'),
       );
+
       if (response.statusCode == 200) {
         setState(() => _status = "DELIVERED");
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Row(children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-            SizedBox(width: 10),
-            Text("Merci ! Le vendeur a été payé."),
-          ]),
-          backgroundColor: _green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Row(children: [
+              Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
+              SizedBox(width: 10),
+              Text("Merci ! Le vendeur a été payé."),
+            ]),
+            backgroundColor: _green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ));
+        }
       }
     } catch (e) {
       debugPrint("Erreur réception: $e");
     } finally {
-      setState(() => _isUpdating = false);
+      if (mounted) setState(() => _isUpdating = false);
     }
   }
 

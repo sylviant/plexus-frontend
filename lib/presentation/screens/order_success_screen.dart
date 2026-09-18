@@ -264,6 +264,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   Widget _buildOrderCard() {
     final items = (_order!['items'] as List?) ?? [];
     final double total = (_order!['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final double shippingFee = (_order!['shippingFee'] as num?)?.toDouble() ?? 0.0; // NOUVEAU
     final String status = _order!['status'] ?? '';
 
     return FadeTransition(
@@ -333,6 +334,19 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                 ],
               ),
             )),
+            if (shippingFee > 0) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Livraison', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textMuted)),
+                  Text(
+                    '\$${shippingFee.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textMuted),
+                  ),
+                ],
+              ),
+            ],
             const Divider(color: _border, height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

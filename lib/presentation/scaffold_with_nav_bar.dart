@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:native_glass_navbar/native_glass_navbar.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 // ─── IMPORTANT : dans main.dart, définissez la couleur primaire PLEXUS ────────
 // MaterialApp(
@@ -14,7 +15,7 @@ import 'package:provider/provider.dart';
 // NativeGlassNavBar utilise Theme.of(context).colorScheme.primary
 // comme couleur de l'onglet sélectionné — pas de paramètre tint/tintColor.
 
-class ScaffoldWithNavBar extends StatelessWidget {
+class ScaffoldWithNavBar extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const ScaffoldWithNavBar({
@@ -25,35 +26,76 @@ class ScaffoldWithNavBar extends StatelessWidget {
   static const Color _accent = Color(0xFF4A6CF7);
 
   @override
+  State<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
+}
+
+class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
+  // 0.0 = barre entièrement visible · 1.0 = entièrement masquée (translatée + transparente)
+  double _hideFactor = 0.0;
+
+  // Distance de scroll (en px) nécessaire pour masquer complètement la barre.
+  static const double _hideDistance = 90.0;
+  // Distance de translation verticale max de la barre quand masquée.
+  static const double _translateDistance = 110.0;
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    // On ignore le scroll horizontal (bannières, carrousels, sélecteurs
+    // d'images horizontaux, etc.) — seul le scroll vertical principal
+    // doit piloter la barre.
+    if (notification.metrics.axis != Axis.vertical) return false;
+
+    if (notification is ScrollUpdateNotification && notification.scrollDelta != null) {
+      setState(() {
+        _hideFactor = (_hideFactor + notification.scrollDelta! / _hideDistance)
+            .clamp(0.0, 1.0);
+      });
+    }
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final int currentIndex = navigationShell.currentIndex;
+    final int currentIndex = widget.navigationShell.currentIndex;
 
     return Consumer<SocketProvider>(
       builder: (context, socket, _) {
         return Scaffold(
           // extendBody OBLIGATOIRE : le contenu remonte sous la barre native
           extendBody: true,
-          body: navigationShell,
+          body: NotificationListener<ScrollNotification>(
+            onNotification: _onScrollNotification,
+            child: widget.navigationShell,
+          ),
 
-          bottomNavigationBar: NativeGlassNavBar(
-            currentIndex: currentIndex,
-            onTap: (index) => navigationShell.goBranch(index),
+          bottomNavigationBar: IgnorePointer(
+            // Une fois quasi masquée, elle ne doit plus intercepter les taps.
+            ignoring: _hideFactor > 0.6,
+            child: Transform.translate(
+              offset: Offset(0, _hideFactor * _translateDistance),
+              child: Opacity(
+                opacity: 1 - _hideFactor,
+                child: NativeGlassNavBar(
+                  currentIndex: currentIndex,
+                  onTap: (index) => widget.navigationShell.goBranch(index),
 
-            // ✅ API exacte 1.0.2 : label + symbol uniquement
-            tabs: const [
-              NativeGlassNavBarItem(label: 'Accueil',    symbol: 'house'),
-              NativeGlassNavBarItem(label: 'Catégories', symbol: 'square.grid.2x2'),
-              NativeGlassNavBarItem(label: 'Panier',     symbol: 'bag'),
-              NativeGlassNavBarItem(label: 'Messages',   symbol: 'message'),
-              NativeGlassNavBarItem(label: 'Profil',     symbol: 'person'),
-            ],
+                  // ✅ API exacte 1.0.2 : label + symbol uniquement
+                  tabs: const [
+                    NativeGlassNavBarItem(label: 'Accueil',    symbol: 'house'),
+                    NativeGlassNavBarItem(label: 'Catégories', symbol: 'square.grid.2x2'),
+                    NativeGlassNavBarItem(label: 'Panier',     symbol: 'bag'),
+                    NativeGlassNavBarItem(label: 'Messages',   symbol: 'message'),
+                    NativeGlassNavBarItem(label: 'Profil',     symbol: 'person'),
+                  ],
 
-            // Fallback Flutter pour Android + iOS < 26
-            fallback: _FlutterFallbackNavBar(
-              currentIndex: currentIndex,
-              accent:       _accent,
-              badgeCount:   socket.unreadCount,
-              onTap:        (i) => navigationShell.goBranch(i),
+                  // Fallback Flutter pour Android + iOS < 26
+                  fallback: _FlutterFallbackNavBar(
+                    currentIndex: currentIndex,
+                    accent:       ScaffoldWithNavBar._accent,
+                    badgeCount:   socket.unreadCount,
+                    onTap:        (i) => widget.navigationShell.goBranch(i),
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -166,6 +208,7 @@ class _FbNavItemState extends State<_FbNavItem>
 
   late AnimationController _ctrl;
   late Animation<double>   _dip;
+  late Animation<double>   _scale;
 
   @override
   void initState() {
@@ -177,6 +220,10 @@ class _FbNavItemState extends State<_FbNavItem>
     _dip = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 2.0).chain(CurveTween(curve: Curves.easeOut)), weight: 35),
       TweenSequenceItem(tween: Tween(begin: 2.0, end: 0.0).chain(CurveTween(curve: Curves.easeOut)), weight: 65),
+    ]).animate(_ctrl);
+    _scale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.88).chain(CurveTween(curve: Curves.easeOut)), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 0.88, end: 1.0).chain(CurveTween(curve: Curves.elasticOut)), weight: 65),
     ]).animate(_ctrl);
   }
 
@@ -196,10 +243,17 @@ class _FbNavItemState extends State<_FbNavItem>
     // ── Bouton central Panier ─────────────────────────────────────────────
     if (item.isCenter) {
       return GestureDetector(
-        onTap: () { _ctrl.forward(from: 0); widget.onTap(); },
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          _ctrl.forward(from: 0);
+          widget.onTap();
+        },
         child: AnimatedBuilder(
-          animation: _dip,
-          builder: (_, child) => Transform.translate(offset: Offset(0, _dip.value), child: child),
+          animation: _ctrl,
+          builder: (_, child) => Transform.translate(
+            offset: Offset(0, _dip.value),
+            child: Transform.scale(scale: _scale.value, child: child),
+          ),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeInOut,
@@ -238,11 +292,18 @@ class _FbNavItemState extends State<_FbNavItem>
 
     // ── Items normaux ─────────────────────────────────────────────────────
     return GestureDetector(
-      onTap: () { _ctrl.forward(from: 0); widget.onTap(); },
+      onTap: () {
+        HapticFeedback.selectionClick();
+        _ctrl.forward(from: 0);
+        widget.onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: AnimatedBuilder(
-        animation: _dip,
-        builder: (_, child) => Transform.translate(offset: Offset(0, _dip.value), child: child),
+        animation: _ctrl,
+        builder: (_, child) => Transform.translate(
+          offset: Offset(0, _dip.value),
+          child: Transform.scale(scale: _scale.value, child: child),
+        ),
         child: SizedBox(
           width: 58,
           child: Column(

@@ -69,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (idToFetch == null) {
         final res = await http
             .get(Uri.parse(
-                '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'))
+            '${ApiConfig.baseUrl}/orders/conversation/${widget.conversationId}'))
             .timeout(const Duration(seconds: 8));
 
         if (res.statusCode == 200) {
@@ -144,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final Map<String, dynamic> body = {
         'status': newStatus,
         'senderName':
-            auth.currentUser?.firstName ?? 'Utilisateur PLEXUS',
+        auth.currentUser?.firstName ?? 'Utilisateur PLEXUS',
       };
       if (shippingFee != null) body['shippingFee'] = shippingFee;
 
@@ -173,87 +173,128 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showShippingForm() {
-    final feeC = TextEditingController();
-    final modeC = TextEditingController();
-    final timeC = TextEditingController();
-    final trackingC = TextEditingController();
+  // NOUVEAU — remplace l'ancien _showShippingForm : les frais de livraison
+  // sont déjà inclus dans le paiement initial (voir computeShippingFee côté
+  // backend), donc le vendeur n'a plus qu'à indiquer transporteur + suivi.
+  static const List<String> _carriers = [
+    'Bufalo Express', 'General Express', 'Guichet Express', 'DHL',
+    'UPS', 'FedEx', 'Chronopost', 'La Poste', 'Main propre', 'Autre',
+  ];
 
-    showDialog(
+  Future<void> _markAsShipped() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final orderId = _currentOrder?['_id'] ?? widget.orderId;
+    if (orderId == null) return;
+
+    final trackingC = TextEditingController();
+    String selectedCarrier = _carriers.first;
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: const [
-            Icon(Icons.local_shipping_outlined,
-                color: _primary, size: 20),
-            SizedBox(width: 10),
-            Text(
-              'Offre de Livraison',
-              style: TextStyle(
-                  color: _primary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.local_shipping_outlined,
+                  color: _primary, size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Expédier le colis',
+                style: TextStyle(
+                    color: _primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Transporteur',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _textSub)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  value: selectedCarrier,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: _carriers
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (value) => setDialogState(
+                          () => selectedCarrier = value ?? selectedCarrier),
+                ),
+                const SizedBox(height: 12),
+                _dialogField(
+                    controller: trackingC,
+                    label: 'N° Suivi (optionnel)',
+                    icon: Icons.qr_code_outlined),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuler',
+                  style: TextStyle(color: _textSub)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+              ),
+              child: const Text("Confirmer l'expédition",
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _dialogField(
-                  controller: feeC,
-                  label: 'Frais de livraison (\$)',
-                  icon: Icons.sell_outlined,
-                  keyboardType: TextInputType.number),
-              const SizedBox(height: 12),
-              _dialogField(
-                  controller: modeC,
-                  label: 'Mode (ex: DHL, Main propre)',
-                  icon: Icons.directions_car_outlined),
-              const SizedBox(height: 12),
-              _dialogField(
-                  controller: timeC,
-                  label: 'Délai (ex: 48h, 5 jours)',
-                  icon: Icons.schedule_outlined),
-              const SizedBox(height: 12),
-              _dialogField(
-                  controller: trackingC,
-                  label: 'N° Suivi (optionnel)',
-                  icon: Icons.qr_code_outlined),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler',
-                style: TextStyle(color: _textSub)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final double? fee = double.tryParse(feeC.text);
-              String msg =
-                  "📦 *OFFRE DE LIVRAISON* :\n• Frais: ${feeC.text}\$\n• Mode: ${modeC.text}\n• Délai: ${timeC.text}";
-              if (trackingC.text.isNotEmpty)
-                msg += "\n• Suivi: ${trackingC.text}";
-              _updateStatus("WAITING_BUYER_CONFIRMATION", msg,
-                  shippingFee: fee);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _primary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-            child: const Text("Envoyer l'offre",
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
+
+    if (confirmed != true) return;
+
+    try {
+      final res = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/ship'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'trackingNumber': trackingC.text,
+          'shippingCarrier': selectedCarrier,
+        }),
+      );
+
+      if (res.statusCode == 200) {
+        String msg = "📦 *COLIS EXPÉDIÉ* :\n• Transporteur: $selectedCarrier";
+        if (trackingC.text.isNotEmpty) msg += "\n• Suivi: ${trackingC.text}";
+        final systemMsg = ChatMessage(
+          text: "📢 SYSTÈME : $msg",
+          user: ChatUser(id: 'system', firstName: 'PLEXUS'),
+          createdAt: DateTime.now(),
+        );
+        _socketProvider.sendMessage(
+            systemMsg, widget.conversationId, 'Système');
+        final updatedData = json.decode(res.body);
+        setState(() {
+          _messages.insert(0, systemMsg);
+          _currentOrder = updatedData;
+        });
+      }
+    } catch (e) {
+      debugPrint("Erreur expédition: $e");
+    }
   }
 
   Widget _dialogField({
@@ -269,7 +310,7 @@ class _ChatScreenState extends State<ChatScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle:
-            const TextStyle(color: _textSub, fontSize: 13),
+        const TextStyle(color: _textSub, fontSize: 13),
         prefixIcon: Icon(icon, color: _textSub, size: 18),
         filled: true,
         fillColor: _surface,
@@ -278,17 +319,17 @@ class _ChatScreenState extends State<ChatScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide:
-              const BorderSide(color: _border, width: 1.5),
+          const BorderSide(color: _border, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide:
-              const BorderSide(color: _border, width: 1.5),
+          const BorderSide(color: _border, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide:
-              const BorderSide(color: _primaryMid, width: 2),
+          const BorderSide(color: _primaryMid, width: 2),
         ),
       ),
     );
@@ -305,12 +346,12 @@ class _ChatScreenState extends State<ChatScreen> {
             _messages.clear();
             _messages.addAll(data
                 .map((m) => ChatMessage(
-                      text: m['text'],
-                      user: ChatUser(
-                          id: m['senderId'],
-                          firstName: m['senderName']),
-                      createdAt: DateTime.parse(m['createdAt']),
-                    ))
+              text: m['text'],
+              user: ChatUser(
+                  id: m['senderId'],
+                  firstName: m['senderName']),
+              createdAt: DateTime.parse(m['createdAt']),
+            ))
                 .toList()
                 .reversed);
           });
@@ -324,14 +365,14 @@ class _ChatScreenState extends State<ChatScreen> {
   void _listenToStream() {
     _messageSubscription =
         _socketProvider.messageStream.listen((message) {
-      if (mounted) {
-        setState(() => _messages.insert(0, message));
-        if (message.text.contains("SYSTÈME") ||
-            message.text.contains("OFFRE DE LIVRAISON")) {
-          _refreshOrder();
-        }
-      }
-    });
+          if (mounted) {
+            setState(() => _messages.insert(0, message));
+            if (message.text.contains("SYSTÈME") ||
+                message.text.contains("COLIS EXPÉDIÉ")) {
+              _refreshOrder();
+            }
+          }
+        });
   }
 
   @override
@@ -431,22 +472,22 @@ class _ChatScreenState extends State<ChatScreen> {
             child: IconButton(
               icon: _isRefreshing
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: _primary),
-                    )
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: _primary),
+              )
                   : Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: _surface,
-                        borderRadius: BorderRadius.circular(9),
-                        border: Border.all(
-                            color: _border, width: 1.2),
-                      ),
-                      child: const Icon(Icons.refresh_rounded,
-                          size: 16, color: _textMain),
-                    ),
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: _surface,
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(
+                      color: _border, width: 1.2),
+                ),
+                child: const Icon(Icons.refresh_rounded,
+                    size: 16, color: _textMain),
+              ),
               onPressed: _refreshOrder,
             ),
           ),
@@ -536,7 +577,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
       padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -612,21 +653,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildSellerButtons(String status) {
-    if (status == "PENDING_SHIPPING") {
-      return _ActionButton(
-        label: 'OFFRE DE LIVRAISON',
-        icon: Icons.local_shipping_outlined,
-        color: _primary,
-        onPressed: _showShippingForm,
-      );
-    }
-    if (status == "PAID") {
+    // NOUVEAU — le frais de livraison est déjà payé à la commande
+    // (voir computeShippingFee), donc PENDING_SHIPPING et PAID mènent
+    // tous deux directement à l'expédition : plus d'étape "offre" séparée.
+    if (status == "PENDING_SHIPPING" || status == "PAID") {
       return _ActionButton(
         label: 'MARQUER EXPÉDIÉ',
         icon: Icons.send_rounded,
         color: const Color(0xFFF59E0B),
-        onPressed: () => _updateStatus(
-            "SHIPPED", "Le vendeur a expédié votre colis !"),
+        onPressed: _markAsShipped,
       );
     }
     if (status == "SHIPPED") {
@@ -642,6 +677,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildBuyerButtons(String status) {
+    // LEGACY — plus jamais atteint par de nouvelles commandes (le frais est
+    // maintenant payé dès la commande initiale). Conservé uniquement pour
+    // que d'éventuelles commandes déjà bloquées dans cet état puissent
+    // encore être finalisées par l'acheteur.
     if (status == "WAITING_BUYER_CONFIRMATION") {
       final dynamic rawFee = _currentOrder?['shippingFee'] ??
           _currentOrder?['shipping_fee'] ??
@@ -655,16 +694,15 @@ class _ChatScreenState extends State<ChatScreen> {
           double.tryParse(rawTotal.toString()) ?? 0.0;
       final double baseFees = (totalProduct + fee) * 0.03;
       final double discount =
-          _currentOrder?['discountAmount'] != null
-              ? (_currentOrder!['discountAmount'] as num).toDouble()
-              : 0.0;
+      _currentOrder?['discountAmount'] != null
+          ? (_currentOrder!['discountAmount'] as num).toDouble()
+          : 0.0;
       final double totalToPay =
           totalProduct + fee + (baseFees - discount);
       final bool isPriceLoaded = fee > 0 ||
           (rawFee != null && rawFee.toString() == "0");
 
       return _ActionButton(
-        // ✅ FIX : affiche uniquement les frais de livraison
         label: !isPriceLoaded
             ? 'ATTENTE PRIX...'
             : 'PAYER LIVRAISON ${fee.toStringAsFixed(2)}\$',
@@ -677,16 +715,14 @@ class _ChatScreenState extends State<ChatScreen> {
         onPressed: !isPriceLoaded
             ? null
             : () => context.push('/cart/payment', extra: {
-                  'orderId': _currentOrder?['_id'],
-                  'title': 'Frais de Livraison PLEXUS',
-                  // ✅ FIX : on envoie uniquement le fee, pas le total
-                  'price': fee,
-                  'sellerId': _currentOrder?['sellerId'],
-                  'sellerWallet':
-                      _currentOrder?['sellerWallet'] ?? '',
-                  // ✅ FIX : isShippingOnly = true
-                  'isShippingOnly': true,
-                }),
+          'orderId': _currentOrder?['_id'],
+          'title': 'Frais de Livraison PLEXUS',
+          'price': fee,
+          'sellerId': _currentOrder?['sellerId'],
+          'sellerWallet':
+          _currentOrder?['sellerWallet'] ?? '',
+          'isShippingOnly': true,
+        }),
       );
     }
 
@@ -738,7 +774,7 @@ class _ActionButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           color: disabled
               ? const Color(0xFFE2E8F0)
@@ -747,12 +783,12 @@ class _ActionButton extends StatelessWidget {
           boxShadow: disabled
               ? []
               : [
-                  BoxShadow(
-                    color: color.withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  )
-                ],
+            BoxShadow(
+              color: color.withOpacity(0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            )
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

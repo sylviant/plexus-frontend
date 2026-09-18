@@ -211,6 +211,12 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                         const Color(0xFFFF5252),
                         () => context.push('/profile/address'),
                       ),
+                      _buildMenuCard(
+                        Icons.local_shipping_outlined,
+                        "Frais de livraison",
+                        const Color(0xFF2196F3),
+                            () => context.push('/profile/shipping-config'),
+                      ),
                       const SizedBox(height: 32),
                       _buildProductsHeader(),
                       const SizedBox(height: 16),

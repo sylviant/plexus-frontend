@@ -4,8 +4,8 @@ import 'escrow_abi.dart';
 
 class EscrowContract {
   // ⚠️ À remplacer par l'adresse réelle après déploiement BSC Testnet
-  static const String contractAddress =
-      '0x0000000000000000000000000000000000000000';
+static const String contractAddress =
+    '0x12B564Cb42C04B4258ED45c5FE42280f96B52bF7';
 
   static const String rpcUrl =
       'https://data-seed-prebsc-1-s1.binance.org:8545';
@@ -63,7 +63,7 @@ class EscrowContract {
           BigInt.from(montantBNB * 1e18),
         ),
       ),
-      chainId: 97, // BSC Testnet
+      chainId: 56, // BSC Testnet
     );
 
     return txHash;

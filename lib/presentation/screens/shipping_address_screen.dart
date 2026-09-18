@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:plexus/core/constants/countries.dart';
 import 'dart:convert';
 
 class ShippingAddressScreen extends StatefulWidget {
@@ -26,6 +27,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
   bool _isLoading = false;
   bool _isGettingLocation = false;
   bool _isFocused = false;
+
+  // NOUVEAU — code pays ISO2 (ex: "CM", "FR") utilisé pour calculer
+  // automatiquement les frais de livraison côté backend.
+  String? _countryCode;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -56,9 +61,15 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
       final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/users/$userId'));
       if (response.statusCode == 200) {
         final userData = json.decode(response.body);
-        if (userData['address'] != null && mounted) {
+        if (mounted) {
           setState(() {
-            _addressController.text = userData['address'];
+            if (userData['address'] != null) {
+              _addressController.text = userData['address'];
+            }
+            if (userData['country'] != null &&
+                (userData['country'] as String).isNotEmpty) {
+              _countryCode = userData['country'];
+            }
           });
         }
       }
@@ -88,7 +99,13 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
         Placemark place = placemarks[0];
         setState(() {
           _addressController.text =
-              "${place.street}, ${place.locality}, ${place.country}";
+          "${place.street}, ${place.locality}, ${place.country}";
+          // NOUVEAU — capture directe du code ISO2 fourni par le géocodage,
+          // plus fiable qu'une déduction depuis le texte de l'adresse.
+          if (place.isoCountryCode != null &&
+              place.isoCountryCode!.isNotEmpty) {
+            _countryCode = place.isoCountryCode;
+          }
         });
       }
     } catch (e) {
@@ -102,6 +119,12 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
   // SAUVEGARDE ET MISE À JOUR DE L'ÉTAT LOCAL
   Future<void> _saveAddress() async {
     if (_addressController.text.isEmpty) return;
+    if (_countryCode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sélectionnez votre pays.")),
+      );
+      return;
+    }
     setState(() => _isLoading = true);
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -111,7 +134,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
       final response = await http.put(
         Uri.parse('${ApiConfig.baseUrl}/users/$userId'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'address': _addressController.text}),
+        body: json.encode({
+          'address': _addressController.text,
+          'country': _countryCode, // NOUVEAU
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -159,6 +185,10 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
                     _buildAddressField(),
                     const SizedBox(height: 16),
                     _buildLocationButton(),
+                    const SizedBox(height: 16),
+                    _fieldLabel("PAYS"),
+                    const SizedBox(height: 10),
+                    _buildCountryDropdown(),
                     const SizedBox(height: 28),
                     _buildTip(),
                   ],
@@ -325,12 +355,47 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
     );
   }
 
+  // NOUVEAU — sélecteur de pays (rempli auto par le GPS, modifiable à la main)
+  Widget _buildCountryDropdown() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFEBEFF8)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButtonFormField<String>(
+          value: _countryCode,
+          isExpanded: true,
+          icon: const Icon(Icons.expand_more_rounded, color: _accent),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            hintText: "Sélectionnez votre pays",
+          ),
+          style: const TextStyle(
+            color: _navy,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          items: kCountries.entries
+              .map((e) => DropdownMenuItem(
+            value: e.key,
+            child: Text(e.value),
+          ))
+              .toList(),
+          onChanged: (value) => setState(() => _countryCode = value),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocationButton() {
     return GestureDetector(
       onTap: _isGettingLocation ? null : _getCurrentLocation,
       child: Container(
         padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -427,28 +492,28 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
           child: Center(
             child: _isLoading
                 ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white),
+            )
                 : const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_rounded,
-                          color: Colors.white, size: 18),
-                      SizedBox(width: 10),
-                      Text(
-                        "CONFIRMER L'ADRESSE",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_rounded,
+                    color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Text(
+                  "CONFIRMER L'ADRESSE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
                   ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

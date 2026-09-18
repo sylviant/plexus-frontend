@@ -9,5 +9,10 @@ module.exports = {
       chainId: 97,
       accounts: [process.env.PRIVATE_KEY],
     },
+    bscMainnet: {
+      url: "https://bsc-dataseed1.binance.org/",
+      chainId: 56,
+      accounts: [process.env.PRIVATE_KEY],
+    },
   },
 };
