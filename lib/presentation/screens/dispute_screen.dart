@@ -5,6 +5,7 @@ import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
+import 'package:plexus/l10n/l10n.dart';
 
 class DisputeScreen extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -87,7 +88,7 @@ class _DisputeScreenState extends State<DisputeScreen>
 
   Future<void> _submitDispute() async {
     if (_descriptionController.text.isEmpty) {
-      _showSnack('La description est obligatoire', _danger,
+      _showSnack(l10n.laDescriptionEstObligatoire, _danger,
           Icons.warning_amber_rounded);
       return;
     }
@@ -129,11 +130,11 @@ class _DisputeScreenState extends State<DisputeScreen>
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Row(children: const [
+              content: Row(children: [
                 Icon(Icons.check_circle_outline_rounded,
                     color: Colors.white, size: 18),
                 SizedBox(width: 10),
-                Text('Litige ouvert avec succès.',
+                Text(l10n.litigeOuvertAvecSucces,
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.w500)),
               ]),
@@ -147,12 +148,12 @@ class _DisputeScreenState extends State<DisputeScreen>
         }
       } else {
         debugPrint("SERVER ERROR 500 BODY: ${res.body}");
-        throw Exception("Erreur ${res.statusCode}: ${res.body}");
+        throw Exception(l10n.erreur('${res.statusCode}', '${res.body}'));
       }
     } catch (e) {
       debugPrint("DISPUTE ERROR: $e");
       if (mounted)
-        _showSnack('Échec : Vérifiez les logs backend', _danger,
+        _showSnack(l10n.echecVerifiezLesLogsBackend, _danger,
             Icons.error_outline_rounded);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -201,8 +202,8 @@ class _DisputeScreenState extends State<DisputeScreen>
           ),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Ouvrir un Litige',
+        title: Text(
+          l10n.ouvrirUnLitige,
           style: TextStyle(
             color: _textMain,
             fontWeight: FontWeight.w800,
@@ -236,9 +237,9 @@ class _DisputeScreenState extends State<DisputeScreen>
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            'Procédure de Litige',
+                            l10n.procedureDeLitige,
                             style: TextStyle(
                               color: _danger,
                               fontWeight: FontWeight.w700,
@@ -247,7 +248,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Les fonds sont bloqués pendant l\'instruction. PLEXUS tranchera sous 72h.',
+                            l10n.lesFondsSontBloquesPendant,
                             style: TextStyle(
                                 color: _danger,
                                 fontSize: 11,
@@ -267,7 +268,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionLabel(label: 'Motif du litige'),
+                    _SectionLabel(label: l10n.motifDuLitige),
                     const SizedBox(height: 10),
 
                     // Motif chips
@@ -293,7 +294,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                               ),
                             ),
                             child: Text(
-                              motif,
+                              trData(motif),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -309,7 +310,7 @@ class _DisputeScreenState extends State<DisputeScreen>
 
                     const SizedBox(height: 22),
 
-                    const _SectionLabel(label: 'Description détaillée'),
+                    _SectionLabel(label: l10n.descriptionDetaillee),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: _descriptionController,
@@ -320,7 +321,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                           fontSize: 14),
                       decoration: InputDecoration(
                         hintText:
-                            'Décrivez précisément le problème rencontré...',
+                            l10n.decrivezPrecisementLeProblemeRencontre,
                         hintStyle: TextStyle(
                             color: _textSub.withOpacity(0.5),
                             fontSize: 13),
@@ -357,7 +358,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                   children: [
                     Row(
                       children: [
-                        const _SectionLabel(label: 'Preuves photos'),
+                        _SectionLabel(label: l10n.preuvesPhotos),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -383,7 +384,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Ajoutez jusqu\'à 3 photos comme preuves.',
+                      l10n.ajoutezJusquA3Photos,
                       style: TextStyle(
                           fontSize: 11,
                           color: _textSub.withOpacity(0.8)),
@@ -444,11 +445,11 @@ class _DisputeScreenState extends State<DisputeScreen>
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Icon(Icons.add_photo_alternate_outlined,
                                       color: _textSub, size: 24),
                                   SizedBox(height: 4),
-                                  Text('Ajouter',
+                                  Text(l10n.ajouter,
                                       style: TextStyle(
                                           fontSize: 10,
                                           color: _textSub,
@@ -470,7 +471,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionLabel(label: 'Preuve vidéo (optionnel)'),
+                    _SectionLabel(label: l10n.preuveVideoOptionnel),
                     const SizedBox(height: 14),
                     if (_videoFile != null)
                       Container(
@@ -538,11 +539,11 @@ class _DisputeScreenState extends State<DisputeScreen>
                                 style: BorderStyle.solid),
                           ),
                           child: Column(
-                            children: const [
+                            children: [
                               Icon(Icons.videocam_outlined,
                                   color: _textSub, size: 26),
                               SizedBox(height: 6),
-                              Text('Appuyez pour ajouter une vidéo',
+                              Text(l10n.appuyezPourAjouterUneVideo,
                                   style: TextStyle(
                                       color: _textSub,
                                       fontSize: 12,
@@ -592,12 +593,12 @@ class _DisputeScreenState extends State<DisputeScreen>
                           )
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.gavel_rounded,
                                   color: Colors.white, size: 17),
                               SizedBox(width: 10),
                               Text(
-                                'ENVOYER LE LITIGE',
+                                l10n.envoyerLeLitige,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,

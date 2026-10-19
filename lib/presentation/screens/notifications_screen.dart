@@ -4,6 +4,7 @@ import 'package:plexus/core/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -61,9 +62,9 @@ class NotificationsScreen extends StatelessWidget {
       titleSpacing: 20,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
-            'Notifications',
+            l10n.notifications,
             style: TextStyle(
               color: _textPri,
               fontSize: 22,
@@ -101,11 +102,11 @@ class NotificationsScreen extends StatelessWidget {
               child: const Icon(Icons.notifications_outlined, size: 38, color: _textSec),
             ),
             const SizedBox(height: 24),
-            const Text('Aucune notification',
+            Text(l10n.aucuneNotification,
                 style: TextStyle(color: _textPri, fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            const Text(
-              'Vos alertes PLEXUS apparaîtront ici dès qu\'une activité est détectée.',
+            Text(
+              l10n.vosAlertesPlexusApparaitrontIci,
               textAlign: TextAlign.center,
               style: TextStyle(color: _textSec, fontSize: 14, height: 1.5),
             ),
@@ -178,7 +179,7 @@ class NotificationsScreen extends StatelessWidget {
             if (type == 'order_validated' && orderId != null && orderId.isNotEmpty) {
               context.push('/order-success/$orderId', extra: {
                 'conversationId': conversationId ?? '',
-                'otherName': senderName ?? 'Vendeur',
+                'otherName': senderName ?? l10n.vendeur,
               });
               return;
             }
@@ -187,7 +188,7 @@ class NotificationsScreen extends StatelessWidget {
               context.push(
                 '/messages/chat/${Uri.encodeComponent(conversationId)}',
                 extra: {
-                  'otherName': senderName ?? 'Utilisateur',
+                  'otherName': senderName ?? l10n.utilisateur,
                   'orderId': orderId ?? '',
                   'productTitle': productTitle ?? '',
                   'conversationId': conversationId,
@@ -229,7 +230,7 @@ class NotificationsScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                notif['title'] ?? 'Alerte PLEXUS',
+                                notif['title'] ?? l10n.alertePlexus,
                                 style: TextStyle(
                                   color: _textPri,
                                   fontSize: 14.5,
@@ -260,7 +261,7 @@ class NotificationsScreen extends StatelessWidget {
                             Icon(Icons.access_time_rounded, size: 12, color: _textSec),
                             const SizedBox(width: 4),
                             Text(
-                              DateFormat('dd/MM à HH:mm').format(date),
+                              l10n.dateAtTime(DateFormat.Md().format(date), DateFormat.jm().format(date)),
                               style: const TextStyle(fontSize: 11, color: _textSec, letterSpacing: 0.2),
                             ),
                           ],
@@ -291,11 +292,11 @@ class NotificationsScreen extends StatelessWidget {
       final dateOnly = DateTime(date.year, date.month, date.day);
       String label;
       if (dateOnly == today) {
-        label = "Aujourd'hui";
+        label = l10n.aujourdHui;
       } else if (dateOnly == yesterday) {
-        label = 'Hier';
+        label = l10n.hier;
       } else {
-        label = DateFormat('dd MMMM yyyy', 'fr_FR').format(date);
+        label = DateFormat.yMMMMd().format(date);
       }
       groups.putIfAbsent(label, () => []).add(notif);
     }

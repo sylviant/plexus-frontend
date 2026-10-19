@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/core/providers/cart_provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class RelatedProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -18,7 +19,7 @@ class RelatedProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String productId =
         (product['_id'] ?? product['id'] ?? '').toString();
-    final String title = product['title'] ?? 'Sans titre';
+    final String title = product['title'] ?? l10n.sansTitre;
     final double price = (product['price'] as num?)?.toDouble() ?? 0.0;
     final String imageUrl =
         ApiConfig.getImageUrl(product['thumbnail'] ?? product['image']);
@@ -99,7 +100,7 @@ class RelatedProductCard extends StatelessWidget {
                               .add(product);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('$title ajouté au panier'),
+                              content: Text(l10n.ajouteAuPanier2('$title')),
                               backgroundColor: const Color(0xFF00B386),
                               duration: const Duration(seconds: 1),
                               behavior: SnackBarBehavior.floating,

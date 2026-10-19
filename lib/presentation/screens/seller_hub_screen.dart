@@ -5,6 +5,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class SellerHubScreen extends StatefulWidget {
   const SellerHubScreen({super.key});
@@ -77,19 +78,19 @@ class _SellerHubScreenState extends State<SellerHubScreen>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Supprimer l\'article',
+        title: Text(
+          l10n.supprimerLArticle,
           style: TextStyle(
               fontWeight: FontWeight.w800, color: _navy, fontSize: 16),
         ),
-        content: const Text(
-          'Voulez-vous vraiment supprimer cet article ?',
+        content: Text(
+          l10n.voulezVousVraimentSupprimerCet,
           style: TextStyle(color: _textMuted, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler',
+            child: Text(l10n.annuler,
                 style: TextStyle(color: _textMuted)),
           ),
           ElevatedButton(
@@ -100,7 +101,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                   borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
-            child: const Text('Supprimer',
+            child: Text(l10n.supprimer,
                 style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -118,11 +119,11 @@ class _SellerHubScreenState extends State<SellerHubScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Row(children: const [
+              content: Row(children: [
                 Icon(Icons.check_circle_rounded,
                     color: Colors.white, size: 18),
                 SizedBox(width: 10),
-                Text("Produit supprimé avec succès"),
+                Text(l10n.produitSupprimeAvecSucces),
               ]),
               backgroundColor: const Color(0xFF00B386),
               behavior: SnackBarBehavior.floating,
@@ -136,8 +137,8 @@ class _SellerHubScreenState extends State<SellerHubScreen>
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Erreur lors de la suppression"),
+            SnackBar(
+              content: Text(l10n.erreurLorsDeLaSuppression),
               backgroundColor: Color(0xFFE53935),
             ),
           );
@@ -147,7 +148,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Erreur : $e"),
+            content: Text(l10n.erreur4('$e')),
             backgroundColor: const Color(0xFFE53935),
           ),
         );
@@ -179,41 +180,41 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 28),
-                      _sectionLabel("MON ACTIVITÉ"),
+                      _sectionLabel(l10n.monActivite),
                       const SizedBox(height: 14),
                       _buildMenuCard(
                         Icons.card_giftcard_rounded,
-                        "Parrainage & Gains",
+                        l10n.parrainageGains,
                         const Color(0xFFFF9900),
                         () => context.push('/profile/referral'),
                       ),
                       _buildMenuCard(
                         Icons.shopping_bag_outlined,
-                        "Historique des achats",
+                        l10n.historiqueDesAchats,
                         const Color(0xFF00B386),
                         () => context.push('/profile/orders'),
                       ),
                       _buildMenuCard(
                         Icons.favorite_outline_rounded,
-                        "Mes Favoris",
+                        l10n.mesFavoris,
                         const Color(0xFFFF4D7E),
                         () => context.push('/profile/favorites'),
                       ),
                       _buildMenuCard(
                         Icons.account_balance_wallet_outlined,
-                        "Portefeuilles Crypto",
+                        l10n.portefeuillesCrypto,
                         const Color(0xFF7C4DFF),
                         () => context.push('/profile/payment-methods'),
                       ),
                       _buildMenuCard(
                         Icons.location_on_outlined,
-                        "Adresses de livraison",
+                        l10n.adressesDeLivraison,
                         const Color(0xFFFF5252),
                         () => context.push('/profile/address'),
                       ),
                       _buildMenuCard(
                         Icons.local_shipping_outlined,
-                        "Frais de livraison",
+                        l10n.fraisDeLivraison2,
                         const Color(0xFF2196F3),
                             () => context.push('/profile/shipping-config'),
                       ),
@@ -272,8 +273,8 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                 color: _accent, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          const Text(
-            'HUB VENDEUR',
+          Text(
+            l10n.hubVendeur,
             style: TextStyle(
               color: _navy,
               fontWeight: FontWeight.w800,
@@ -347,8 +348,8 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                     color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    "SOLDE DISPONIBLE",
+                  child: Text(
+                    l10n.soldeDisponible3,
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 9,
@@ -402,14 +403,14 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.arrow_upward_rounded,
                             size: 16, color: _navy),
                         SizedBox(width: 8),
                         Text(
-                          "DEMANDER UN RETRAIT",
+                          l10n.demanderUnRetrait,
                           style: TextStyle(
                             color: _navy,
                             fontWeight: FontWeight.w800,
@@ -532,7 +533,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _sectionLabel("MES ARTICLES EN VENTE"),
+        _sectionLabel(l10n.mesArticlesEnVente),
         GestureDetector(
           onTap: () => context.push('/profile/add-product'),
           child: Container(
@@ -592,8 +593,8 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                 size: 40, color: _textMuted),
           ),
           const SizedBox(height: 16),
-          const Text(
-            "Aucun article publié",
+          Text(
+            l10n.aucunArticlePublie,
             style: TextStyle(
               color: _textPrimary,
               fontWeight: FontWeight.w700,
@@ -601,8 +602,8 @@ class _SellerHubScreenState extends State<SellerHubScreen>
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "Publiez votre premier article\npour commencer à vendre.",
+          Text(
+            l10n.publiezVotrePremierArticlePour,
             textAlign: TextAlign.center,
             style: TextStyle(color: _textMuted, fontSize: 13, height: 1.5),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ConfirmationScreen extends StatefulWidget {
   final Map<String, dynamic>? order;
@@ -163,8 +164,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                       position: _contentSlide,
                       child: Column(
                         children: [
-                          const Text(
-                            'Paiement en attente',
+                          Text(
+                            l10n.paiementEnAttente,
                             style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
@@ -175,7 +176,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Votre commande a été enregistrée et est en attente de confirmation sur la Blockchain.',
+                            l10n.votreCommandeAEteEnregistree,
                             style: const TextStyle(
                               fontSize: 14,
                               color: _textSub,
@@ -222,8 +223,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Référence commande',
+                                    Text(
+                                      l10n.referenceCommande,
                                       style: TextStyle(
                                           fontSize: 11,
                                           color: _textSub,
@@ -250,8 +251,8 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                     color: _pending.withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Text(
-                                    'EN ATTENTE',
+                                  child: Text(
+                                    l10n.enAttente,
                                     style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
@@ -285,7 +286,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                     color: _accent.withOpacity(0.8)),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Confirmation en cours sur la Blockchain PLEXUS',
+                                  l10n.confirmationEnCoursSurLa,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: _textSub,
@@ -326,12 +327,12 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Icon(Icons.receipt_outlined,
                                     size: 16, color: _textMain),
                                 SizedBox(width: 8),
                                 Text(
-                                  'Voir le détail de la commande',
+                                  l10n.voirLeDetailDeLa,
                                   style: TextStyle(
                                     color: _textMain,
                                     fontWeight: FontWeight.w600,
@@ -376,12 +377,12 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Icon(Icons.home_rounded,
                                       color: Colors.white, size: 18),
                                   SizedBox(width: 8),
                                   Text(
-                                    'Retour à l\'accueil',
+                                    l10n.retourALAccueil,
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700,

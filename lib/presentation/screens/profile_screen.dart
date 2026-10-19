@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -53,27 +54,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionLabel("Général"),
+                  _buildSectionLabel(l10n.general),
                   const SizedBox(height: 12),
                   _buildMenuGroup([
-                    _TileData(Icons.person_outline_rounded,       "Éditer le profil",       const Color(0xFF4F6EF7), () => context.push('/profile/edit')),
-                    _TileData(Icons.card_giftcard_rounded,         "Parrainage & Gains",     const Color(0xFFF5A623), () => context.push('/profile/referral')),
+                    _TileData(Icons.person_outline_rounded,       l10n.editerLeProfil,       const Color(0xFF4F6EF7), () => context.push('/profile/edit')),
+                    _TileData(Icons.card_giftcard_rounded,         l10n.parrainageGains,     const Color(0xFFF5A623), () => context.push('/profile/referral')),
                   ]),
 
                   const SizedBox(height: 28),
-                  _buildSectionLabel("Commandes & Achats"),
+                  _buildSectionLabel(l10n.commandesAchats),
                   const SizedBox(height: 12),
                   _buildMenuGroup([
-                    _TileData(Icons.shopping_bag_outlined,         "Historique des achats",  const Color(0xFF34C97B), () => context.push('/profile/orders')),
-                    _TileData(Icons.favorite_outline_rounded,      "Mes Favoris",            const Color(0xFFEF5350), () => context.push('/profile/favorites')),
+                    _TileData(Icons.shopping_bag_outlined,         l10n.historiqueDesAchats,  const Color(0xFF34C97B), () => context.push('/profile/orders')),
+                    _TileData(Icons.favorite_outline_rounded,      l10n.mesFavoris,            const Color(0xFFEF5350), () => context.push('/profile/favorites')),
                   ]),
 
                   const SizedBox(height: 28),
-                  _buildSectionLabel("Paiement"),
+                  _buildSectionLabel(l10n.paiement),
                   const SizedBox(height: 12),
                   _buildMenuGroup([
-                    _TileData(Icons.account_balance_wallet_outlined, "Portefeuilles Crypto", const Color(0xFF9B8EF7), () => context.push('/profile/payment-methods')),
-                    _TileData(Icons.location_on_outlined,           "Adresses de livraison", const Color(0xFFEF5350), () => context.push('/profile/address')), // LIEN CORRIGÉ
+                    _TileData(Icons.account_balance_wallet_outlined, l10n.portefeuillesCrypto, const Color(0xFF9B8EF7), () => context.push('/profile/payment-methods')),
+                    _TileData(Icons.location_on_outlined,           l10n.adressesDeLivraison, const Color(0xFFEF5350), () => context.push('/profile/address')), // LIEN CORRIGÉ
                   ]),
 
                   const SizedBox(height: 36),
@@ -85,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => auth.logout(),
                       icon: const Icon(Icons.logout_rounded, size: 18, color: _red),
-                      label: const Text("Déconnexion",
+                      label: Text(l10n.deconnexion,
                           style: TextStyle(
                               color: _red,
                               fontWeight: FontWeight.w700,
@@ -126,8 +127,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Mon Compte',
+                  Text(
+                    l10n.monCompte,
                     style: TextStyle(
                       color: _textPri,
                       fontSize: 22,
@@ -208,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
 
               Text(
-                user?.firstName ?? 'Utilisateur PLEXUS',
+                user?.firstName ?? l10n.utilisateurPlexus,
                 style: const TextStyle(
                   color: _textPri,
                   fontSize: 22,
@@ -233,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: _green, shape: BoxShape.circle),
                     ),
                     const SizedBox(width: 6),
-                    const Text("Profil actif",
+                    Text(l10n.profilActif,
                         style: TextStyle(
                             color: _green,
                             fontSize: 11,

@@ -9,6 +9,7 @@ import 'package:plexus/core/api_config.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class AuthProvider with ChangeNotifier {
   String? _token;
@@ -93,7 +94,7 @@ class AuthProvider with ChangeNotifier {
         await _saveDataLocally(data['token'], data['user']);
         await _handleAuthResponse(data);
       } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Identifiants incorrects');
+        throw Exception(json.decode(response.body)['msg'] ?? l10n.identifiantsIncorrects);
       }
     } catch (e) {
       throw Exception(ApiConfig.handleNetworkError(e));
@@ -144,11 +145,11 @@ class AuthProvider with ChangeNotifier {
           await _saveDataLocally(data['token'], data['user']);
           await _handleAuthResponse(data);
         } else {
-          throw Exception('Le serveur PLEXUS a rejeté la connexion Google');
+          throw Exception(l10n.leServeurPlexusARejete);
         }
       }
     } catch (e) {
-      throw Exception("Erreur Google Login: $e");
+      throw Exception(l10n.erreurGoogleLogin('$e'));
     }
   }
 
@@ -216,7 +217,7 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
       } else {
         throw Exception(
-            json.decode(response.body)['msg'] ?? "Erreur d'inscription");
+            json.decode(response.body)['msg'] ?? l10n.erreurDInscription);
       }
     } catch (e) {
       rethrow;
@@ -236,7 +237,7 @@ class AuthProvider with ChangeNotifier {
         _pendingEmail = null;
         notifyListeners();
       } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Code invalide');
+        throw Exception(json.decode(response.body)['msg'] ?? l10n.codeInvalide2);
       }
     } catch (e) {
       rethrow;
@@ -254,7 +255,7 @@ class AuthProvider with ChangeNotifier {
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         throw Exception(
-            json.decode(response.body)['msg'] ?? 'Erreur lors du renvoi');
+            json.decode(response.body)['msg'] ?? l10n.erreurLorsDuRenvoi);
       }
     } catch (e) {
       rethrow;
@@ -273,7 +274,7 @@ class AuthProvider with ChangeNotifier {
         _pendingEmail = email;
         notifyListeners();
       } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Email inconnu');
+        throw Exception(json.decode(response.body)['msg'] ?? l10n.emailInconnu);
       }
     } catch (e) {
       rethrow;
@@ -297,7 +298,7 @@ class AuthProvider with ChangeNotifier {
         _pendingEmail = null;
         notifyListeners();
       } else {
-        throw Exception(json.decode(response.body)['msg'] ?? 'Code invalide');
+        throw Exception(json.decode(response.body)['msg'] ?? l10n.codeInvalide2);
       }
     } catch (e) {
       rethrow;

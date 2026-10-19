@@ -3,6 +3,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/favorite_provider.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -57,8 +58,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: _primary.withOpacity(0.08),
-        title: const Text(
-          'Mes Favoris',
+        title: Text(
+          l10n.mesFavoris,
           style: TextStyle(
             color: _textMain,
             fontWeight: FontWeight.w800,
@@ -110,7 +111,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${favProvider.favoriteProducts.length} article${favProvider.favoriteProducts.length > 1 ? 's' : ''} sauvegardé${favProvider.favoriteProducts.length > 1 ? 's' : ''}',
+                            l10n.favoritesCount(favProvider.favoriteProducts.length),
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -199,8 +200,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Votre liste est vide',
+            Text(
+              l10n.votreListeEstVide,
               style: TextStyle(
                 color: _textMain,
                 fontSize: 18,
@@ -208,8 +209,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Ajoutez des articles à vos favoris pour les retrouver facilement.',
+            Text(
+              l10n.ajoutezDesArticlesAVos,
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: _textSub, fontSize: 13, height: 1.5),
@@ -244,8 +245,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                         borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                   ),
-                  child: const Text(
-                    'Découvrir des produits',
+                  child: Text(
+                    l10n.decouvrirDesProduits,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

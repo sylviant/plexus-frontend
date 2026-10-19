@@ -6,6 +6,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:intl/intl.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -51,10 +52,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       if (response.statusCode == 200) {
         setState(() { _orders = json.decode(response.body); _isLoading = false; });
       } else {
-        setState(() { _error = "Erreur serveur (${response.statusCode})"; _isLoading = false; });
+        setState(() { _error = l10n.erreurServeur2('${response.statusCode}'); _isLoading = false; });
       }
     } catch (e) {
-      setState(() { _error = "Impossible de joindre le serveur."; _isLoading = false; });
+      setState(() { _error = l10n.impossibleDeJoindreLeServeur; _isLoading = false; });
     }
   }
 
@@ -90,8 +91,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       elevation: 0,
       centerTitle: false,
       titleSpacing: 20,
-      title: const Text(
-        'Mes Achats',
+      title: Text(
+        l10n.mesAchats,
         style: TextStyle(
           color: _textPri,
           fontSize: 22,
@@ -184,7 +185,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            DateFormat('dd MMM yyyy · HH:mm').format(date),
+                            '${DateFormat.yMMMd().format(date)} · ${DateFormat.jm().format(date)}',
                             style: const TextStyle(color: _textSec, fontSize: 11),
                           ),
                         ],
@@ -241,7 +242,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           size: 14, color: _textSec),
                       const SizedBox(width: 5),
                       Text(
-                        '$itemCount article${itemCount > 1 ? 's' : ''}',
+                        l10n.favoritesCount(itemCount),
                         style: const TextStyle(color: _textSec, fontSize: 13),
                       ),
                     ],
@@ -290,7 +291,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               child: const Icon(Icons.cloud_off_rounded, size: 36, color: _red),
             ),
             const SizedBox(height: 20),
-            const Text('Connexion impossible',
+            Text(l10n.connexionImpossible,
                 style: TextStyle(color: _textPri, fontSize: 17, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(_error!,
@@ -308,7 +309,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Réessayer', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(l10n.reessayer, style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -336,11 +337,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               child: const Icon(Icons.shopping_bag_outlined, size: 38, color: _textSec),
             ),
             const SizedBox(height: 24),
-            const Text('Aucun achat',
+            Text(l10n.aucunAchat,
                 style: TextStyle(color: _textPri, fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            const Text(
-              'Vos commandes passées apparaîtront ici.',
+            Text(
+              l10n.vosCommandesPasseesApparaitrontIci,
               textAlign: TextAlign.center,
               style: TextStyle(color: _textSec, fontSize: 14, height: 1.5),
             ),
@@ -355,13 +356,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     switch (status) {
       case 'DELIVERED':
       case 'Terminé':
-        return _StatusInfo(label: 'LIVRÉ',       color: _green);
+        return _StatusInfo(label: l10n.livre,       color: _green);
       case 'SHIPPED':
-        return _StatusInfo(label: 'EN TRANSIT',  color: _accent);
+        return _StatusInfo(label: l10n.enTransit,  color: _accent);
       case 'CANCELLED':
-        return _StatusInfo(label: 'ANNULÉ',      color: _red);
+        return _StatusInfo(label: l10n.annule,      color: _red);
       default:
-        return _StatusInfo(label: 'EN ATTENTE',  color: _orange);
+        return _StatusInfo(label: l10n.enAttente,  color: _orange);
     }
   }
 }

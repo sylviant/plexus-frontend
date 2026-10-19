@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/constants/countries.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 // NOUVEAU — écran vendeur : configuration de la grille de frais de livraison
 // (local / national / régional / international) + exceptions par pays.
@@ -99,20 +100,20 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
       );
       if (mounted) {
         if (res.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Frais de livraison enregistrés !'),
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l10n.fraisDeLivraisonEnregistres),
             backgroundColor: Color(0xFF00B386),
           ));
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Erreur d'enregistrement.")));
+              SnackBar(content: Text(l10n.erreurDEnregistrement)));
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Erreur réseau.')));
+            .showSnackBar(SnackBar(content: Text(l10n.erreurReseau)));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -129,7 +130,7 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
         builder: (context, setDialogState) => AlertDialog(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          title: const Text('Ajouter une exception',
+          title: Text(l10n.ajouterUneException,
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -137,10 +138,10 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
               DropdownButtonFormField<String>(
                 value: country,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Pays'),
+                decoration: InputDecoration(labelText: l10n.pays2),
                 items: kCountries.entries
                     .map((e) =>
-                    DropdownMenuItem(value: e.key, child: Text(e.value)))
+                    DropdownMenuItem(value: e.key, child: Text(trCountry(e.key))))
                     .toList(),
                 onChanged: (v) => setDialogState(() => country = v),
               ),
@@ -148,15 +149,15 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
               TextField(
                 controller: priceC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    labelText: 'Frais de livraison (\$)'),
+                decoration: InputDecoration(
+                    labelText: l10n.fraisDeLivraison3),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
+              child: Text(l10n.annuler),
             ),
             ElevatedButton(
               onPressed: () {
@@ -169,7 +170,7 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
               },
               style: ElevatedButton.styleFrom(backgroundColor: _navy),
               child:
-              const Text('Ajouter', style: TextStyle(color: Colors.white)),
+              Text(l10n.ajouter, style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -185,7 +186,7 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text('FRAIS DE LIVRAISON',
+        title: Text(l10n.fraisDeLivraison,
             style: TextStyle(
                 color: _navy,
                 fontWeight: FontWeight.w800,
@@ -205,28 +206,26 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
                 color: _accent.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text(
-                "Ces frais sont ajoutés automatiquement au prix du "
-                    "produit selon le pays de l'acheteur — plus besoin de "
-                    "négocier ou de faire payer une deuxième fois.",
+              child: Text(
+                l10n.cesFraisSontAjoutesAutomatiquement,
                 style: TextStyle(
                     fontSize: 12.5, color: _navy, height: 1.4),
               ),
             ),
             const SizedBox(height: 24),
-            _zoneField('Livraison locale (même ville)', _localC),
+            _zoneField(l10n.livraisonLocaleMemeVille, _localC),
             const SizedBox(height: 14),
-            _zoneField('Livraison nationale (même pays)', _nationalC),
+            _zoneField(l10n.livraisonNationaleMemePays, _nationalC),
             const SizedBox(height: 14),
             _zoneField(
-                'Livraison régionale (même continent)', _regionalC),
+                l10n.livraisonRegionaleMemeContinent, _regionalC),
             const SizedBox(height: 14),
-            _zoneField('Livraison internationale', _internationalC),
+            _zoneField(l10n.livraisonInternationale, _internationalC),
             const SizedBox(height: 28),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Exceptions par pays',
+                Text(l10n.exceptionsParPays,
                     style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 13,
@@ -234,21 +233,20 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
                 TextButton.icon(
                   onPressed: _addException,
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Ajouter'),
+                  label: Text(l10n.ajouter),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             if (_exceptions.isEmpty)
-              const Text(
-                  'Aucune exception — utile si un pays précis doit '
-                      'avoir un tarif différent de sa zone.',
+              Text(
+                  l10n.aucuneExceptionUtileSiUn,
                   style: TextStyle(fontSize: 12, color: _textMuted)),
             ..._exceptions.asMap().entries.map((entry) {
               final i = entry.key;
               final ex = entry.value;
               final countryName =
-                  kCountries[ex['country']] ?? ex['country'];
+                  trCountry(ex['country']?.toString());
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(

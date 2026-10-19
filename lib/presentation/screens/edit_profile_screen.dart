@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:plexus/l10n/l10n.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -103,11 +104,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Row(children: const [
+              content: Row(children: [
                 Icon(Icons.check_circle_outline_rounded,
                     color: Colors.white, size: 18),
                 SizedBox(width: 10),
-                Text('Profil mis à jour !',
+                Text(l10n.profilMisAJour,
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.w500)),
               ]),
@@ -131,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               const SizedBox(width: 10),
               Expanded(
                   child: Text(
-                'Erreur : ${ApiConfig.handleNetworkError(e)}',
+                l10n.erreur2('${ApiConfig.handleNetworkError(e)}'),
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w500),
               )),
@@ -173,8 +174,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Modifier le profil',
+        title: Text(
+          l10n.modifierLeProfil,
           style: TextStyle(
             color: _textMain,
             fontWeight: FontWeight.w800,
@@ -271,7 +272,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
                   const SizedBox(height: 8),
                   Text(
-                    user?.firstName ?? 'Votre nom',
+                    user?.firstName ?? l10n.votreNom,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -280,7 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Appuyez sur la photo pour modifier',
+                    l10n.appuyezSurLaPhotoPour,
                     style: TextStyle(
                         fontSize: 11,
                         color: _textSub.withOpacity(0.8)),
@@ -305,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _FieldLabel(label: 'Nom complet'),
+                        _FieldLabel(label: l10n.nomComplet),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _nameController,
@@ -313,16 +314,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                               color: _textMain,
                               fontWeight: FontWeight.w500),
                           decoration: _inputDecoration(
-                            hint: 'Jean Dupont',
+                            hint: l10n.jeanDupont,
                             icon: Icons.person_outline_rounded,
                           ),
                           validator: (v) =>
-                              v!.isEmpty ? 'Requis' : null,
+                              v!.isEmpty ? l10n.requis : null,
                         ),
 
                         const SizedBox(height: 18),
 
-                        const _FieldLabel(label: 'Téléphone'),
+                        _FieldLabel(label: l10n.telephone),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _phoneController,
@@ -331,16 +332,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                               color: _textMain,
                               fontWeight: FontWeight.w500),
                           decoration: _inputDecoration(
-                            hint: '+237 6XX XXX XXX',
+                            hint: l10n.t2376xxXxxXxx,
                             icon: Icons.phone_android_rounded,
                           ),
                           validator: (v) =>
-                              v!.isEmpty ? 'Requis' : null,
+                              v!.isEmpty ? l10n.requis : null,
                         ),
 
                         const SizedBox(height: 18),
 
-                        const _FieldLabel(label: 'Adresse'),
+                        _FieldLabel(label: l10n.adresse),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _addressController,
@@ -348,11 +349,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                               color: _textMain,
                               fontWeight: FontWeight.w500),
                           decoration: _inputDecoration(
-                            hint: 'Rue, Ville, Pays',
+                            hint: l10n.rueVillePays,
                             icon: Icons.location_on_outlined,
                           ),
                           validator: (v) =>
-                              v!.isEmpty ? 'Requis' : null,
+                              v!.isEmpty ? l10n.requis : null,
                         ),
                       ],
                     ),

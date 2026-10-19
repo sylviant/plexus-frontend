@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
 import 'package:go_router/go_router.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -115,7 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Uri.parse('${ApiConfig.baseUrl}/orders/$orderId/receive'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'senderName': auth.currentUser?.firstName ?? "L'acheteur"
+          'senderName': auth.currentUser?.firstName ?? l10n.acheteur
         }),
       );
 
@@ -144,7 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final Map<String, dynamic> body = {
         'status': newStatus,
         'senderName':
-        auth.currentUser?.firstName ?? 'Utilisateur PLEXUS',
+        auth.currentUser?.firstName ?? l10n.utilisateurPlexus,
       };
       if (shippingFee != null) body['shippingFee'] = shippingFee;
 
@@ -196,12 +197,12 @@ class _ChatScreenState extends State<ChatScreen> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20)),
           title: Row(
-            children: const [
+            children: [
               Icon(Icons.local_shipping_outlined,
                   color: _primary, size: 20),
               SizedBox(width: 10),
               Text(
-                'Expédier le colis',
+                l10n.expedierLeColis,
                 style: TextStyle(
                     color: _primary,
                     fontWeight: FontWeight.w800,
@@ -214,7 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Transporteur',
+                Text(l10n.transporteur,
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -229,7 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: _carriers
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .map((c) => DropdownMenuItem(value: c, child: Text(trData(c))))
                       .toList(),
                   onChanged: (value) => setDialogState(
                           () => selectedCarrier = value ?? selectedCarrier),
@@ -237,7 +238,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(height: 12),
                 _dialogField(
                     controller: trackingC,
-                    label: 'N° Suivi (optionnel)',
+                    label: l10n.nSuiviOptionnel,
                     icon: Icons.qr_code_outlined),
               ],
             ),
@@ -245,7 +246,7 @@ class _ChatScreenState extends State<ChatScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler',
+              child: Text(l10n.annuler,
                   style: TextStyle(color: _textSub)),
             ),
             ElevatedButton(
@@ -256,7 +257,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
-              child: const Text("Confirmer l'expédition",
+              child: Text(l10n.confirmerLExpedition,
                   style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -446,7 +447,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.otherName ?? 'Journal de Transaction',
+                    widget.otherName ?? l10n.journalDeTransaction,
                     style: const TextStyle(
                       color: _textMain,
                       fontSize: 14,
@@ -501,7 +502,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: DashChat(
               currentUser: currentUser,
               onSend: (ChatMessage m) {},
-              messages: _messages,
+              messages: _messages.map(_localizedMessage).toList(),
               inputOptions: const InputOptions(
                 sendOnEnter: false,
                 inputDisabled: true,
@@ -518,6 +519,19 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Affichage : traduit les messages système (stockés en français) selon la langue du téléphone.
+  ChatMessage _localizedMessage(ChatMessage m) {
+    final String t = trChatText(m.text);
+    if (t == m.text) return m;
+    return ChatMessage(
+      text: t,
+      user: m.user,
+      createdAt: m.createdAt,
+      medias: m.medias,
+      customProperties: m.customProperties,
     );
   }
 
@@ -658,7 +672,7 @@ class _ChatScreenState extends State<ChatScreen> {
     // tous deux directement à l'expédition : plus d'étape "offre" séparée.
     if (status == "PENDING_SHIPPING" || status == "PAID") {
       return _ActionButton(
-        label: 'MARQUER EXPÉDIÉ',
+        label: l10n.marquerExpedie,
         icon: Icons.send_rounded,
         color: const Color(0xFFF59E0B),
         onPressed: _markAsShipped,
@@ -666,7 +680,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     if (status == "SHIPPED") {
       return _ActionButton(
-        label: 'MARQUER LIVRÉ',
+        label: l10n.marquerLivre,
         icon: Icons.inventory_2_outlined,
         color: const Color(0xFF64748B),
         onPressed: () => _updateStatus("DELIVERED_BY_SELLER",
@@ -704,8 +718,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       return _ActionButton(
         label: !isPriceLoaded
-            ? 'ATTENTE PRIX...'
-            : 'PAYER LIVRAISON ${fee.toStringAsFixed(2)}\$',
+            ? l10n.attentePrix
+            : l10n.payerLivraison('${fee.toStringAsFixed(2)}'),
         icon: isPriceLoaded
             ? Icons.local_shipping_outlined
             : Icons.hourglass_top_rounded,
@@ -731,7 +745,7 @@ class _ChatScreenState extends State<ChatScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _ActionButton(
-            label: 'RÉCEPTION',
+            label: l10n.reception,
             icon: Icons.check_circle_outline_rounded,
             color: const Color(0xFF3B82F6),
             onPressed: _confirmReceipt,

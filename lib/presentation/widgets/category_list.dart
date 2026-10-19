@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class CategoryList extends StatelessWidget {
   final Function(String) onCategorySelected;
@@ -89,7 +90,7 @@ class CategoryList extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    name,
+                    trData(name),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,

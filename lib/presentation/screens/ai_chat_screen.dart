@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:plexus/core/api_config.dart';
 import '../../core/models/ai_product.dart';
 import '../../core/services/ai_chat_service.dart';
 import '../widgets/product_card_widget.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class _ChatBubble {
   final String role; // 'user' ou 'assistant'
@@ -28,14 +33,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
   final AiChatService _service = AiChatService();
   final List<_ChatBubble> _bubbles = [];
   bool _isLoading = false;
+  bool _openingProduct = false;
 
   @override
   void initState() {
     super.initState();
-    // Message de bienvenue
     _bubbles.add(_ChatBubble(
       role: 'assistant',
-      message: 'Bonjour ! 👋 Décris-moi ce que tu cherches — couleur, prix, type de produit — et je te trouve les meilleures options.',
+      message: l10n.bonjourDecrisMoiCeQue,
     ));
   }
 
@@ -52,6 +57,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     final response = await _service.sendMessage(text);
 
+    if (!mounted) return;
     setState(() {
       _bubbles.add(_ChatBubble(
         role: 'assistant',
@@ -75,18 +81,47 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
-  void _navigateToProduct(String productId) {
-    // Adapte avec ton router existant
-    // context.push('/product/$productId');
-    // ou :
-    Navigator.pushNamed(context, '/product', arguments: productId);
+  void _showError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: Colors.red,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  // Récupère le produit complet puis ouvre directement la page de paiement
+  Future<void> _openPayment(String productId) async {
+    if (_openingProduct) return;
+    setState(() => _openingProduct = true);
+
+    try {
+      final res = await http
+          .get(Uri.parse('${ApiConfig.baseUrl}/products/$productId'))
+          .timeout(const Duration(seconds: 15));
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final product = json.decode(res.body) as Map<String, dynamic>;
+        context.push('/cart/payment', extra: {'singleProduct': product});
+      } else if (res.statusCode == 404) {
+        _showError('Produit introuvable (il a peut-être été supprimé).');
+      } else {
+        _showError('Impossible d\'ouvrir le produit (${res.statusCode}).');
+      }
+    } catch (e) {
+      _showError('Erreur de connexion. Réessaie.');
+    } finally {
+      if (mounted) setState(() => _openingProduct = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
             CircleAvatar(
               radius: 16,
@@ -97,8 +132,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Assistant IA', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                Text('Trouve ton produit idéal', style: TextStyle(fontSize: 11)),
+                Text(l10n.assistantIa,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                Text(l10n.trouveTonProduitIdeal, style: TextStyle(fontSize: 11)),
               ],
             ),
           ],
@@ -107,26 +143,32 @@ class _AiChatScreenState extends State<AiChatScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              setState(() => _bubbles.clear());
               _service.clearHistory();
-              _bubbles.add(_ChatBubble(
-                role: 'assistant',
-                message: 'Nouvelle conversation ! Que cherches-tu ?',
-              ));
+              setState(() {
+                _bubbles.clear();
+                _bubbles.add(_ChatBubble(
+                  role: 'assistant',
+                  message: l10n.nouvelleConversationQueCherchesTu,
+                ));
+              });
             },
           )
         ],
+        bottom: _openingProduct
+            ? const PreferredSize(
+          preferredSize: Size.fromHeight(3),
+          child: LinearProgressIndicator(minHeight: 3),
+        )
+            : null,
       ),
       body: Column(
         children: [
-          // Liste des messages
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: _bubbles.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                // Indicateur de chargement
                 if (_isLoading && index == _bubbles.length) {
                   return _buildTypingIndicator();
                 }
@@ -134,7 +176,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
               },
             ),
           ),
-          // Champ de saisie
           _buildInputBar(),
         ],
       ),
@@ -144,9 +185,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
   Widget _buildBubble(_ChatBubble bubble) {
     final isUser = bubble.role == 'user';
     return Column(
-      crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+      isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        // Bulle texte
         Container(
           margin: const EdgeInsets.only(bottom: 8),
           constraints: BoxConstraints(
@@ -179,7 +220,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ),
           ),
         ),
-        // Cartes produits (si présents)
         if (bubble.products.isNotEmpty) ...[
           SizedBox(
             height: 230,
@@ -189,7 +229,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               itemCount: bubble.products.length,
               itemBuilder: (context, i) => ProductCardWidget(
                 product: bubble.products[i],
-                onTap: () => _navigateToProduct(bubble.products[i].productId),
+                onTap: () => _openPayment(bubble.products[i].productId),
               ),
             ),
           ),
@@ -253,9 +293,10 @@ class _AiChatScreenState extends State<AiChatScreen> {
               controller: _controller,
               onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
-                hintText: 'Ex: téléphone rouge moins de 50 000 FCFA...',
+                hintText: l10n.exTelephoneRougeMoinsDe,
                 hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -274,7 +315,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 color: Theme.of(context).primaryColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              child:
+              const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),
         ],

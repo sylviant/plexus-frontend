@@ -12,6 +12,7 @@ import 'package:plexus/presentation/widgets/category_list.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 // ─── Constantes globales ──────────────────────────────────────────────────────
 const Color _primary    = Color(0xFF1A237E);
@@ -22,20 +23,20 @@ const Color _textMain   = Color(0xFF0F172A);
 const Color _textSub    = Color(0xFF64748B);
 
 // ─── Placeholders animés pour la barre de recherche ──────────────────────────
-const List<String> _searchPlaceholders = [
-  'Rechercher un article...',
-  '💎Nouvelle tendance de bijoux',
-  'Prix de l\'iPhone 15 Pro Max',
-  'Chaussures de sport',
-  'Téléphones Samsung',
-  'Robes pour femmes',
-  '💻Ordinateurs portables',
-  'Meilleurs écouteurs Bluetooth',
-  'Nouveautés électroniques',
-  'Accessoires automobiles',
-  'Montres de luxe',
-  '🚀Promotions du jour',
-  'Air jordan 1',
+List<String> get _searchPlaceholders => [
+  l10n.rechercherUnArticle,
+  l10n.nouvelleTendanceDeBijoux,
+  l10n.prixDeLIphone15,
+  l10n.chaussuresDeSport,
+  l10n.telephonesSamsung,
+  l10n.robesPourFemmes,
+  l10n.ordinateursPortables,
+  l10n.meilleursEcouteursBluetooth,
+  l10n.nouveautesElectroniques,
+  l10n.accessoiresAutomobiles,
+  l10n.montresDeLuxe,
+  l10n.promotionsDuJour,
+  l10n.airJordan1,
 ];
 
 class HomeScreen extends StatefulWidget {
@@ -133,10 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _applyFilters();
         }
       } else {
-        if (mounted) setState(() { _error = 'Erreur serveur'; _isLoading = false; });
+        if (mounted) setState(() { _error = l10n.erreurServeur; _isLoading = false; });
       }
     } catch (e) {
-      if (mounted) setState(() { _error = 'Connexion impossible'; _isLoading = false; });
+      if (mounted) setState(() { _error = l10n.connexionImpossible; _isLoading = false; });
     }
   }
 
@@ -242,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Bienvenue sur',
+                            Text(l10n.bienvenueSur,
                                 style: TextStyle(color: _textSub, fontSize: 12, fontWeight: FontWeight.w500)),
                             const SizedBox(height: 2),
                             Row(children: const [
@@ -453,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
         slivers: [
           const SliverToBoxAdapter(child: PromoBannerCarousel()),
           const SliverToBoxAdapter(child: _LiveAdBanner()),
-          _buildSectionTitle('Pour vous'),
+          _buildSectionTitle(l10n.pourVous),
           SliverToBoxAdapter(child: _buildEmptySearch()),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -468,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SliverToBoxAdapter(child: PromoBannerCarousel()),
         const SliverToBoxAdapter(child: _LiveAdBanner()),
 
-        _buildSectionTitle('Pour vous'),
+        _buildSectionTitle(l10n.pourVous),
 
         // Grille principale
         SliverPadding(
@@ -495,7 +496,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (_popularTerms.isNotEmpty) ...[
-                const Text('Produits populaires',
+                Text(l10n.produitsPopulaires,
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -536,7 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
               ],
               if (_popularCats.isNotEmpty) ...[
-                const Text('Catégories',
+                Text(l10n.categories,
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -663,13 +664,13 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                   color: _textMain, fontWeight: FontWeight.w700, fontSize: 15)),
           const SizedBox(height: 8),
-          const Text('Vérifiez votre connexion internet.',
+          Text(l10n.verifiezVotreConnexionInternet,
               style: TextStyle(color: _textSub, fontSize: 13)),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _fetchProducts,
             icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
-            label: const Text('Réessayer', style: TextStyle(color: Colors.white)),
+            label: Text(l10n.reessayer, style: TextStyle(color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: _primary,
               shape: RoundedRectangleBorder(
@@ -691,13 +692,13 @@ class _HomeScreenState extends State<HomeScreen> {
           const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFCBD5E1)),
           const SizedBox(height: 16),
           Text(
-            'Aucun résultat pour\n"${_searchController.text}"',
+            l10n.aucunResultatPour2('${_searchController.text}'),
             textAlign: TextAlign.center,
             style: const TextStyle(
                 color: _textMain, fontWeight: FontWeight.w600, height: 1.4),
           ),
           const SizedBox(height: 6),
-          const Text('Essayez un autre terme ou une autre catégorie.',
+          Text(l10n.essayezUnAutreTermeOu,
               textAlign: TextAlign.center,
               style: TextStyle(color: _textSub, fontSize: 12)),
         ],
@@ -723,7 +724,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: _textMain,
                   letterSpacing: -0.3)),
           const Spacer(),
-          Text('Voir tout',
+          Text(l10n.voirTout,
               style: TextStyle(
                   color: _primaryMid,
                   fontWeight: FontWeight.w600,
@@ -948,7 +949,7 @@ class _InspirationCardState extends State<_InspirationCard>
                             Border.all(color: Colors.white.withOpacity(0.4)),
                           ),
                           child: Text(
-                            category.toUpperCase(),
+                            trData(category).toUpperCase(),
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -957,7 +958,7 @@ class _InspirationCardState extends State<_InspirationCard>
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text('Découvrir la collection',
+                        Text(l10n.decouvrirLaCollection,
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -971,7 +972,7 @@ class _InspirationCardState extends State<_InspirationCard>
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10)),
-                    child: Text('VOIR TOUT',
+                    child: Text(l10n.voirTout2,
                         style: TextStyle(
                             color: _primary,
                             fontSize: 10,
@@ -1074,25 +1075,25 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
   late AnimationController _pulseCtrl;
   late Animation<double>   _pulseAnim;
 
-  static const List<Map<String, dynamic>> _ads = [
+  static List<Map<String, dynamic>> get _ads => [
     {
-      'title':  '20% DE RÉDUCTION\nET CADEAU GRATUIT',
-      'sub':    'JOURNÉE PORTES OUVERTES',
-      'btn':    'Regarder le DIRECT',
+      'title':  l10n.t20DeReductionEtCadeau,
+      'sub':    l10n.journeePortesOuvertes,
+      'btn':    l10n.regarderLeDirect,
       'colors': [Color(0xFF1A1A2E), Color(0xFF16213E)],
       'icon':   Icons.live_tv_rounded,
     },
     {
-      'title':  'FLASH SALE 🔥\nJUSQU\'À -50%',
-      'sub':    'OFFRES LIMITÉES DU JOUR',
-      'btn':    'Voir les offres',
+      'title':  l10n.flashSaleJusquA50,
+      'sub':    l10n.offresLimiteesDuJour,
+      'btn':    l10n.voirLesOffres,
       'colors': [Color(0xFF7B1FA2), Color(0xFF4A148C)],
       'icon':   Icons.local_fire_department_rounded,
     },
     {
-      'title':  'NOUVEAUTÉS\nDE LA SEMAINE',
-      'sub':    'DÉCOUVREZ EN AVANT-PREMIÈRE',
-      'btn':    'Explorer maintenant',
+      'title':  l10n.nouveautesDeLaSemaine,
+      'sub':    l10n.decouvrezEnAvantPremiere,
+      'btn':    l10n.explorerMaintenant,
       'colors': [Color(0xFF1A237E), Color(0xFF283593)],
       'icon':   Icons.new_releases_rounded,
     },
@@ -1291,16 +1292,16 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
   int    _currentPage = 0;
   Timer? _autoTimer;
 
-  static const List<Map<String, dynamic>> _banners = [
+  static List<Map<String, dynamic>> get _banners => [
     {
-      'title':  'Nouvelle Collection',
-      'sub':    'Électronique 2K & 4K',
+      'title':  l10n.nouvelleCollection,
+      'sub':    l10n.electronique2k4k,
       'image':  'assets/images/pub2.png',
       'colors': [Color(0xFF1A237E), Color(0xFF3949AB)],
     },
     {
-      'title':  'Flash Sale 🔥',
-      'sub':    "Jusqu'à -50% aujourd'hui",
+      'title':  l10n.flashSale,
+      'sub':    l10n.jusquA50AujourdHui,
       'image':  'assets/images/pub2.png',
       'colors': [Color(0xFFBF360C), Color(0xFFEF6C00)],
     },

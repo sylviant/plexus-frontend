@@ -12,6 +12,7 @@ import 'package:plexus/core/api_config.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:plexus/core/constants/countries.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic>? productData;
@@ -22,12 +23,13 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  final _hashController    = TextEditingController();
+  final _hashController    = TextEditingController(); // rempli automatiquement par l'escrow
   final _addressController = TextEditingController();
-  String? _countryCode; // NOUVEAU — sert au calcul auto des frais de livraison
-  bool _isSubmitting       = false;
-  String _selectedCrypto   = "USDT";
-  String _methode = 'manuel'; // 'manuel' ou 'wallet'
+  String? _countryCode;
+  bool _isSubmitting = false;
+
+  // Le paiement se fait uniquement en BNB via le smart contract escrow.
+  static const String _cryptoType = 'BNB';
 
   // ── Blockchain ─────────────────────────────────────────────────────────────
   final WalletService  _walletService  = WalletService();
@@ -36,8 +38,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String? _adresseWallet;
   bool    _isPaying       = false;
 
-  static const String _walletAddress =
-      "0x772b9729B0c76cDf4e9295e32664ff01E5757358";
+  Map<String, dynamic>? get _singleProduct =>
+      widget.productData?['singleProduct'] as Map<String, dynamic>?;
 
   @override
   void dispose() {
@@ -62,153 +64,148 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   // ── Connexion wallet ───────────────────────────────────────────────────────
-Future<void> _connecterWallet() async {
-  try {
-    _walletService.onConnected = () {
-      if (mounted) {
-        setState(() {
-          _walletConnecte = true;
-          _adresseWallet  = _walletService.adresseConnectee;
-        });
-        _showSnack(
-          'Wallet connecté ! ${_adresseWallet?.substring(0, 8)}...',
-          Colors.green,
-          Icons.check_circle,
-        );
-      }
-    };
+  Future<void> _connecterWallet() async {
+    try {
+      _walletService.onConnected = () {
+        if (mounted) {
+          setState(() {
+            _walletConnecte = true;
+            _adresseWallet  = _walletService.adresseConnectee;
+          });
+          _showSnack(
+            l10n.walletConnecte('${_adresseWallet?.substring(0, 8)}'),
+            Colors.green,
+            Icons.check_circle,
+          );
+        }
+      };
 
-    final uri = await _walletService.init();
-    if (uri == null) return;
+      final uri = await _walletService.init();
+      if (uri == null) return;
 
-    if (kIsWeb) {
-      // Web → QR code
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (ctx) => Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            child: Padding(
+      if (kIsWeb) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (ctx) => Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.scannerAvecTonWallet,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(
+                        l10n.scanneCeQrCodeAvec,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: QrImageView(data: uri, size: 200)),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(l10n.annuler),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      } else {
+        final wallets = await _walletService.getWalletsDisponibles(uri);
+
+        if (!mounted) return;
+
+        if (wallets.isEmpty) {
+          _showSnack(
+            l10n.aucunWalletCompatibleInstalleInstalle,
+            Colors.orange,
+            Icons.warning,
+          );
+          return;
+        }
+
+        if (wallets.length == 1) {
+          await _walletService.ouvrirWallet(wallets.first['deeplink']!);
+        } else {
+          showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (ctx) => Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Scanner avec ton wallet',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text(
-                      'Scanne ce QR code avec MetaMask ou Trust Wallet',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: QrImageView(data: uri, size: 200)),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Annuler'),
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
+                  const SizedBox(height: 20),
+                  Text(l10n.choisirTonWallet,
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  ...wallets.map((wallet) => ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        wallet['icon']!,
+                        width: 40, height: 40,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.account_balance_wallet,
+                              color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    title: Text(wallet['name']!,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.arrow_forward_ios,
+                        size: 14, color: Colors.grey),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await _walletService.ouvrirWallet(wallet['deeplink']!);
+                    },
+                  )),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
-          ),
-        );
+          );
+        }
       }
-    } else {
-      // Mobile → liste des wallets installés
-      final wallets = await _walletService.getWalletsDisponibles(uri);
-
-      if (!mounted) return;
-
-      if (wallets.isEmpty) {
-        // Aucun wallet installé
-        _showSnack(
-          'Aucun wallet compatible installé. Installe MetaMask ou Trust Wallet.',
-          Colors.orange,
-          Icons.warning,
-        );
-        return;
-      }
-
-      if (wallets.length == 1) {
-        // Un seul wallet → ouvre directement
-        await _walletService.ouvrirWallet(wallets.first['deeplink']!);
-      } else {
-        // Plusieurs wallets → laisse choisir
-        showModalBottomSheet(
-          context: context,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          builder: (ctx) => Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text('Choisir ton wallet',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                ...wallets.map((wallet) => ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      wallet['icon']!,
-                      width: 40, height: 40,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 40, height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.account_balance_wallet,
-                            color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                  title: Text(wallet['name']!,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: const Icon(Icons.arrow_forward_ios,
-                      size: 14, color: Colors.grey),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    await _walletService.ouvrirWallet(wallet['deeplink']!);
-                  },
-                )),
-                const SizedBox(height: 10),
-              ],
-            ),
-          ),
-        );
-      }
+    } catch (e) {
+      _showSnack(l10n.erreur3('$e'), Colors.red, Icons.error);
     }
-  } catch (e) {
-    _showSnack('Erreur: $e', Colors.red, Icons.error);
   }
-}
 
   // ── Paiement via escrow ────────────────────────────────────────────────────
   Future<void> _payerAvecWallet() async {
     if (!_walletConnecte) {
-      _showSnack('Connecte ton wallet d\'abord', Colors.orange, Icons.warning);
+      _showSnack(l10n.connecteTonWalletDAbord, Colors.orange, Icons.warning);
       return;
     }
     if (_addressController.text.isEmpty) {
-      _showSnack('Entre une adresse de livraison',
+      _showSnack(l10n.entreUneAdresseDeLivraison,
           Colors.orange, Icons.location_off);
       return;
     }
@@ -219,12 +216,16 @@ Future<void> _connecterWallet() async {
         ? double.parse(passedPriceRaw.toString()) : 0.0;
     final bool isFromChat    = widget.productData?['orderId'] != null;
     final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
-    final double displayPrice =
-        (isFromChat || isShippingOnly) ? passedPrice : cart.totalPrice;
+    final double displayPrice = (isFromChat || isShippingOnly)
+        ? passedPrice
+        : (_singleProduct != null)
+        ? ((_singleProduct!['price'] as num?)?.toDouble() ?? 0.0)
+        : cart.totalPrice;
 
     setState(() => _isPaying = true);
     try {
       final String adresseVendeur = widget.productData?['sellerWallet']
+          ?? _singleProduct?['sellerWallet']
           ?? '0x0000000000000000000000000000000000000000';
 
       final txHash = await _escrowContract.creerCommande(
@@ -236,34 +237,34 @@ Future<void> _connecterWallet() async {
 
       _hashController.text = txHash;
       _showSnack(
-        'Paiement envoyé ! Hash: ${txHash.substring(0, 10)}...',
+        l10n.paiementEnvoyeHash('${txHash.substring(0, 10)}'),
         Colors.green,
         Icons.check_circle,
       );
       await _confirmTransfer();
     } catch (e) {
-      _showSnack('Erreur paiement: $e', Colors.red, Icons.error);
+      _showSnack(l10n.erreurPaiement('$e'), Colors.red, Icons.error);
     } finally {
       if (mounted) setState(() => _isPaying = false);
     }
   }
 
-  // ── Confirmation manuelle ──────────────────────────────────────────────────
+  // ── Finalisation de la commande après transaction escrow ──────────────────
   Future<void> _confirmTransfer() async {
     HapticFeedback.mediumImpact();
     if (_hashController.text.length < 10) {
-      _showSnack('Veuillez entrer un Hash (TXID) valide.',
+      _showSnack(l10n.transactionIntrouvableReessaieLePaiement,
           Colors.orange, Icons.warning_amber_rounded);
       return;
     }
     if (_addressController.text.isEmpty) {
-      _showSnack("Veuillez entrer une adresse de livraison.",
+      _showSnack(l10n.veuillezEntrerUneAdresseDe,
           Colors.orange, Icons.location_off_outlined);
       return;
     }
     final bool isFromChatCheck = widget.productData?['orderId'] != null;
     if (!isFromChatCheck && _countryCode == null) {
-      _showSnack("Veuillez sélectionner un pays de livraison.",
+      _showSnack(l10n.veuillezSelectionnerUnPaysDe,
           Colors.orange, Icons.flag_outlined);
       return;
     }
@@ -288,7 +289,7 @@ Future<void> _connecterWallet() async {
           body: json.encode({
             if (!isShippingOnly) 'status': 'PAID',
             'transactionHash': _hashController.text,
-            'cryptoType':      _selectedCrypto,
+            'cryptoType':      _cryptoType,
             'deliveryAddress': _addressController.text,
           }),
         );
@@ -298,18 +299,31 @@ Future<void> _connecterWallet() async {
         final double promoAmount =
             (widget.productData?['promoAmount'] as num?)?.toDouble() ?? 0.0;
 
+        final bool isSingle = _singleProduct != null;
+        final double singlePrice =
+            (_singleProduct?['price'] as num?)?.toDouble() ?? 0.0;
+
         final orderData = <String, dynamic>{
           'userId':          auth.currentUser!.id,
           'buyerName':       auth.currentUser!.firstName,
           'deliveryAddress': _addressController.text,
-          'deliveryCountry': _countryCode, // NOUVEAU — utilisé par computeShippingFee
-          'items': cart.items.values.map((item) => {
+          'deliveryCountry': _countryCode,
+          'items': isSingle
+              ? [{
+            'title':    _singleProduct!['title'],
+            'price':    singlePrice,
+            'quantity': 1,
+          }]
+              : cart.items.values.map((item) => {
             'title': item.title, 'price': item.price, 'quantity': item.quantity,
           }).toList(),
-          'totalAmount':     cart.totalPrice,
-          'sellerId':        widget.productData?['sellerId'] ?? 'Inconnu',
+          'totalAmount': isSingle ? singlePrice : cart.totalPrice,
+          'sellerId': isSingle
+              ? (_singleProduct!['sellerId'] ?? 'Inconnu')
+              : (widget.productData?['sellerId'] ?? 'Inconnu'),
+          'sellerWallet': isSingle ? (_singleProduct!['sellerWallet'] ?? '') : '',
           'transactionHash': _hashController.text,
-          'cryptoType':      _selectedCrypto,
+          'cryptoType':      _cryptoType,
           'status':          'PENDING_ADMIN',
         };
         if (promoCode != null) orderData['promoCode']    = promoCode;
@@ -321,7 +335,7 @@ Future<void> _connecterWallet() async {
           body: json.encode(orderData),
         );
         if (response.statusCode == 201) {
-          cart.clear();
+          if (!isSingle) cart.clear();
           if (mounted) context.go(
             '/cart/confirmation',
             extra: json.decode(response.body),
@@ -329,7 +343,7 @@ Future<void> _connecterWallet() async {
         }
       }
     } catch (e) {
-      _showSnack('Erreur: $e', Colors.red, Icons.error_outline);
+      _showSnack(l10n.erreur3('$e'), Colors.red, Icons.error_outline);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -345,8 +359,11 @@ Future<void> _connecterWallet() async {
         ? double.parse(passedPriceRaw.toString()) : 0.0;
     final bool isFromChat     = widget.productData?['orderId'] != null;
     final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
-    final double displayPrice =
-        (isFromChat || isShippingOnly) ? passedPrice : cart.totalPrice;
+    final double displayPrice = (isFromChat || isShippingOnly)
+        ? passedPrice
+        : (_singleProduct != null)
+        ? ((_singleProduct!['price'] as num?)?.toDouble() ?? 0.0)
+        : cart.totalPrice;
 
     final String? promoCode = widget.productData?['promoCode'] as String?;
     final double promoDiscount =
@@ -360,7 +377,7 @@ Future<void> _connecterWallet() async {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
-          isShippingOnly ? 'FRAIS DE LIVRAISON' : 'PAIEMENT SÉCURISÉ',
+          isShippingOnly ? l10n.fraisDeLivraison : l10n.paiementSecurise,
           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
         ),
         centerTitle: true,
@@ -389,14 +406,14 @@ Future<void> _connecterWallet() async {
               ),
               child: Column(children: [
                 if (isShippingOnly) ...[
-                  const Text('FRAIS DE LIVRAISON',
+                  Text(l10n.fraisDeLivraison,
                       style: TextStyle(color: Colors.white60,
                           fontSize: 12, letterSpacing: 1.5)),
                   const SizedBox(height: 6),
                 ],
                 if (hasPromo && !isFromChat) ...[
                   Text(
-                    '\$${cart.rawPrice.toStringAsFixed(2)} $_selectedCrypto',
+                    '\$${cart.rawPrice.toStringAsFixed(2)} $_cryptoType',
                     style: const TextStyle(
                       color: Colors.white38, fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -411,14 +428,14 @@ Future<void> _connecterWallet() async {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'Code $promoCode — −${promoDiscount.toStringAsFixed(0)}%',
+                      l10n.code('$promoCode', '${promoDiscount.toStringAsFixed(0)}'),
                       style: const TextStyle(color: Colors.white70, fontSize: 11),
                     ),
                   ),
                   const SizedBox(height: 8),
                 ],
                 Text(
-                  '\$${displayPrice.toStringAsFixed(2)} $_selectedCrypto',
+                  '\$${displayPrice.toStringAsFixed(2)} $_cryptoType',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white, fontSize: 32,
@@ -430,347 +447,139 @@ Future<void> _connecterWallet() async {
             const SizedBox(height: 24),
 
             // ── Adresse livraison ────────────────────────────────────────────
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text("ADRESSE DE LIVRAISON",
+              child: Text(l10n.adresseDeLivraison2,
                   style: TextStyle(fontWeight: FontWeight.bold,
                       color: Colors.grey, fontSize: 12)),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _addressController,
-              decoration: const InputDecoration(
-                  hintText: "Saisissez votre adresse de réception"),
+              decoration: InputDecoration(
+                  hintText: l10n.saisissezVotreAdresseDeReception),
             ),
             if (!isFromChat) ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _countryCode,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  hintText: "Pays de livraison",
+                decoration: InputDecoration(
+                  hintText: l10n.paysDeLivraison,
                 ),
                 items: kCountries.entries
                     .map((e) => DropdownMenuItem(
-                          value: e.key,
-                          child: Text(e.value),
-                        ))
+                  value: e.key,
+                  child: Text(trCountry(e.key)),
+                ))
                     .toList(),
                 onChanged: (value) => setState(() => _countryCode = value),
               ),
             ],
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            // ── Sélection méthode de paiement ────────────────────────────────
+            // ── Paiement sécurisé via Escrow ─────────────────────────────────
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text("MÉTHODE DE PAIEMENT",
+              child: Text("PAIEMENT",
                   style: TextStyle(fontWeight: FontWeight.bold,
                       color: Colors.grey, fontSize: 12)),
             ),
             const SizedBox(height: 12),
-            Row(children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _methode = 'manuel'),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: _methode == 'manuel'
-                          ? primaryColor : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: _methode == 'manuel'
-                            ? primaryColor : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: Column(children: [
-                      Icon(Icons.qr_code_rounded,
-                          color: _methode == 'manuel'
-                              ? Colors.white : Colors.grey, size: 24),
-                      const SizedBox(height: 6),
-                      Text("Transfert manuel",
-                          style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.bold,
-                            color: _methode == 'manuel'
-                                ? Colors.white : Colors.grey,
-                          )),
-                    ]),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(children: [
+                Icon(Icons.security, color: Colors.green, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.lesFondsSontBloquesDans,
+                    style: TextStyle(fontSize: 11, color: Colors.green),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _methode = 'wallet'),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
-                      color: _methode == 'wallet'
-                          ? Colors.green[700] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: _methode == 'wallet'
-                            ? Colors.green[700]! : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: Column(children: [
-                      Icon(Icons.account_balance_wallet_outlined,
-                          color: _methode == 'wallet'
-                              ? Colors.white : Colors.grey, size: 24),
-                      const SizedBox(height: 6),
-                      Text("Payer via Escrow",
-                          style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.bold,
-                            color: _methode == 'wallet'
-                                ? Colors.white : Colors.grey,
-                          )),
-                    ]),
-                  ),
-                ),
-              ),
-            ]),
+              ]),
+            ),
             const SizedBox(height: 24),
 
-            // ── Contenu selon méthode ────────────────────────────────────────
-            if (_methode == 'manuel') ...[
-
-              // ── Crypto ───────────────────────────────────────────────────
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'USDT', label: Text('USDT'),
-                      icon: Icon(Icons.currency_bitcoin)),
-                  ButtonSegment(value: 'USDC', label: Text('USDC'),
-                      icon: Icon(Icons.monetization_on_outlined)),
-                ],
-                selected: {_selectedCrypto},
-                onSelectionChanged: (v) {
-                  HapticFeedback.lightImpact();
-                  setState(() => _selectedCrypto = v.first);
-                },
-              ),
-              const SizedBox(height: 25),
-              _buildWarningBanner(),
-              const SizedBox(height: 24),
-
-              // ── QR ───────────────────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    _selectedCrypto == "USDT"
-                        ? 'assets/images/usdt.png'
-                        : 'assets/images/usdc.png',
-                    width: 220, height: 220, fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 220, height: 220, color: Colors.grey[100],
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.qr_code_2_rounded,
-                              size: 60, color: Colors.grey),
-                          SizedBox(height: 10),
-                          Text("Image QR introuvable",
-                              style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                    ),
+            if (!_walletConnecte)
+              SizedBox(
+                width: double.infinity, height: 55,
+                child: OutlinedButton.icon(
+                  onPressed: _connecterWallet,
+                  icon: const Icon(Icons.account_balance_wallet_outlined),
+                  label: Text(l10n.connecterMonWallet),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: primaryColor),
+                    foregroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
-              const Text("BNB Smart Chain (BEP20)",
-                  style: TextStyle(fontSize: 10,
-                      fontWeight: FontWeight.bold, color: Colors.grey)),
-              const SizedBox(height: 15),
-
-              // ── Adresse wallet ───────────────────────────────────────────
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  Clipboard.setData(const ClipboardData(text: _walletAddress));
-                  _showSnack("Adresse copiée !", primaryColor, Icons.copy_rounded);
-                },
-                child: Container(
+              )
+            else
+              Column(children: [
+                Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.05),
+                    color: Colors.green.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: primaryColor.withOpacity(0.1)),
+                    border: Border.all(color: Colors.green.withOpacity(0.3)),
                   ),
-                  child: const Text(_walletAddress,
-                      style: TextStyle(
-                        color: primaryColor, fontWeight: FontWeight.bold, fontSize: 11,
-                      )),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Hash TXID ────────────────────────────────────────────────
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text("PREUVE DE TRANSFERT (HASH TXID)",
-                    style: TextStyle(fontWeight: FontWeight.bold,
-                        color: Colors.grey, fontSize: 12)),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _hashController,
-                decoration: const InputDecoration(
-                    hintText: "Collez l'ID de transaction"),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Bouton confirmation manuelle ─────────────────────────────
-              SizedBox(
-                width: double.infinity, height: 60,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _confirmTransfer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                  ),
-                  child: _isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          isShippingOnly
-                              ? 'CONFIRMER LES FRAIS DE LIVRAISON'
-                              : 'CONFIRMER LE PAIEMENT',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                        ),
-                ),
-              ),
-
-            ] else ...[
-
-              // ── Méthode Wallet ───────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green[200]!),
-                ),
-                child: const Row(children: [
-                  Icon(Icons.security, color: Colors.green, size: 20),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Les fonds sont bloqués dans le smart contract jusqu'à confirmation de livraison. Le vendeur ne peut pas les récupérer avant.",
-                      style: TextStyle(fontSize: 11, color: Colors.green),
+                  child: Row(children: [
+                    const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _adresseWallet ?? '',
+                        style: const TextStyle(fontSize: 11, color: Colors.green),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ]),
-              ),
-              const SizedBox(height: 24),
-
-              if (!_walletConnecte)
+                    TextButton(
+                      onPressed: () {
+                        _walletService.deconnecter();
+                        setState(() {
+                          _walletConnecte = false;
+                          _adresseWallet  = null;
+                        });
+                      },
+                      child: Text(l10n.deconnecter,
+                          style: TextStyle(fontSize: 11)),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity, height: 55,
-                  child: OutlinedButton.icon(
-                    onPressed: _connecterWallet,
-                    icon: const Icon(Icons.account_balance_wallet_outlined),
-                    label: const Text('CONNECTER MON WALLET'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: primaryColor),
-                      foregroundColor: primaryColor,
+                  child: ElevatedButton.icon(
+                    onPressed: (_isPaying || _isSubmitting) ? null : _payerAvecWallet,
+                    icon: (_isPaying || _isSubmitting)
+                        ? const SizedBox(
+                        width: 16, height: 16,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.send_rounded),
+                    label: Text((_isPaying || _isSubmitting)
+                        ? l10n.transactionEnCours
+                        : l10n.payerViaEscrow),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
                     ),
                   ),
-                )
-              else
-                Column(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green.withOpacity(0.3)),
-                    ),
-                    child: Row(children: [
-                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _adresseWallet ?? '',
-                          style: const TextStyle(fontSize: 11, color: Colors.green),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          _walletService.deconnecter();
-                          setState(() {
-                            _walletConnecte = false;
-                            _adresseWallet  = null;
-                          });
-                        },
-                        child: const Text('Déconnecter',
-                            style: TextStyle(fontSize: 11)),
-                      ),
-                    ]),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity, height: 55,
-                    child: ElevatedButton.icon(
-                      onPressed: _isPaying ? null : _payerAvecWallet,
-                      icon: _isPaying
-                          ? const SizedBox(
-                              width: 16, height: 16,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2))
-                          : const Icon(Icons.send_rounded),
-                      label: Text(_isPaying
-                          ? 'Transaction en cours...'
-                          : 'PAYER VIA ESCROW'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15)),
-                      ),
-                    ),
-                  ),
-                ]),
-            ],
+                ),
+              ]),
 
             const SizedBox(height: 40),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildWarningBanner() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF9C4),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
-      ),
-      child: Row(children: [
-        const Icon(Icons.info_outline, color: Colors.orange, size: 24),
-        const SizedBox(width: 12),
-        Expanded(child: Text(
-          _selectedCrypto == "USDT"
-              ? "N'envoyez que des Tether USD (BEP20). Les autres actifs seront perdus."
-              : "N'envoyez que des BNB pegged USD Coin (BEP20). Les autres actifs seront perdus.",
-          style: const TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w500),
-        )),
-      ]),
     );
   }
 }

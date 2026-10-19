@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   final String orderId;
@@ -147,8 +148,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
             ),
           ),
           const SizedBox(width: 14),
-          const Text(
-            'Confirmation de commande',
+          Text(
+            l10n.confirmationDeCommande,
             style: TextStyle(
               color: _textMain,
               fontSize: 15,
@@ -209,8 +210,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
       opacity: _fadeAnim,
       child: Column(
         children: [
-          const Text(
-            'Félicitations ! 🎉',
+          Text(
+            l10n.felicitations,
             style: TextStyle(
               color: _textMain,
               fontSize: 26,
@@ -221,8 +222,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: const Text(
-              'Votre paiement a été validé par nos services. Le vendeur prépare votre colis.',
+            child: Text(
+              l10n.votrePaiementAEteValide,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _textMuted,
@@ -245,7 +246,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                 Icon(Icons.shield_outlined, size: 14, color: _success),
                 const SizedBox(width: 6),
                 Text(
-                  'Fonds sécurisés par PLEXUS Escrow',
+                  l10n.fondsSecurisesParPlexusEscrow,
                   style: TextStyle(
                     color: _success,
                     fontSize: 11,
@@ -294,8 +295,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                   decoration: BoxDecoration(color: _accent, borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'DÉTAILS DE LA COMMANDE',
+                Text(
+                  l10n.detailsDeLaCommande2,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
@@ -339,7 +340,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Livraison', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textMuted)),
+                  Text(l10n.livraison, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _textMuted)),
                   Text(
                     '\$${shippingFee.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textMuted),
@@ -351,7 +352,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
+                Text(l10n.total, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
                 Text(
                   '\$${total.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: _navy),
@@ -397,8 +398,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           context.push('/profile/orders/detail', extra: _order ?? {});
         },
         icon: const Icon(Icons.receipt_long_outlined, size: 18),
-        label: const Text(
-          'Voir ma commande',
+        label: Text(
+          l10n.voirMaCommande,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.3),
         ),
         style: ElevatedButton.styleFrom(
@@ -422,15 +423,15 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           context.push(
             '/messages/chat/${Uri.encodeComponent(convId)}',
             extra: {
-              'otherName': widget.extra?['otherName'] ?? 'Vendeur',
+              'otherName': widget.extra?['otherName'] ?? l10n.vendeur,
               'orderId': widget.orderId,
               'conversationId': convId,
             },
           );
         },
         icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-        label: const Text(
-          'Discuter avec le vendeur',
+        label: Text(
+          l10n.discuterAvecLeVendeur,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 0.3),
         ),
         style: OutlinedButton.styleFrom(

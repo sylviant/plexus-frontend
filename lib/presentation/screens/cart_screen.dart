@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:plexus/l10n/l10n.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -53,13 +54,13 @@ class _CartScreenState extends State<CartScreen> {
         final double discount = (body['discount'] as num).toDouble();
         Provider.of<CartProvider>(context, listen: false)
             .applyPromo(code, discount);
-        _showSnack('Code "$code" appliqué ! −${discount.toStringAsFixed(0)}%',
+        _showSnack(l10n.codeApplique('$code', '${discount.toStringAsFixed(0)}'),
             _green, Icons.check_circle_outline);
       } else {
-        _showSnack(body['msg'] ?? 'Code invalide.', _red, Icons.error_outline);
+        _showSnack(body['msg'] ?? l10n.codeInvalide, _red, Icons.error_outline);
       }
     } catch (e) {
-      _showSnack('Erreur de connexion.', _red, Icons.wifi_off_rounded);
+      _showSnack(l10n.erreurDeConnexion, _red, Icons.wifi_off_rounded);
     } finally {
       setState(() => _isVerifyingPromo = false);
     }
@@ -99,7 +100,7 @@ class _CartScreenState extends State<CartScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Mon Panier',
+            Text(l10n.monPanier,
                 style: TextStyle(
                     color: _textMain,
                     fontWeight: FontWeight.w800,
@@ -175,18 +176,18 @@ class _CartScreenState extends State<CartScreen> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20)),
-        title: const Text('Vider le panier',
+        title: Text(l10n.viderLePanier,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: _textMain,
                 fontSize: 16)),
-        content: const Text(
-            'Tous les articles seront supprimés. Confirmer ?',
+        content: Text(
+            l10n.tousLesArticlesSerontSupprimes,
             style: TextStyle(color: _textSub, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler',
+              child: Text(l10n.annuler,
                   style: TextStyle(color: _textSub))),
           ElevatedButton(
             onPressed: () {
@@ -198,7 +199,7 @@ class _CartScreenState extends State<CartScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 elevation: 0),
-            child: const Text('Vider',
+            child: Text(l10n.vider,
                 style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -231,14 +232,14 @@ class _CartScreenState extends State<CartScreen> {
                   size: 48, color: Color(0xFFCBD5E1)),
             ),
             const SizedBox(height: 28),
-            const Text('Votre panier est vide',
+            Text(l10n.votrePanierEstVide,
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: _textMain)),
             const SizedBox(height: 8),
-            const Text(
-                'Parcourez notre catalogue et ajoutez vos articles préférés.',
+            Text(
+                l10n.parcourezNotreCatalogueEtAjoutez,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 13, color: _textSub, height: 1.5)),
@@ -268,7 +269,7 @@ class _CartScreenState extends State<CartScreen> {
                           borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 32)),
-                  child: const Text('EXPLORER LE CATALOGUE',
+                  child: Text(l10n.explorerLeCatalogue,
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -374,7 +375,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Sous-total : \$${(item.price * item.quantity).toStringAsFixed(2)}',
+                    l10n.sousTotal('${(item.price * item.quantity).toStringAsFixed(2)}'),
                     style: TextStyle(
                         color: _textSub.withOpacity(0.7),
                         fontSize: 11),
@@ -449,7 +450,7 @@ class _CartScreenState extends State<CartScreen> {
 
             // Summary
             _SummaryRow(
-                label: 'Articles ($totalItems)',
+                label: l10n.articles('$totalItems'),
                 value: '\$${cart.rawPrice.toStringAsFixed(2)}',
                 isSubtle: true),
 
@@ -457,7 +458,7 @@ class _CartScreenState extends State<CartScreen> {
               const SizedBox(height: 6),
               _SummaryRow(
                 label:
-                'Réduction ${cart.appliedPromoCode} (−${cart.discountPercentage.toStringAsFixed(0)}%)',
+                l10n.reduction('${cart.appliedPromoCode}', '${cart.discountPercentage.toStringAsFixed(0)}'),
                 value:
                 '−\$${cart.discountAmount.toStringAsFixed(2)}',
                 isSubtle: true,
@@ -467,8 +468,8 @@ class _CartScreenState extends State<CartScreen> {
 
             const SizedBox(height: 6),
             _SummaryRow(
-                label: 'Frais Escrow (0%)',
-                value: 'Offerts',
+                label: l10n.fraisEscrow0,
+                value: l10n.offerts,
                 isSubtle: true,
                 valueColor: _green),
 
@@ -476,7 +477,7 @@ class _CartScreenState extends State<CartScreen> {
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Divider(color: _border)),
             _SummaryRow(
-                label: 'Total à payer',
+                label: l10n.totalAPayer,
                 value:
                 '\$${cart.totalPrice.toStringAsFixed(2)}',
                 isSubtle: false),
@@ -506,7 +507,7 @@ class _CartScreenState extends State<CartScreen> {
                     final firstItem = cart.items.values.first;
                     final sellerId =
                         firstItem.productData?['sellerId'] ??
-                            'Inconnu';
+                            l10n.inconnu;
                     context.push('/cart/payment', extra: {
                       'sellerId':      sellerId,
                       'promoCode':     cart.appliedPromoCode,
@@ -520,13 +521,13 @@ class _CartScreenState extends State<CartScreen> {
                       shape: RoundedRectangleBorder(
                           borderRadius:
                           BorderRadius.circular(14))),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.lock_outline_rounded,
                           color: Colors.white, size: 16),
                       SizedBox(width: 10),
-                      Text('PROCÉDER AU PAIEMENT',
+                      Text(l10n.procederAuPaiement,
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -545,7 +546,7 @@ class _CartScreenState extends State<CartScreen> {
                     size: 12,
                     color: _textSub.withOpacity(0.6)),
                 const SizedBox(width: 5),
-                Text('Paiement sécurisé via Escrow PLEXUS',
+                Text(l10n.paiementSecuriseViaEscrowPlexus,
                     style: TextStyle(
                         fontSize: 11,
                         color: _textSub.withOpacity(0.7))),
@@ -578,13 +579,13 @@ class _CartScreenState extends State<CartScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      'Code "${cart.appliedPromoCode}" appliqué',
+                      l10n.codeApplique2('${cart.appliedPromoCode}'),
                       style: const TextStyle(
                           color: _green,
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                   Text(
-                      '−${cart.discountPercentage.toStringAsFixed(0)}% sur votre commande',
+                      l10n.surVotreCommande('${cart.discountPercentage.toStringAsFixed(0)}'),
                       style: TextStyle(
                           color: _green.withOpacity(0.8),
                           fontSize: 11)),
@@ -622,7 +623,7 @@ class _CartScreenState extends State<CartScreen> {
                 fontSize: 14,
                 letterSpacing: 1.2),
             decoration: InputDecoration(
-              hintText: 'Code promo (ex: PLEXUS20)',
+              hintText: l10n.codePromoExPlexus20,
               hintStyle: TextStyle(
                   color: _textSub.withOpacity(0.5),
                   fontSize: 13,
@@ -670,7 +671,7 @@ class _CartScreenState extends State<CartScreen> {
                 height: 18,
                 child: CircularProgressIndicator(
                     color: Colors.white, strokeWidth: 2))
-                : const Text('Appliquer',
+                : Text(l10n.appliquer,
                 style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,

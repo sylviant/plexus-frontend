@@ -12,12 +12,14 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/date_symbol_data_local.dart'; // AJOUTÉ
+import 'package:plexus/l10n/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialisation des dates pour éviter les crashs sur Notifications
-  await initializeDateFormatting('fr_FR', null);
+  await initializeDateFormatting(); // toutes les locales (fr, en, ... + zones)
+  L10n.initFromDevice(); // langue + zone géographique du téléphone / navigateur
 
   try {
 await Firebase.initializeApp(
@@ -127,6 +129,18 @@ class _PlexusAppState extends State<PlexusApp> {
           ),
         ),
       ),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localeListResolutionCallback: (locales, supported) => L10n.resolveList(locales),
+      builder: (context, child) {
+        final Locale locale = Localizations.localeOf(context);
+        L10n.apply(locale);
+        // La clé force la reconstruction de l'arbre si la langue du téléphone change.
+        return KeyedSubtree(
+          key: ValueKey(locale.toString()),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: createRouter(context),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class WalletService {
   static const String projectId = 'c5d461f849457d1fa9c1f03693707c6d';
@@ -21,9 +22,9 @@ class WalletService {
   Future<String?> init() async {
     _web3app = await Web3App.createInstance(
       projectId: projectId,
-      metadata: const PairingMetadata(
+      metadata: PairingMetadata(
         name: 'PLEXUS',
-        description: 'Marketplace de livraison communautaire',
+        description: l10n.marketplaceDeLivraisonCommunautaire,
         url: 'https://plexus.app',
         icons: ['https://plexus.app/icon.png'],
       ),
@@ -86,7 +87,7 @@ Future<void> ouvrirWallet(String deeplink) async {
     if (_session != null && _web3app != null) {
       await _web3app!.disconnectSession(
         topic: _session!.topic,
-        reason: const WalletConnectError(code: 0, message: 'Déconnexion'),
+        reason: WalletConnectError(code: 0, message: l10n.deconnexion),
       );
       _session = null;
     }

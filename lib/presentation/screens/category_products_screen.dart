@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
@@ -103,7 +104,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 children: [
                   Image.asset('assets/categories/${widget.categoryName.toLowerCase()}.png', fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(color: primaryColor)),
                   Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.8)]))),
-                  Positioned(bottom: 25, left: 20, child: Text(widget.categoryName.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2))),
+                  Positioned(bottom: 25, left: 20, child: Text(trData(widget.categoryName).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2))),
                 ],
               ),
             ),
@@ -129,7 +130,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           _isLoading 
             ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator(color: primaryColor))))
             : _displayProducts.isEmpty 
-              ? SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(50), child: Text("Aucun produit disponible"))))
+              ? SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(50), child: Text(l10n.aucunProduitDisponible))))
               : SliverPadding(
                   padding: const EdgeInsets.all(20),
                   sliver: SliverGrid(
@@ -157,7 +158,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: isSel ? Colors.transparent : Colors.grey[200]!),
         ),
-        child: Center(child: Text(label, style: TextStyle(color: isSel ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: isSel ? FontWeight.bold : FontWeight.normal))),
+        child: Center(child: Text(trData(label), style: TextStyle(color: isSel ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: isSel ? FontWeight.bold : FontWeight.normal))),
       ),
     );
   }

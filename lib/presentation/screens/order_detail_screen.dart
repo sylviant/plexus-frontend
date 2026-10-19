@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/blockchain/escrow_contract.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -65,10 +66,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         setState(() => _status = "DELIVERED");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Row(children: [
+            content: Row(children: [
               Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
               SizedBox(width: 10),
-              Text("Merci ! Le vendeur a été payé."),
+              Text(l10n.merciLeVendeurAEte),
             ]),
             backgroundColor: _green,
             behavior: SnackBarBehavior.floating,
@@ -111,19 +112,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const SizedBox(height: 32),
 
             // ── Adresse livraison ─────────────────────────────────────────
-            _buildSectionLabel('Adresse de livraison'),
+            _buildSectionLabel(l10n.adresseDeLivraison),
             const SizedBox(height: 12),
-            _buildAddressCard(widget.order['deliveryAddress'] ?? 'Aucune adresse renseignée'),
+            _buildAddressCard(widget.order['deliveryAddress'] ?? l10n.aucuneAdresseRenseignee),
             const SizedBox(height: 32),
 
             // ── Articles ──────────────────────────────────────────────────
-            _buildSectionLabel('Articles commandés'),
+            _buildSectionLabel(l10n.articlesCommandes),
             const SizedBox(height: 12),
             _buildItemsList(items),
             const SizedBox(height: 32),
 
             // ── Récapitulatif prix ────────────────────────────────────────
-            _buildSectionLabel('Récapitulatif'),
+            _buildSectionLabel(l10n.recapitulatif),
             const SizedBox(height: 12),
             _buildPriceSummary(items, hasPromo, promoCode, promoDiscount),
             const SizedBox(height: 32),
@@ -151,7 +152,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
         onPressed: () => Navigator.of(context).pop(),
       ),
-      title: const Text('Détails de la commande', style: TextStyle(color: _textPri, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
+      title: Text(l10n.detailsDeLaCommande, style: TextStyle(color: _textPri, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
       bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: _divider)),
     );
   }
@@ -179,7 +180,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           Row(children: [
             const Icon(Icons.calendar_today_outlined, size: 12, color: _textSec),
             const SizedBox(width: 5),
-            Text(DateFormat('dd MMMM yyyy').format(date), style: const TextStyle(color: _textSec, fontSize: 13)),
+            Text(DateFormat.yMMMMd().format(date), style: const TextStyle(color: _textSec, fontSize: 13)),
           ]),
         ])),
       ]),
@@ -194,13 +195,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         onPressed: () => context.push(
           '/messages/chat/${widget.order['userId']}_${widget.order['sellerId']}',
           extra: {
-            'otherName':    isSeller ? widget.order['buyerName'] : 'Vendeur',
-            'productTitle': items.isNotEmpty ? items[0]['title'] : 'Commande',
+            'otherName':    isSeller ? widget.order['buyerName'] : l10n.vendeur,
+            'productTitle': items.isNotEmpty ? items[0]['title'] : l10n.commande,
             'orderId':      widget.order['_id'],
           },
         ),
         icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-        label: Text(isSeller ? "Discuter avec l'acheteur" : "Contacter le vendeur",
+        label: Text(isSeller ? l10n.discuterAvecLAcheteur : l10n.contacterLeVendeur,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, letterSpacing: 0.2)),
         style: ElevatedButton.styleFrom(backgroundColor: _accent, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
       ),
@@ -242,7 +243,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: const Icon(Icons.inventory_2_outlined, size: 18, color: _textSec),
               ),
               const SizedBox(width: 14),
-              Expanded(child: Text(item['title'] ?? 'Produit', style: const TextStyle(color: _textPri, fontSize: 14, fontWeight: FontWeight.w500))),
+              Expanded(child: Text(item['title'] ?? l10n.produit, style: const TextStyle(color: _textPri, fontSize: 14, fontWeight: FontWeight.w500))),
               Text('\$${item['price']}', style: const TextStyle(color: _textPri, fontSize: 14, fontWeight: FontWeight.w700)),
             ]),
           ),
@@ -263,13 +264,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: _divider)),
       child: Column(children: [
         // Sous-total articles
-        _priceRow('Sous-total articles', '\$${rawTotal.toStringAsFixed(2)}', _textSec, false),
+        _priceRow(l10n.sousTotalArticles, '\$${rawTotal.toStringAsFixed(2)}', _textSec, false),
         Container(height: 1, color: _divider, margin: const EdgeInsets.symmetric(horizontal: 18)),
 
         // Réduction promo (affichée seulement si applicable)
         if (hasPromo) ...[
           _priceRow(
-            'Réduction "$promoCode"',
+            l10n.reduction2('$promoCode'),
             '−\$${promoDiscount.toStringAsFixed(2)}',
             const Color(0xFF34C97B),
             false,
@@ -282,7 +283,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('Total payé', style: TextStyle(color: _textSec, fontSize: 14, fontWeight: FontWeight.w500)),
+            Text(l10n.totalPaye, style: TextStyle(color: _textSec, fontSize: 14, fontWeight: FontWeight.w500)),
             Text('\$${finalTotal.toStringAsFixed(2)}', style: const TextStyle(color: _accent, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
           ]),
         ),
@@ -314,10 +315,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
         child: _isUpdating
             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-            : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.verified_outlined, size: 20),
                 SizedBox(width: 10),
-                Text("J'ai bien reçu le colis", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+                Text(l10n.jAiBienRecuLe, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
               ]),
       ),
     );
@@ -326,11 +327,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   // ─── Status Info ──────────────────────────────────────────────────────────
   _StatusInfo _getStatusInfo(String status) {
     switch (status) {
-      case 'DELIVERED':      return _StatusInfo(label: 'LIVRÉ',      color: _green,                      icon: Icons.check_circle_outline_rounded);
-      case 'SHIPPED':        return _StatusInfo(label: 'EN TRANSIT',  color: const Color(0xFF4F6EF7),     icon: Icons.local_shipping_outlined);
-      case 'PENDING_ADMIN':  return _StatusInfo(label: 'VÉRIFICATION',color: const Color(0xFF9B8EF7),     icon: Icons.admin_panel_settings_outlined);
-      case 'PENDING_SHIPPING': return _StatusInfo(label: 'EN ATTENTE', color: const Color(0xFFF5A623),   icon: Icons.hourglass_top_rounded);
-      case 'CANCELLED':      return _StatusInfo(label: 'ANNULÉ',      color: const Color(0xFFEF5350),     icon: Icons.cancel_outlined);
+      case 'DELIVERED':      return _StatusInfo(label: l10n.livre,      color: _green,                      icon: Icons.check_circle_outline_rounded);
+      case 'SHIPPED':        return _StatusInfo(label: l10n.enTransit,  color: const Color(0xFF4F6EF7),     icon: Icons.local_shipping_outlined);
+      case 'PENDING_ADMIN':  return _StatusInfo(label: l10n.verification,color: const Color(0xFF9B8EF7),     icon: Icons.admin_panel_settings_outlined);
+      case 'PENDING_SHIPPING': return _StatusInfo(label: l10n.enAttente, color: const Color(0xFFF5A623),   icon: Icons.hourglass_top_rounded);
+      case 'CANCELLED':      return _StatusInfo(label: l10n.annule,      color: const Color(0xFFEF5350),     icon: Icons.cancel_outlined);
       default:               return _StatusInfo(label: status,        color: _textSec,                    icon: Icons.info_outline_rounded);
     }
   }

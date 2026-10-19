@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 // ─── Modèle local d'une variante ─────────────────────────────────────────────
 
@@ -109,27 +110,27 @@ class _AddProductScreenState extends State<AddProductScreen>
   String? _status;         // 'En stock' | 'Limité'
   String? _sellerCountry;  // Code ISO-2, ex: 'CM'
 
-  static const List<DropdownMenuItem<String>> _countryItems = [
-    DropdownMenuItem(value: 'CM', child: Text('🇨🇲 Cameroun (CM)')),
-    DropdownMenuItem(value: 'FR', child: Text('🇫🇷 France (FR)')),
-    DropdownMenuItem(value: 'CN', child: Text('🇨🇳 Chine (CN)')),
-    DropdownMenuItem(value: 'US', child: Text('🇺🇸 États-Unis (US)')),
-    DropdownMenuItem(value: 'NG', child: Text('🇳🇬 Nigeria (NG)')),
-    DropdownMenuItem(value: 'SN', child: Text('🇸🇳 Sénégal (SN)')),
-    DropdownMenuItem(value: 'CI', child: Text('🇨🇮 Côte d\'Ivoire (CI)')),
-    DropdownMenuItem(value: 'MA', child: Text('🇲🇦 Maroc (MA)')),
-    DropdownMenuItem(value: 'DZ', child: Text('🇩🇿 Algérie (DZ)')),
-    DropdownMenuItem(value: 'GH', child: Text('🇬🇭 Ghana (GH)')),
-    DropdownMenuItem(value: 'ZA', child: Text('🇿🇦 Afrique du Sud (ZA)')),
-    DropdownMenuItem(value: 'GB', child: Text('🇬🇧 Royaume-Uni (GB)')),
-    DropdownMenuItem(value: 'DE', child: Text('🇩🇪 Allemagne (DE)')),
-    DropdownMenuItem(value: 'TR', child: Text('🇹🇷 Turquie (TR)')),
-    DropdownMenuItem(value: 'IN', child: Text('🇮🇳 Inde (IN)')),
-    DropdownMenuItem(value: 'JP', child: Text('🇯🇵 Japon (JP)')),
-    DropdownMenuItem(value: 'AE', child: Text('🇦🇪 Émirats arabes unis (AE)')),
-    DropdownMenuItem(value: 'CD', child: Text('🇨🇩 RD Congo (CD)')),
-    DropdownMenuItem(value: 'TG', child: Text('🇹🇬 Togo (TG)')),
-    DropdownMenuItem(value: 'GA', child: Text('🇬🇦 Gabon (GA)')),
+  static List<DropdownMenuItem<String>> get _countryItems => [
+    DropdownMenuItem(value: 'CM', child: Text(l10n.camerounCm)),
+    DropdownMenuItem(value: 'FR', child: Text(l10n.franceFr)),
+    DropdownMenuItem(value: 'CN', child: Text(l10n.chineCn)),
+    DropdownMenuItem(value: 'US', child: Text(l10n.etatsUnisUs)),
+    DropdownMenuItem(value: 'NG', child: Text(l10n.nigeriaNg)),
+    DropdownMenuItem(value: 'SN', child: Text(l10n.senegalSn)),
+    DropdownMenuItem(value: 'CI', child: Text(l10n.coteDIvoireCi)),
+    DropdownMenuItem(value: 'MA', child: Text(l10n.marocMa)),
+    DropdownMenuItem(value: 'DZ', child: Text(l10n.algerieDz)),
+    DropdownMenuItem(value: 'GH', child: Text(l10n.ghanaGh)),
+    DropdownMenuItem(value: 'ZA', child: Text(l10n.afriqueDuSudZa)),
+    DropdownMenuItem(value: 'GB', child: Text(l10n.royaumeUniGb)),
+    DropdownMenuItem(value: 'DE', child: Text(l10n.allemagneDe)),
+    DropdownMenuItem(value: 'TR', child: Text(l10n.turquieTr)),
+    DropdownMenuItem(value: 'IN', child: Text(l10n.indeIn)),
+    DropdownMenuItem(value: 'JP', child: Text(l10n.japonJp)),
+    DropdownMenuItem(value: 'AE', child: Text(l10n.emiratsArabesUnisAe)),
+    DropdownMenuItem(value: 'CD', child: Text(l10n.rdCongoCd)),
+    DropdownMenuItem(value: 'TG', child: Text(l10n.togoTg)),
+    DropdownMenuItem(value: 'GA', child: Text(l10n.gabonGa)),
   ];
 
   final Map<String, List<String>> _subCategoriesMap = {
@@ -278,7 +279,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         if (!kIsWeb) {
           final sz = await File(video.path).length();
           if (sz > 100 * 1024 * 1024) {
-            _showSnack('Vidéo trop volumineuse (max 100 MB).', Colors.red, Icons.error_outline);
+            _showSnack(l10n.videoTropVolumineuseMax100, Colors.red, Icons.error_outline);
             return;
           }
         }
@@ -326,17 +327,17 @@ class _AddProductScreenState extends State<AddProductScreen>
     else                         toCheck = _sizeVariants;
 
     if (toCheck.isEmpty) {
-      _showSnack('Ajoutez au moins une variante.', Colors.orange, Icons.warning); return false;
+      _showSnack(l10n.ajoutezAuMoinsUneVariante, Colors.orange, Icons.warning); return false;
     }
     for (final v in toCheck) {
       if (v.label.isEmpty) {
-        _showSnack('Renseignez le nom de chaque variante.', Colors.orange, Icons.warning); return false;
+        _showSnack(l10n.renseignezLeNomDeChaque, Colors.orange, Icons.warning); return false;
       }
       if (v.price <= 0) {
-        _showSnack('Prix manquant pour "${v.label}".', Colors.orange, Icons.warning); return false;
+        _showSnack(l10n.prixManquantPour('${v.label}'), Colors.orange, Icons.warning); return false;
       }
       if (v.newImages.isEmpty && v.existingImages.isEmpty) {
-        _showSnack('Images manquantes pour "${v.label}".', Colors.orange, Icons.warning); return false;
+        _showSnack(l10n.imagesManquantesPour('${v.label}'), Colors.orange, Icons.warning); return false;
       }
     }
     return true;
@@ -347,15 +348,15 @@ class _AddProductScreenState extends State<AddProductScreen>
     if (!_formKey.currentState!.validate()) return;
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (!auth.isApproved) {
-      _showSnack('Compte en attente de validation.', const Color(0xFFF59E0B), Icons.warning_amber_rounded); return;
+      _showSnack(l10n.compteEnAttenteDeValidation, const Color(0xFFF59E0B), Icons.warning_amber_rounded); return;
     }
     if (!_validateVariants()) return;
     if (_status == null) {
-      _showSnack('Sélectionnez le statut du produit (En stock / Limité).', Colors.orange, Icons.warning);
+      _showSnack(l10n.selectionnezLeStatutDuProduit, Colors.orange, Icons.warning);
       return;
     }
     if (_sellerCountry == null || _sellerCountry!.isEmpty) {
-      _showSnack('Sélectionnez votre pays.', Colors.orange, Icons.warning);
+      _showSnack(l10n.selectionnezVotrePays, Colors.orange, Icons.warning);
       return;
     }
 
@@ -378,7 +379,7 @@ class _AddProductScreenState extends State<AddProductScreen>
       request.fields['category']    = _selectedCategory    ?? '';
       request.fields['subCategory'] = _selectedSubCategory ?? '';
       request.fields['sellerId']    = auth.currentUser!.id;
-      request.fields['sellerName']  = auth.currentUser!.firstName ?? 'Vendeur';
+      request.fields['sellerName']  = auth.currentUser!.firstName ?? l10n.vendeur;
       request.fields['hasColors']   = _hasColors.toString();
       request.fields['hasSizes']    = _hasSizes.toString();
       request.fields['status']        = _status ?? '';
@@ -448,11 +449,11 @@ class _AddProductScreenState extends State<AddProductScreen>
         if (mounted) context.go('/home');
       } else {
         final body = await response.stream.bytesToString();
-        _showSnack('Erreur ${response.statusCode}: $body', Colors.red, Icons.error_outline);
+        _showSnack(l10n.erreur('${response.statusCode}', '$body'), Colors.red, Icons.error_outline);
       }
     } catch (e) {
       debugPrint('Submit error: $e');
-      _showSnack('Erreur de connexion.', Colors.red, Icons.wifi_off_rounded);
+      _showSnack(l10n.erreurDeConnexion, Colors.red, Icons.wifi_off_rounded);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -494,7 +495,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           ),
           onPressed: () => context.pop(),
         ),
-        title: Text(_isEditing ? 'Modifier le produit' : 'Publier un produit',
+        title: Text(_isEditing ? l10n.modifierLeProduit : l10n.publierUnProduit,
             style: const TextStyle(color: _textMain, fontSize: 17, fontWeight: FontWeight.w700)),
         centerTitle: true,
         actions: [
@@ -504,7 +505,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(color: _primaryMid.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: const Text('Édition', style: TextStyle(color: _primaryMid, fontSize: 12, fontWeight: FontWeight.w600)),
+                child: Text(l10n.edition, style: TextStyle(color: _primaryMid, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ),
         ],
@@ -523,45 +524,45 @@ class _AddProductScreenState extends State<AddProductScreen>
                 if (!auth.isApproved)
                   _Banner(
                     icon: Icons.hourglass_top_rounded,
-                    message: "Compte en attente de validation. Vous ne pouvez pas publier pour l'instant.",
+                    message: l10n.compteEnAttenteDeValidation2,
                     color: const Color(0xFFF59E0B),
                     bgColor: const Color(0xFFFFFBEB),
                     borderColor: const Color(0xFFFDE68A),
                   ),
 
                 // ── Catégorie ─────────────────────────────────────
-                const _SectionLabel(label: 'Classification'),
+                _SectionLabel(label: l10n.classification),
                 const SizedBox(height: 10),
                 _buildCategoryCard(currentSubCats),
                 const SizedBox(height: 28),
 
                 // ── Statut & Pays (NOUVEAU) ─────────────────────────
-                const _SectionLabel(label: 'Disponibilité & Origine'),
+                _SectionLabel(label: l10n.disponibiliteOrigine),
                 const SizedBox(height: 10),
                 _buildAvailabilityCard(),
                 const SizedBox(height: 28),
 
                 // ── Infos ─────────────────────────────────────────
-                const _SectionLabel(label: 'Informations du produit'),
+                _SectionLabel(label: l10n.informationsDuProduit),
                 const SizedBox(height: 10),
                 _buildInfoCard(),
                 const SizedBox(height: 28),
 
                 // ── Variantes ─────────────────────────────────────
-                const _SectionLabel(label: 'Variantes'),
+                _SectionLabel(label: l10n.variantes),
                 const SizedBox(height: 10),
                 _buildVariantsSection(),
                 const SizedBox(height: 28),
 
                 // ── Médias généraux (si pas de variantes) ─────────
                 if (!_hasColors && !_hasSizes) ...[
-                  const _SectionLabel(label: 'Photos & Vidéo'),
+                  _SectionLabel(label: l10n.photosVideo),
                   const SizedBox(height: 10),
                   _buildMediaSection(),
                   const SizedBox(height: 28),
                 ] else ...[
                   // Vidéo même avec variantes
-                  const _SectionLabel(label: 'Vidéo du produit (optionnel)'),
+                  _SectionLabel(label: l10n.videoDuProduitOptionnel),
                   const SizedBox(height: 10),
                   _buildVideoSection(),
                   const SizedBox(height: 28),
@@ -569,7 +570,7 @@ class _AddProductScreenState extends State<AddProductScreen>
 
                 // ── Wallet ────────────────────────────────────────
                 if (_userWallets.isNotEmpty) ...[
-                  const _SectionLabel(label: 'Portefeuille de paiement'),
+                  _SectionLabel(label: l10n.portefeuilleDePaiement),
                   const SizedBox(height: 10),
                   _buildWalletCard(),
                   const SizedBox(height: 28),
@@ -593,32 +594,32 @@ class _AddProductScreenState extends State<AddProductScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _FieldLabel(label: 'Statut du produit *'),
+          _FieldLabel(label: l10n.statutDuProduit),
           const SizedBox(height: 10),
           Row(children: [
             Expanded(
               child: _buildStatusChip(
-                label: 'En stock', value: 'En stock',
+                label: l10n.enStock, value: 'En stock',
                 color: _green, icon: Icons.check_circle_outline_rounded,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _buildStatusChip(
-                label: 'Limité', value: 'Limité',
+                label: l10n.limite, value: 'Limité',
                 color: _red, icon: Icons.warning_amber_rounded,
               ),
             ),
           ]),
           const SizedBox(height: 20),
-          const _FieldLabel(label: 'Pays *'),
+          _FieldLabel(label: l10n.pays),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _sellerCountry,
-            decoration: _inputDeco(hint: 'Sélectionner votre pays', icon: Icons.public_rounded),
+            decoration: _inputDeco(hint: l10n.selectionnerVotrePays, icon: Icons.public_rounded),
             items: _countryItems,
             onChanged: (v) => setState(() => _sellerCountry = v),
-            validator: (v) => v == null ? 'Requis' : null,
+            validator: (v) => v == null ? l10n.requis : null,
             style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500, fontSize: 14),
             dropdownColor: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -670,8 +671,8 @@ class _AddProductScreenState extends State<AddProductScreen>
 
           // ── Toggle couleurs ──────────────────────────────────────────
           _buildToggle(
-            label:    'Ce produit a plusieurs couleurs',
-            sub:      'Chaque couleur aura ses propres images, prix et stock',
+            label:    l10n.ceProduitAPlusieursCouleurs,
+            sub:      l10n.chaqueCouleurAuraSesPropres,
             value:    _hasColors,
             onChanged: (v) {
               setState(() {
@@ -686,7 +687,7 @@ class _AddProductScreenState extends State<AddProductScreen>
             ..._colorVariants.asMap().entries.map((e) => _buildVariantBlock(e.key, e.value, isColor: true)),
             _buildAddVariantRow(
               ctrl:      _colorNameCtrl,
-              hint:      'Nom de la couleur (ex: Noir)',
+              hint:      l10n.nomDeLaCouleurEx,
               onAdd:     () {
                 final name = _colorNameCtrl.text.trim();
                 if (name.isEmpty || _colorVariants.any((v) => v.color == name)) return;
@@ -703,8 +704,8 @@ class _AddProductScreenState extends State<AddProductScreen>
 
           // ── Toggle tailles ───────────────────────────────────────────
           _buildToggle(
-            label:    'Ce produit a plusieurs tailles',
-            sub:      'Chaque taille aura ses propres images, prix et stock',
+            label:    l10n.ceProduitAPlusieursTailles,
+            sub:      l10n.chaqueTailleAuraSesPropres,
             value:    _hasSizes,
             onChanged: (v) {
               setState(() {
@@ -719,7 +720,7 @@ class _AddProductScreenState extends State<AddProductScreen>
             ..._sizeVariants.asMap().entries.map((e) => _buildVariantBlock(e.key, e.value, isColor: false)),
             _buildAddVariantRow(
               ctrl:      _sizeNameCtrl,
-              hint:      'Nom de la taille (ex: S, M, 42...)',
+              hint:      l10n.nomDeLaTailleEx,
               onAdd:     () {
                 final name = _sizeNameCtrl.text.trim();
                 if (name.isEmpty || _sizeVariants.any((v) => v.size == name)) return;
@@ -735,9 +736,9 @@ class _AddProductScreenState extends State<AddProductScreen>
           // ── Tableau combos (couleurs + tailles) ──────────────────────
           if (_hasColors && _hasSizes && _comboVariants.isNotEmpty) ...[
             const Divider(height: 28, color: Color(0xFFE2E8F0)),
-            const _FieldLabel(label: 'Variantes combinées'),
+            _FieldLabel(label: l10n.variantesCombinees),
             const SizedBox(height: 4),
-            Text('Définissez prix, stock et images pour chaque combinaison.',
+            Text(l10n.definissezPrixStockEtImages,
                 style: TextStyle(color: _textSub, fontSize: 11)),
             const SizedBox(height: 12),
             ..._comboVariants.asMap().entries.map((e) => _buildComboRow(e.key, e.value)),
@@ -804,7 +805,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Images de cette variante
-                const _FieldLabel(label: 'Images de cette variante *'),
+                _FieldLabel(label: l10n.imagesDeCetteVariante),
                 const SizedBox(height: 8),
                 _buildVariantImagesPicker(variant),
 
@@ -813,20 +814,20 @@ class _AddProductScreenState extends State<AddProductScreen>
                 // Prix + Stock
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const _FieldLabel(label: 'Prix *'),
+                    _FieldLabel(label: l10n.prix),
                     const SizedBox(height: 6),
                     _buildSmallField(ctrl: variant.priceCtrl, hint: '0', prefix: '\$ '),
                   ])),
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const _FieldLabel(label: 'Stock'),
+                    _FieldLabel(label: l10n.stock),
                     const SizedBox(height: 6),
                     _buildSmallField(ctrl: variant.stockCtrl, hint: '0'),
                   ])),
                   const SizedBox(width: 12),
                   // Disponible
                   Column(children: [
-                    const _FieldLabel(label: 'Dispo'),
+                    _FieldLabel(label: l10n.dispo),
                     const SizedBox(height: 6),
                     GestureDetector(
                       onTap: () => setState(() => variant.available = !variant.available),
@@ -871,7 +872,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.add_photo_alternate_outlined, color: _primary, size: 22),
                 const SizedBox(height: 2),
-                Text('Photos', style: TextStyle(color: _primary, fontSize: 9, fontWeight: FontWeight.w600)),
+                Text(l10n.photos, style: TextStyle(color: _primary, fontSize: 9, fontWeight: FontWeight.w600)),
               ]),
             ),
           ),
@@ -969,13 +970,13 @@ class _AddProductScreenState extends State<AddProductScreen>
           ]),
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: _buildSmallField(ctrl: combo.priceCtrl, hint: 'Prix', prefix: '\$ ')),
+            Expanded(child: _buildSmallField(ctrl: combo.priceCtrl, hint: l10n.prix2, prefix: '\$ ')),
             const SizedBox(width: 10),
-            SizedBox(width: 80, child: _buildSmallField(ctrl: combo.stockCtrl, hint: 'Stock')),
+            SizedBox(width: 80, child: _buildSmallField(ctrl: combo.stockCtrl, hint: l10n.stock)),
           ]),
           const SizedBox(height: 10),
           // Images de la combo
-          const _FieldLabel(label: 'Images (optionnel — hérite de la couleur par défaut)'),
+          _FieldLabel(label: l10n.imagesOptionnelHeriteDeLa),
           const SizedBox(height: 6),
           _buildVariantImagesPicker(combo),
         ],
@@ -999,7 +1000,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        child: const Text('Ajouter'),
+        child: Text(l10n.ajouter),
       ),
     ]);
   }
@@ -1013,7 +1014,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const _FieldLabel(label: 'Images produit (max 6)'),
+            _FieldLabel(label: l10n.imagesProduitMax6),
             Text('${_generalImages.length}/6',
                 style: TextStyle(color: _generalImages.length >= 6 ? Colors.orange : _textSub, fontSize: 12, fontWeight: FontWeight.w600)),
           ]),
@@ -1034,7 +1035,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                         Icon(Icons.add_photo_alternate_outlined, color: _primary, size: 28),
                         const SizedBox(height: 4),
-                        Text('Ajouter', style: TextStyle(color: _primary, fontSize: 10, fontWeight: FontWeight.w600)),
+                        Text(l10n.ajouter, style: TextStyle(color: _primary, fontSize: 10, fontWeight: FontWeight.w600)),
                       ]),
                     ),
                   ),
@@ -1058,7 +1059,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(color: _primary, borderRadius: BorderRadius.circular(4)),
-                          child: const Text('Principale', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700)),
+                          child: Text(l10n.principale, style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700)),
                         ),
                       ),
                     Positioned(
@@ -1105,7 +1106,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_hasColors || _hasSizes)
-            const _FieldLabel(label: 'Vidéo du produit (optionnel · max 3 min · 100 MB)'),
+            _FieldLabel(label: l10n.videoDuProduitOptionnelMax),
           if (_hasColors || _hasSizes) const SizedBox(height: 10),
 
           // Vidéo existante (mode édition)
@@ -1126,10 +1127,10 @@ class _AddProductScreenState extends State<AddProductScreen>
                     child: Icon(Icons.videocam_rounded, color: _primary, size: 20),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Vidéo actuelle', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w700, fontSize: 13)),
-                      Text('Votre produit a une vidéo.', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                      Text(l10n.videoActuelle, style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text(l10n.votreProduitAUneVideo, style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
                     ]),
                   ),
                   GestureDetector(
@@ -1161,7 +1162,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               child: OutlinedButton.icon(
                 onPressed: _isPickingVideo ? null : _pickVideo,
                 icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                label: const Text('Remplacer la vidéo'),
+                label: Text(l10n.remplacerLaVideo),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: _primary.withOpacity(0.4)),
                   foregroundColor: _primary,
@@ -1192,7 +1193,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(p.basename(_pickedVideo!.name), maxLines: 1, overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 13)),
-                    const Text('Prête à être uploadée', style: TextStyle(color: Color(0xFF10B981), fontSize: 11)),
+                    Text(l10n.preteAEtreUploadee, style: TextStyle(color: Color(0xFF10B981), fontSize: 11)),
                   ]),
                 ),
                 GestureDetector(
@@ -1219,7 +1220,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                     : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Icon(Icons.video_call_outlined, color: _primary, size: 22),
                   const SizedBox(width: 8),
-                  Text('Sélectionner une vidéo (max 3 min)', style: TextStyle(color: _primary, fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text(l10n.selectionnerUneVideoMax3, style: TextStyle(color: _primary, fontWeight: FontWeight.w600, fontSize: 13)),
                 ]),
               ),
             ),
@@ -1251,7 +1252,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(_catIcons[cat] ?? Icons.category_outlined, size: 14, color: sel ? Colors.white : _textSub),
                   const SizedBox(width: 6),
-                  Text(cat, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? Colors.white : _textSub)),
+                  Text(trData(cat), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? Colors.white : _textSub)),
                 ]),
               ),
             );
@@ -1261,14 +1262,14 @@ class _AddProductScreenState extends State<AddProductScreen>
           const SizedBox(height: 16),
           const Divider(color: Color(0xFFE2E8F0)),
           const SizedBox(height: 12),
-          const _FieldLabel(label: 'Sous-catégorie'),
+          _FieldLabel(label: l10n.sousCategorie),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedSubCategory,
-            decoration: _inputDeco(hint: 'Choisir une sous-catégorie', icon: Icons.subdirectory_arrow_right_rounded),
-            items: currentSubCats.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+            decoration: _inputDeco(hint: l10n.choisirUneSousCategorie, icon: Icons.subdirectory_arrow_right_rounded),
+            items: currentSubCats.map((s) => DropdownMenuItem(value: s, child: Text(trData(s)))).toList(),
             onChanged: (val) => setState(() => _selectedSubCategory = val),
-            validator: (v) => v == null ? 'Veuillez choisir une sous-catégorie' : null,
+            validator: (v) => v == null ? l10n.veuillezChoisirUneSousCategorie : null,
             style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500, fontSize: 14),
             dropdownColor: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -1284,28 +1285,28 @@ class _AddProductScreenState extends State<AddProductScreen>
       decoration: _card(),
       padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const _FieldLabel(label: 'Nom du produit *'),
+        _FieldLabel(label: l10n.nomDuProduit),
         const SizedBox(height: 8),
         TextFormField(
           controller: _nameCtrl,
           style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
-          decoration: _inputDeco(hint: 'Ex: T-Shirt premium coton bio', icon: Icons.label_outline_rounded),
-          validator: (v) => v!.isEmpty ? 'Requis' : null,
+          decoration: _inputDeco(hint: l10n.exTShirtPremiumCoton, icon: Icons.label_outline_rounded),
+          validator: (v) => v!.isEmpty ? l10n.requis : null,
         ),
         const SizedBox(height: 18),
-        const _FieldLabel(label: 'Description'),
+        _FieldLabel(label: l10n.description),
         const SizedBox(height: 8),
         TextFormField(
           controller: _descCtrl,
           maxLines: 4,
           style: const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
-          decoration: _inputDeco(hint: 'Décrivez votre produit...', icon: Icons.notes_rounded),
+          decoration: _inputDeco(hint: l10n.decrivezVotreProduit, icon: Icons.notes_rounded),
         ),
         if (!_hasColors && !_hasSizes) ...[
           const SizedBox(height: 18),
           Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const _FieldLabel(label: 'Prix actuel *'),
+              _FieldLabel(label: l10n.prixActuel),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _priceCtrl,
@@ -1313,12 +1314,12 @@ class _AddProductScreenState extends State<AddProductScreen>
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: const TextStyle(color: _textMain, fontWeight: FontWeight.w600),
                 decoration: _inputDeco(hint: '0', icon: Icons.sell_outlined, prefixText: '\$ '),
-                validator: (v) => v!.isEmpty ? 'Requis' : null,
+                validator: (v) => v!.isEmpty ? l10n.requis : null,
               ),
             ])),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const _FieldLabel(label: 'Ancien prix'),
+              _FieldLabel(label: l10n.ancienPrix),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _oldPriceCtrl,
@@ -1341,7 +1342,7 @@ class _AddProductScreenState extends State<AddProductScreen>
             child: Row(children: [
               Icon(Icons.info_outline, color: _primary.withOpacity(0.7), size: 14),
               const SizedBox(width: 8),
-              Expanded(child: Text('Le prix est défini dans chaque variante.', style: TextStyle(color: _primary.withOpacity(0.8), fontSize: 11))),
+              Expanded(child: Text(l10n.lePrixEstDefiniDans, style: TextStyle(color: _primary.withOpacity(0.8), fontSize: 11))),
             ]),
           ),
         ],
@@ -1355,11 +1356,11 @@ class _AddProductScreenState extends State<AddProductScreen>
       decoration: _card(),
       padding: const EdgeInsets.all(18),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const _FieldLabel(label: 'Adresse du portefeuille'),
+        _FieldLabel(label: l10n.adresseDuPortefeuille),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedWalletAddress,
-          decoration: _inputDeco(hint: 'Choisir un portefeuille', icon: Icons.account_balance_wallet_outlined),
+          decoration: _inputDeco(hint: l10n.choisirUnPortefeuille, icon: Icons.account_balance_wallet_outlined),
           items: _userWallets.map((w) => DropdownMenuItem<String>(
             value: w['address'],
             child: Text(
@@ -1376,7 +1377,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         Row(children: [
           Icon(Icons.shield_outlined, size: 13, color: _accent.withOpacity(0.8)),
           const SizedBox(width: 6),
-          Text('Paiements sécurisés via Escrow PLEXUS.', style: TextStyle(fontSize: 11, color: _textSub.withOpacity(0.8))),
+          Text(l10n.paiementsSecurisesViaEscrowPlexus, style: TextStyle(fontSize: 11, color: _textSub.withOpacity(0.8))),
         ]),
       ]),
     );
@@ -1404,7 +1405,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(_isEditing ? Icons.save_rounded : Icons.rocket_launch_rounded, color: Colors.white, size: 17),
             const SizedBox(width: 10),
-            Text(_isEditing ? 'ENREGISTRER' : "PUBLIER L'ARTICLE",
+            Text(_isEditing ? 'ENREGISTRER' : l10n.publierLArticle,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1.2, fontSize: 14)),
           ]),
         ),
@@ -1469,7 +1470,7 @@ class _VideoWebWidget extends StatelessWidget {
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Icon(Icons.play_circle_fill, color: Colors.white54, size: 48),
           const SizedBox(height: 8),
-          const Text('Appuyez pour voir la vidéo', style: TextStyle(color: Colors.white54, fontSize: 12)),
+          Text(l10n.appuyezPourVoirLaVideo, style: TextStyle(color: Colors.white54, fontSize: 12)),
         ]),
       ),
     );

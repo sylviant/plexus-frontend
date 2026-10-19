@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:plexus/core/models/user_type.dart';
 import 'package:plexus/core/providers/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class UserTypeSelectionScreen extends StatefulWidget {
   const UserTypeSelectionScreen({super.key});
@@ -131,8 +132,8 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          "Bienvenue sur Plexus",
+                        Text(
+                          l10n.bienvenueSurPlexus,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -142,7 +143,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Comment souhaitez-vous utiliser\nl'application ?",
+                          l10n.commentSouhaitezVousUtiliserL,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.65),
@@ -165,28 +166,28 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                           _buildTypeCard(
                             type: UserType.client,
                             icon: Icons.shopping_bag_outlined,
-                            title: "Je suis un Client",
+                            title: l10n.jeSuisUnClient,
                             subtitle:
-                                "Parcourez et achetez des articles auprès de vendeurs vérifiés.",
+                                l10n.parcourezEtAchetezDesArticles,
                             accentColor: _accent,
-                            features: const [
-                              "Accès à tous les produits",
-                              "Suivi de commandes",
-                              "Favoris & listes",
+                            features: [
+                              l10n.accesATousLesProduits,
+                              l10n.suiviDeCommandes,
+                              l10n.favorisListes,
                             ],
                           ),
                           const SizedBox(height: 16),
                           _buildTypeCard(
                             type: UserType.seller,
                             icon: Icons.store_outlined,
-                            title: "Je suis un Vendeur",
+                            title: l10n.jeSuisUnVendeur,
                             subtitle:
-                                "Publiez vos articles et gérez votre boutique en ligne.",
+                                l10n.publiezVosArticlesEtGerez,
                             accentColor: const Color(0xFF00B386),
-                            features: const [
-                              "Tableau de bord vendeur",
-                              "Gestion des commandes",
-                              "Retrait des gains",
+                            features: [
+                              l10n.tableauDeBordVendeur,
+                              l10n.gestionDesCommandes,
+                              l10n.retraitDesGains,
                             ],
                           ),
                           const SizedBox(height: 32),

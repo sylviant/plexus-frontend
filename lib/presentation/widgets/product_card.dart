@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -25,7 +26,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String productId = (product['_id'] ?? product['id'] ?? '').toString();
-    final String title     = product['title']    ?? 'Sans titre';
+    final String title     = product['title']    ?? l10n.sansTitre;
     final double price     = (product['price'] as num?)?.toDouble() ?? 0.0;
     final String imageUrl  = ApiConfig.getImageUrl(product['thumbnail'] ?? product['image']);
 
@@ -137,7 +138,7 @@ class ProductCard extends StatelessWidget {
                       transitionDuration: const Duration(milliseconds: 550),
                       items: [
                         Text(
-                          status,
+                          trData(status),
                           key: const ValueKey('status'),
                           style: TextStyle(
                             color: status == 'En stock' ? _green : _red,
@@ -145,8 +146,8 @@ class ProductCard extends StatelessWidget {
                             fontSize: 10.5,
                           ),
                         ),
-                        const Text(
-                          'Livré en maximum 14 jours',
+                        Text(
+                          l10n.livreEnMaximum14Jours,
                           key: ValueKey('delivery'),
                           style: TextStyle(
                             color: _green,

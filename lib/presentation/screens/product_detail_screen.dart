@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/presentation/widgets/related_product_card.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -70,7 +71,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _displayImages = _extractProductImages(product);
       return product;
     }
-    throw Exception('Produit non trouvé');
+    throw Exception(l10n.produitNonTrouve);
   }
 
   Future<List<dynamic>> _fetchRelated(String category, String currentId) async {
@@ -290,13 +291,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final hasSizes  = product['hasSizes']  == true;
 
     if (hasColors && _selectedColor == null) {
-      _showSnack('Veuillez sélectionner une couleur.', Colors.orange, Icons.warning); return;
+      _showSnack(l10n.veuillezSelectionnerUneCouleur, Colors.orange, Icons.warning); return;
     }
     if (hasSizes && _selectedSize == null) {
-      _showSnack('Veuillez sélectionner une taille.', Colors.orange, Icons.warning); return;
+      _showSnack(l10n.veuillezSelectionnerUneTaille, Colors.orange, Icons.warning); return;
     }
     if ((hasColors || hasSizes) && (_variantId == null || _variantUnavailable)) {
-      _showSnack('Cette variante est indisponible.', _red, Icons.block); return;
+      _showSnack(l10n.cetteVarianteEstIndisponible, _red, Icons.block); return;
     }
 
     Provider.of<CartProvider>(ctx, listen: false).add(
@@ -309,10 +310,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
 
     ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-      content: const Row(children: [
+      content: Row(children: [
         Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
         SizedBox(width: 8),
-        Text('Ajouté au panier'),
+        Text(l10n.ajouteAuPanier),
       ]),
       backgroundColor: _green,
       behavior: SnackBarBehavior.floating,
@@ -359,7 +360,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             return const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2));
           }
           if (!snap.hasData || snap.hasError) {
-            return const Center(child: Text('Erreur de chargement.', style: TextStyle(color: _textSub)));
+            return Center(child: Text(l10n.erreurDeChargement, style: TextStyle(color: _textSub)));
           }
 
           final product   = snap.data!;
@@ -473,7 +474,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(color: _green, borderRadius: BorderRadius.circular(20)),
-                          child: Text('SAVE $discountPct%', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                          child: Text(l10n.save('$discountPct'), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
                         ),
                       ),
 
@@ -513,7 +514,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(color: _accent.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                              child: Text((product['category'] as String).toUpperCase(),
+                              child: Text(trData(product['category'] as String).toUpperCase(),
                                   style: const TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                             ),
                           const SizedBox(height: 8),
@@ -529,7 +530,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               color: _orange, size: 16,
                             )),
                             const SizedBox(width: 6),
-                            Text(avgRating > 0 ? '${avgRating.toStringAsFixed(1)} (${reviews.length})' : 'Aucun avis',
+                            Text(avgRating > 0 ? '${avgRating.toStringAsFixed(1)} (${reviews.length})' : l10n.aucunAvis,
                                 style: const TextStyle(color: _textSub, fontSize: 12)),
                           ]),
                         ],
@@ -566,7 +567,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(color: _red.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                              child: Text('Plus que $_variantStock !',
+                              child: Text(l10n.plusQue('$_variantStock'),
                                   style: const TextStyle(color: _red, fontSize: 11, fontWeight: FontWeight.w600)),
                             ),
                           ],
@@ -577,10 +578,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                 decoration: BoxDecoration(color: _orange.withOpacity(0.10), borderRadius: BorderRadius.circular(10), border: Border.all(color: _orange.withOpacity(0.3))),
-                                child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                                child: Row(mainAxisSize: MainAxisSize.min, children: [
                                   Icon(Icons.edit_outlined, size: 14, color: _orange),
                                   SizedBox(width: 5),
-                                  Text('Modifier', style: TextStyle(color: _orange, fontWeight: FontWeight.w600, fontSize: 13)),
+                                  Text(l10n.modifier, style: TextStyle(color: _orange, fontWeight: FontWeight.w600, fontSize: 13)),
                                 ]),
                               ),
                             ),
@@ -619,10 +620,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     side: const BorderSide(color: _primary, width: 1.5),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                   ),
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                                     Icon(Icons.shopping_cart_outlined, color: _primary, size: 18),
                                     SizedBox(width: 8),
-                                    Flexible(child: Text('Ajouter au panier', overflow: TextOverflow.ellipsis,
+                                    Flexible(child: Text(l10n.ajouterAuPanier, overflow: TextOverflow.ellipsis,
                                         style: TextStyle(color: _primary, fontWeight: FontWeight.w700, fontSize: 13))),
                                   ]),
                                 ),
@@ -643,10 +644,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                                       Icon(Icons.bolt_rounded, color: Colors.white, size: 18),
                                       SizedBox(width: 8),
-                                      Flexible(child: Text('Commander', overflow: TextOverflow.ellipsis,
+                                      Flexible(child: Text(l10n.commander, overflow: TextOverflow.ellipsis,
                                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13))),
                                     ]),
                                   ),
@@ -672,7 +673,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                                     Icon(isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: isFav ? _red : _textSub, size: 18),
                                     const SizedBox(width: 8),
-                                    Text(isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+                                    Text(isFav ? l10n.retirerDesFavoris : l10n.ajouterAuxFavoris,
                                         style: TextStyle(color: isFav ? _red : _textSub, fontWeight: FontWeight.w600, fontSize: 13)),
                                   ]),
                                 ),
@@ -681,10 +682,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
 
                           const SizedBox(height: 10),
-                          Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                             Icon(Icons.local_shipping_outlined, size: 14, color: _green),
                             SizedBox(width: 6),
-                            Text('Livraison via Escrow PLEXUS', style: TextStyle(fontSize: 12, color: _green, fontWeight: FontWeight.w500)),
+                            Text(l10n.livraisonViaEscrowPlexus, style: TextStyle(fontSize: 12, color: _green, fontWeight: FontWeight.w500)),
                           ]),
                         ]),
                       ),
@@ -719,8 +720,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  const Text('Vendu par', style: TextStyle(fontSize: 11, color: _textMuted)),
-                                  Text(product['sellerName'] ?? 'Vendeur', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
+                                  Text(l10n.venduPar, style: TextStyle(fontSize: 11, color: _textMuted)),
+                                  Text(product['sellerName'] ?? l10n.vendeur, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _textMain)),
                                 ]),
                               ),
                               const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: _textMuted),
@@ -737,9 +738,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        _SectionTitle(title: 'Description'),
+                        _SectionTitle(title: l10n.description),
                         const SizedBox(height: 12),
-                        Text(desc.isNotEmpty ? desc : 'Aucune description.',
+                        Text(desc.isNotEmpty ? desc : l10n.aucuneDescription,
                             style: const TextStyle(fontSize: 14, height: 1.7, color: _textSub)),
                       ]),
                     ),
@@ -751,7 +752,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          _SectionTitle(title: 'Vidéo du produit'),
+                          _SectionTitle(title: l10n.videoDuProduit),
                           const SizedBox(height: 12),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(16),
@@ -777,7 +778,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       padding: const EdgeInsets.all(20),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [
-                          _SectionTitle(title: 'Avis clients'),
+                          _SectionTitle(title: l10n.avisClients),
                           const Spacer(),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -797,7 +798,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: _border)),
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              const Text('Votre évaluation', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textSub)),
+                              Text(l10n.votreEvaluation, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textSub)),
                               const SizedBox(height: 10),
                               Row(children: List.generate(5, (i) => GestureDetector(
                                 onTap: () => setState(() => _userRating = i + 1.0),
@@ -809,7 +810,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 controller: _commentCtrl,
                                 maxLines: 3,
                                 decoration: InputDecoration(
-                                  hintText: 'Partagez votre expérience...',
+                                  hintText: l10n.partagezVotreExperience,
                                   hintStyle: const TextStyle(color: _textMuted, fontSize: 13),
                                   filled: true, fillColor: Colors.white,
                                   contentPadding: const EdgeInsets.all(14),
@@ -825,7 +826,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   onPressed: _submitReview,
                                   style: ElevatedButton.styleFrom(backgroundColor: _accent, foregroundColor: Colors.white, elevation: 0,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                  child: const Text("Publier l'avis", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                  child: Text(l10n.publierLAvis, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                                 ),
                               ),
                             ]),
@@ -837,7 +838,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: _border)),
-                            child: const Center(child: Text('Soyez le premier à laisser un avis.', style: TextStyle(color: _textSub, fontSize: 14))),
+                            child: Center(child: Text(l10n.soyezLePremierALaisser, style: TextStyle(color: _textSub, fontSize: 14))),
                           )
                         else
                           ...reviews.map((r) => _ReviewCard(review: r)),
@@ -846,7 +847,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                     // ── Articles similaires ────────────────────────────────
                     _Divider(),
-                    Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 0), child: _SectionTitle(title: 'Articles similaires')),
+                    Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 0), child: _SectionTitle(title: l10n.articlesSimilaires)),
                     const SizedBox(height: 16),
                     FutureBuilder<List<dynamic>>(
                       future: _relatedFuture,
@@ -1008,8 +1009,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               Expanded(
                 child: Text(
                   _variantUnavailable || _variantId == null
-                      ? 'Combinaison indisponible'
-                      : 'Sélection : ${[if (_selectedColor != null) _selectedColor, if (_selectedSize != null) _selectedSize].join(' / ')}',
+                      ? l10n.combinaisonIndisponible
+                      : l10n.selectionOptions([if (_selectedColor != null) _selectedColor, if (_selectedSize != null) _selectedSize].join(' / ')),
                   style: TextStyle(
                     color: _variantUnavailable || _variantId == null ? _red : _green,
                     fontSize: 12, fontWeight: FontWeight.w600,
@@ -1047,7 +1048,7 @@ class _VideoPlayerWidget extends StatelessWidget {
               child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 48),
             ),
             const SizedBox(height: 12),
-            const Text('Appuyez pour lire la vidéo',
+            Text(l10n.appuyezPourLireLaVideo,
                 style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
           ]),
         ],
@@ -1063,10 +1064,10 @@ class _FeatureBadgesRow extends StatelessWidget {
   const _FeatureBadgesRow({required this.product});
   @override
   Widget build(BuildContext context) {
-    const features = [
-      {'icon': Icons.verified_outlined,       'label': 'Qualité garantie'},
-      {'icon': Icons.local_shipping_outlined, 'label': 'Livraison incluse'},
-      {'icon': Icons.shield_outlined,         'label': 'Paiement sécurisé'},
+    final features = [
+      {'icon': Icons.verified_outlined,       'label': l10n.qualiteGarantie},
+      {'icon': Icons.local_shipping_outlined, 'label': l10n.livraisonIncluse},
+      {'icon': Icons.shield_outlined,         'label': l10n.paiementSecurise2},
     ];
     return SizedBox(
       height: 80,
@@ -1114,7 +1115,7 @@ class _ReviewCard extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)))),
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(review['userName'] ?? 'Anonyme', style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 14)),
+            Text(review['userName'] ?? l10n.anonyme, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 14)),
             Row(children: List.generate(5, (i) => Icon(
               i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
               color: const Color(0xFFF59E0B), size: 12,

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -60,10 +61,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     if (_wallets.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(children: [
+          content: Row(children: [
             Icon(Icons.info_outline, color: Colors.white, size: 16),
             SizedBox(width: 8),
-            Text("Ajoutez d'abord un portefeuille de retrait"),
+            Text(l10n.ajoutezDAbordUnPortefeuille),
           ]),
           backgroundColor: _surface,
           behavior: SnackBarBehavior.floating,
@@ -96,7 +97,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text("Retirer vos gains",
+            Text(l10n.retirerVosGains,
                 style: TextStyle(color: _textPri, fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             Row(
@@ -104,7 +105,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 const Icon(Icons.account_balance_wallet_outlined, size: 14, color: _textSec),
                 const SizedBox(width: 6),
                 Text(
-                  "Solde disponible : ",
+                  l10n.soldeDisponible,
                   style: const TextStyle(color: _textSec, fontSize: 13),
                 ),
                 Text(
@@ -158,7 +159,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(w['name'] ?? 'Wallet',
+                  Text(w['name'] ?? l10n.wallet,
                       style: const TextStyle(
                           color: _textPri, fontWeight: FontWeight.w600, fontSize: 14)),
                   const SizedBox(height: 2),
@@ -196,10 +197,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(children: [
+            content: Row(children: [
               Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
               SizedBox(width: 8),
-              Text("Demande de retrait transmise !"),
+              Text(l10n.demandeDeRetraitTransmise),
             ]),
             backgroundColor: _green,
             behavior: SnackBarBehavior.floating,
@@ -232,18 +233,18 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Ajouter un portefeuille",
+              Text(l10n.ajouterUnPortefeuille,
                   style: TextStyle(
                       color: _textPri, fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
-              const Text("Associez une adresse blockchain à votre compte.",
+              Text(l10n.associezUneAdresseBlockchainA,
                   style: TextStyle(color: _textSec, fontSize: 13, height: 1.4)),
               const SizedBox(height: 24),
-              _buildDialogField(controller: nameCtrl,    label: "Nom du portefeuille", hint: "Ex: Mon Wallet USDT"),
+              _buildDialogField(controller: nameCtrl,    label: l10n.nomDuPortefeuille, hint: l10n.exMonWalletUsdt),
               const SizedBox(height: 14),
-              _buildDialogField(controller: networkCtrl, label: "Réseau",              hint: "Ex: TRC20, ERC20"),
+              _buildDialogField(controller: networkCtrl, label: l10n.reseau,              hint: l10n.exTrc20Erc20),
               const SizedBox(height: 14),
-              _buildDialogField(controller: addressCtrl, label: "Adresse Blockchain",  hint: "0x...",  isMonospace: true),
+              _buildDialogField(controller: addressCtrl, label: l10n.adresseBlockchain,  hint: "0x...",  isMonospace: true),
               const SizedBox(height: 28),
               Row(
                 children: [
@@ -257,7 +258,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             borderRadius: BorderRadius.circular(12),
                             side: BorderSide(color: _divider)),
                       ),
-                      child: const Text("Annuler",
+                      child: Text(l10n.annuler,
                           style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -276,7 +277,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text("Enregistrer",
+                      child: Text(l10n.enregistrer,
                           style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -346,10 +347,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         _fetchUserData();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(children: [
+            content: Row(children: [
               Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
               SizedBox(width: 8),
-              Text("Portefeuille enregistré !"),
+              Text(l10n.portefeuilleEnregistre),
             ]),
             backgroundColor: _green,
             behavior: SnackBarBehavior.floating,
@@ -385,7 +386,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     const SizedBox(height: 36),
 
                     // ── Wallets Section ──────────────────────────────────
-                    _buildSectionLabel('Adresses de retrait'),
+                    _buildSectionLabel(l10n.adressesDeRetrait),
                     const SizedBox(height: 14),
 
                     if (_wallets.isEmpty)
@@ -412,8 +413,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       elevation: 0,
       centerTitle: false,
       titleSpacing: 20,
-      title: const Text(
-        'Paiements & Gains',
+      title: Text(
+        l10n.paiementsGains,
         style: TextStyle(
           color: _textPri,
           fontSize: 22,
@@ -463,7 +464,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     color: Colors.white, size: 18),
               ),
               const SizedBox(width: 10),
-              const Text("Solde disponible",
+              Text(l10n.soldeDisponible2,
                   style: TextStyle(color: Colors.white70, fontSize: 14)),
             ],
           ),
@@ -485,7 +486,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text("USD · Prêt à retirer",
+                  Text(l10n.usdPretARetirer,
                       style: TextStyle(color: Colors.white60, fontSize: 12)),
                 ],
               ),
@@ -499,7 +500,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text("Retirer",
+                child: Text(l10n.retirer,
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               ),
             ],
@@ -533,10 +534,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         border: Border.all(color: _divider),
       ),
       child: Column(
-        children: const [
+        children: [
           Icon(Icons.account_balance_wallet_outlined, size: 36, color: _textSec),
           SizedBox(height: 12),
-          Text("Aucun portefeuille lié",
+          Text(l10n.aucunPortefeuilleLie,
               style: TextStyle(color: _textSec, fontSize: 14)),
         ],
       ),
@@ -572,7 +573,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    wallet['name'] ?? 'Inconnu',
+                    wallet['name'] ?? l10n.inconnu,
                     style: const TextStyle(
                         color: _textPri, fontWeight: FontWeight.w600, fontSize: 15),
                   ),
@@ -586,7 +587,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   border: Border.all(color: _divider),
                 ),
                 child: Text(
-                  wallet['network'] ?? 'Réseau',
+                  wallet['network'] ?? l10n.reseau,
                   style: const TextStyle(
                       color: _textSec,
                       fontSize: 10,
@@ -621,10 +622,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     Clipboard.setData(ClipboardData(text: wallet['address'] ?? ''));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Row(children: [
+                        content: Row(children: [
                           Icon(Icons.copy, color: Colors.white, size: 14),
                           SizedBox(width: 8),
-                          Text("Adresse copiée !"),
+                          Text(l10n.adresseCopiee),
                         ]),
                         backgroundColor: _surface,
                         behavior: SnackBarBehavior.floating,
@@ -659,7 +660,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       child: OutlinedButton.icon(
         onPressed: _showAddWalletDialog,
         icon: const Icon(Icons.add_rounded, size: 20),
-        label: const Text("Ajouter une adresse",
+        label: Text(l10n.ajouterUneAdresse,
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         style: OutlinedButton.styleFrom(
           foregroundColor: _accent,

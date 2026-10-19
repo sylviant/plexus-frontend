@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -29,10 +30,10 @@ class NotificationService {
 
       await _notificationsPlugin.initialize(initializationSettings);
 
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      final AndroidNotificationChannel channel = AndroidNotificationChannel(
         'chat_messages', 
-        'Messages de Chat', 
-        description: 'Notifications pour les nouveaux messages reçus',
+        l10n.messagesDeChat, 
+        description: l10n.notificationsPourLesNouveauxMessages,
         importance: Importance.max,
       );
 
@@ -62,15 +63,15 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'chat_messages',
-      'Messages de Chat',
+      l10n.messagesDeChat,
       importance: Importance.max,
       priority: Priority.high,
     );
 
-    const NotificationDetails platformChannelSpecifics =
+    final NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _notificationsPlugin.show(id, title, body, platformChannelSpecifics);

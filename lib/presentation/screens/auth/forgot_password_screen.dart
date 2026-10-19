@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -223,8 +224,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Mot de passe oublié',
+                              Text(
+                                l10n.motDePasseOublie,
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -233,8 +234,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              const Text(
-                                'Entrez votre adresse e-mail pour recevoir un code de réinitialisation.',
+                              Text(
+                                l10n.entrezVotreAdresseEMail,
                                 style: TextStyle(
                                     fontSize: 13, color: _textSub),
                               ),
@@ -258,9 +259,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                         size: 16,
                                         color: _accent.withOpacity(0.8)),
                                     const SizedBox(width: 10),
-                                    const Expanded(
+                                    Expanded(
                                       child: Text(
-                                        'Un code à 6 chiffres sera envoyé à votre adresse e-mail.',
+                                        l10n.unCodeA6Chiffres,
                                         style: TextStyle(
                                             fontSize: 12,
                                             color: _textSub,
@@ -274,7 +275,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               const SizedBox(height: 24),
 
                               // Email field
-                              const _FieldLabel(label: 'Adresse e-mail'),
+                              _FieldLabel(label: l10n.adresseEMail),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _emailController,
@@ -283,7 +284,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                     color: _textMain,
                                     fontWeight: FontWeight.w500),
                                 decoration: InputDecoration(
-                                  hintText: 'exemple@domaine.com',
+                                  hintText: l10n.exempleDomaineCom,
                                   hintStyle: TextStyle(
                                       color: _textSub.withOpacity(0.5),
                                       fontSize: 14),
@@ -325,7 +326,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 ),
                                 validator: (v) =>
                                     v!.isEmpty || !v.contains('@')
-                                        ? 'Email invalide'
+                                        ? l10n.emailInvalide
                                         : null,
                               ),
 
@@ -378,7 +379,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                         : Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
-                                            children: const [
+                                            children: [
                                               Icon(
                                                   Icons
                                                       .send_rounded,
@@ -386,7 +387,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                                   size: 16),
                                               SizedBox(width: 10),
                                               Text(
-                                                'ENVOYER LE CODE',
+                                                l10n.envoyerLeCode,
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.w700,
@@ -412,12 +413,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           onTap: () => context.go('/login'),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(Icons.arrow_back_rounded,
                                   size: 14, color: _primaryMid),
                               SizedBox(width: 6),
                               Text(
-                                'Retour à la connexion',
+                                l10n.retourALaConnexion,
                                 style: TextStyle(
                                   color: _primaryMid,
                                   fontWeight: FontWeight.w600,
@@ -449,11 +450,11 @@ class _StepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _Step(number: '1', label: 'Email', active: true),
+        _Step(number: '1', label: l10n.email, active: true),
         _StepLine(),
-        _Step(number: '2', label: 'Code', done: false),
+        _Step(number: '2', label: l10n.code2, done: false),
         _StepLine(),
-        _Step(number: '3', label: 'Nouveau MDP', done: false),
+        _Step(number: '3', label: l10n.nouveauMdp, done: false),
       ],
     );
   }

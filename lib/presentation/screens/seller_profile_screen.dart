@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class SellerProfileScreen extends StatefulWidget {
   final String sellerId;
@@ -24,10 +25,11 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
-  // ── Stats (NOUVEAU) : articles vendus + note moyenne ─────────────────────
-  int    _soldCount   = 0;
-  double _avgRating   = 0;
-  int    _ratingCount = 0;
+  // ── Stats : articles vendus, note moyenne, parrainages ────────────────────
+  int    _soldCount     = 0;
+  double _avgRating     = 0;
+  int    _ratingCount   = 0;
+  int    _referralCount = 0;
 
   // ─── Palette (alignée sur seller_hub_screen.dart) ────────────────────────────
   static const Color _navy = Color(0xFF0D1B4B);
@@ -61,8 +63,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
         .join();
   }
 
-  // Le pays est stocké par produit (pas sur le profil vendeur) : on prend
-  // le premier produit qui en a un.
   String? get _sellerCountry {
     for (final p in _products) {
       final c = p['sellerCountry'];
@@ -94,9 +94,10 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           }
           if (resS.statusCode == 200) {
             final stats = json.decode(resS.body);
-            _soldCount   = (stats['soldCount']   as num?)?.toInt()    ?? 0;
-            _avgRating   = (stats['avgRating']   as num?)?.toDouble() ?? 0;
-            _ratingCount = (stats['ratingCount'] as num?)?.toInt()    ?? 0;
+            _soldCount     = (stats['soldCount']     as num?)?.toInt()    ?? 0;
+            _avgRating     = (stats['avgRating']     as num?)?.toDouble() ?? 0;
+            _ratingCount   = (stats['ratingCount']   as num?)?.toInt()    ?? 0;
+            _referralCount = (stats['referralCount'] as num?)?.toInt()    ?? 0;
           }
           _isLoading = false;
         });
@@ -187,7 +188,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
   }
 
   Widget _buildHero(bool isOwnProfile) {
-    final String name = _seller!['name'] ?? 'Vendeur';
+    final String name = _seller!['name'] ?? l10n.vendeur;
     final String? profileImage = _seller!['profileImage'];
     final bool isApproved = _seller!['isApproved'] == true;
     final String memberSince = _memberSinceLabel(_seller!['createdAt']);
@@ -258,7 +259,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           ),
           const SizedBox(height: 6),
           Text(
-            isApproved ? 'Vendeur vérifié · $memberSince' : memberSince,
+            isApproved ? l10n.vendeurVerifie('$memberSince') : memberSince,
             style: TextStyle(
               color: Colors.white.withOpacity(0.65),
               fontSize: 13,
@@ -266,22 +267,29 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
             ),
           ),
           const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Wrap plutôt que Row : évite un débordement si les 4 badges
+          // ne tiennent pas sur une seule ligne (petit écran, nom long...).
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
             children: [
               _buildStatChip(
                 Icons.inventory_2_outlined,
                 '${_products.length}',
                 _products.length > 1 ? 'articles' : 'article',
               ),
-              const SizedBox(width: 10),
               _buildStatChip(
                 Icons.local_shipping_outlined,
                 '$_soldCount',
                 _soldCount > 1 ? 'vendus' : 'vendu',
               ),
-              const SizedBox(width: 10),
               _buildRatingChip(),
+              _buildStatChip(
+                Icons.group_add_outlined,
+                '$_referralCount',
+                _referralCount > 1 ? 'parrainages' : 'parrainage',
+              ),
             ],
           ),
         ],
@@ -363,8 +371,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
   }
 
   Widget _buildProductsHeader() {
-    return const Text(
-      'ARTICLES EN VENTE',
+    return Text(
+      l10n.articlesEnVente,
       style: TextStyle(
         color: _textMuted,
         fontWeight: FontWeight.w800,
@@ -395,14 +403,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
                 size: 40, color: _textMuted),
           ),
           const SizedBox(height: 16),
-          const Text(
-            "Aucun article publié",
+          Text(
+            l10n.aucunArticlePublie,
             style: TextStyle(
                 color: _textPrimary, fontWeight: FontWeight.w700, fontSize: 15),
           ),
           const SizedBox(height: 6),
-          const Text(
-            "Ce vendeur n'a pas encore mis\nd'article en vente.",
+          Text(
+            l10n.ceVendeurNAPas,
             textAlign: TextAlign.center,
             style: TextStyle(color: _textMuted, fontSize: 13, height: 1.5),
           ),
@@ -420,15 +428,15 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           children: [
             const Icon(Icons.person_off_outlined, size: 48, color: _textMuted),
             const SizedBox(height: 16),
-            const Text(
-              "Impossible de charger ce profil",
+            Text(
+              l10n.impossibleDeChargerCeProfil,
               style: TextStyle(
                   color: _textPrimary, fontWeight: FontWeight.w700, fontSize: 15),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: _fetchSellerData,
-              child: const Text('Réessayer',
+              child: Text(l10n.reessayer,
                   style: TextStyle(color: _accent, fontWeight: FontWeight.w700)),
             ),
           ],
@@ -438,12 +446,12 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
   }
 
   String _memberSinceLabel(String? createdAt) {
-    if (createdAt == null) return 'Membre PLEXUS';
+    if (createdAt == null) return l10n.membrePlexus;
     try {
       final date = DateTime.parse(createdAt);
-      return 'Membre depuis ${date.year}';
+      return l10n.membreDepuis('${date.year}');
     } catch (_) {
-      return 'Membre PLEXUS';
+      return l10n.membrePlexus;
     }
   }
 }

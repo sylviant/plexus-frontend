@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -88,7 +89,7 @@ class _VerificationScreenState extends State<VerificationScreen>
       await Provider.of<AuthProvider>(context, listen: false)
           .resendVerificationCode();
       if (mounted) {
-        _showSnack("Un nouveau code a été envoyé !",
+        _showSnack(l10n.unNouveauCodeAEte,
             const Color(0xFF3B82F6), Icons.send_rounded);
         _startTimer();
       }
@@ -111,7 +112,7 @@ class _VerificationScreenState extends State<VerificationScreen>
       await auth.verifyCode(code);
 
       if (mounted) {
-        _showSnack("Email vérifié ! Connectez-vous maintenant.",
+        _showSnack(l10n.emailVerifieConnectezVousMaintenant,
             const Color(0xFF10B981), Icons.check_circle_outline_rounded);
         context.go('/login');
       }
@@ -153,7 +154,7 @@ class _VerificationScreenState extends State<VerificationScreen>
   @override
   Widget build(BuildContext context) {
     final email =
-        Provider.of<AuthProvider>(context).pendingEmail ?? "votre email";
+        Provider.of<AuthProvider>(context).pendingEmail ?? l10n.votreEmail;
 
     return Scaffold(
       backgroundColor: _surface,
@@ -266,8 +267,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Title
-                            const Text(
-                              'Vérification e-mail',
+                            Text(
+                              l10n.verificationEMail,
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
@@ -276,8 +277,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                               ),
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Un code à 5 chiffres a été envoyé à :',
+                            Text(
+                              l10n.unCodeA5Chiffres,
                               style:
                                   TextStyle(fontSize: 13, color: _textSub),
                               textAlign: TextAlign.center,
@@ -380,7 +381,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                                       : Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
-                                          children: const [
+                                          children: [
                                             Icon(
                                                 Icons
                                                     .verified_user_rounded,
@@ -388,7 +389,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                                                 size: 16),
                                             SizedBox(width: 10),
                                             Text(
-                                              'VÉRIFIER MON COMPTE',
+                                              l10n.verifierMonCompte,
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w700,
@@ -436,8 +437,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                                     const SizedBox(width: 6),
                                     Text(
                                       _canResend
-                                          ? 'Renvoyer le code'
-                                          : 'Renvoyer dans $_secondsRemaining s',
+                                          ? l10n.renvoyerLeCode
+                                          : l10n.renvoyerDansS('$_secondsRemaining'),
                                       style: TextStyle(
                                         color: _canResend
                                             ? _primary
@@ -463,12 +464,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                         onTap: () => context.go('/login'),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.arrow_back_rounded,
                                 size: 14, color: _primaryMid),
                             SizedBox(width: 6),
                             Text(
-                              'Retour à la connexion',
+                              l10n.retourALaConnexion,
                               style: TextStyle(
                                 color: _primaryMid,
                                 fontWeight: FontWeight.w600,
@@ -593,8 +594,8 @@ class _TimerIndicator extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           canResend
-              ? 'Vous pouvez renvoyer le code'
-              : 'Expiration du code',
+              ? l10n.vousPouvezRenvoyerLeCode
+              : l10n.expirationDuCode,
           style: const TextStyle(fontSize: 11, color: _textSub),
         ),
       ],

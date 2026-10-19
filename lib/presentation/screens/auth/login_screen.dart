@@ -4,6 +4,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
 import 'package:plexus/core/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen>
       await auth.signInWithGoogle();
       _onLoginSuccess(auth);
     } catch (e) {
-      _showError("Échec de la connexion Google");
+      _showError(l10n.echecDeLaConnexionGoogle);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -286,8 +287,8 @@ class _LoginScreenState extends State<LoginScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Connexion',
+            Text(
+              l10n.connexion,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -297,21 +298,21 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             const SizedBox(height: 6),
             Text(
-              'Bienvenue ! Identifiez-vous pour continuer.',
+              l10n.bienvenueIdentifiezVousPourContinuer,
               style: TextStyle(fontSize: 13.5, color: _textSub, height: 1.4),
             ),
             const SizedBox(height: 28),
-            _styledLabel('Adresse e-mail'),
+            _styledLabel(l10n.adresseEMail),
             const SizedBox(height: 8),
             _styledField(
               controller: _emailController,
               focusNode: _emailFocus,
-              hint: 'exemple@domaine.com',
+              hint: l10n.exempleDomaineCom,
               icon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 18),
-            _styledLabel('Mot de passe'),
+            _styledLabel(l10n.motDePasse),
             const SizedBox(height: 8),
             TextFormField(
               controller: _passwordController,
@@ -322,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen>
                 fontWeight: FontWeight.w500,
                 fontSize: 14.5,
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
+              validator: (v) => (v == null || v.isEmpty) ? l10n.requis : null,
               decoration: _inputDecoration(
                 hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
@@ -348,8 +349,8 @@ class _LoginScreenState extends State<LoginScreen>
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 onPressed: () => context.push('/forgot-password'),
-                child: const Text(
-                  'Mot de passe oublié ?',
+                child: Text(
+                  l10n.motDePasseOublie2,
                   style: TextStyle(
                     color: _primaryMid,
                     fontWeight: FontWeight.w600,
@@ -430,8 +431,8 @@ class _LoginScreenState extends State<LoginScreen>
               strokeWidth: 2.4,
             ),
           )
-              : const Text(
-            'SE CONNECTER',
+              : Text(
+            l10n.seConnecter,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
@@ -469,9 +470,9 @@ class _LoginScreenState extends State<LoginScreen>
           children: [
             const _GoogleMark(),
             const SizedBox(width: 10),
-            const Flexible(
+            Flexible(
               child: Text(
-                'Continuer avec Google',
+                l10n.continuerAvecGoogle,
                 style: TextStyle(
                   color: _textMain,
                   fontWeight: FontWeight.w600,
@@ -491,13 +492,13 @@ class _LoginScreenState extends State<LoginScreen>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Pas encore de compte ? ',
+          l10n.pasEncoreDeCompte,
           style: TextStyle(color: _textSub, fontSize: 14),
         ),
         GestureDetector(
           onTap: () => context.go('/signup'),
-          child: const Text(
-            'S\'inscrire',
+          child: Text(
+            l10n.sInscrire,
             style: TextStyle(
               color: _primary,
               fontWeight: FontWeight.w700,
@@ -535,7 +536,7 @@ class _LoginScreenState extends State<LoginScreen>
         fontSize: 14.5,
       ),
       decoration: _inputDecoration(hint: hint, icon: icon),
-      validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
+      validator: (v) => (v == null || v.isEmpty) ? l10n.requis : null,
     );
   }
 

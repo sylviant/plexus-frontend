@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plexus/core/models/cart_item.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class CartProvider with ChangeNotifier {
   final Map<String, CartItem> _items = {};
@@ -54,7 +55,7 @@ class CartProvider with ChangeNotifier {
     } else {
       _items[key] = CartItem(
         id:          productId,
-        title:       product['title'] ?? 'Produit',
+        title:       product['title'] ?? l10n.produit,
         price:       price,
         quantity:    1,
         imageUrl:    image,

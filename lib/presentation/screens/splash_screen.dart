@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -259,7 +260,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                             const SizedBox(height: 14),
                             Text(
-                              "Chargement...",
+                              l10n.chargement,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.4),
                                 fontSize: 11,

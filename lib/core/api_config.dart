@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ApiConfig {
   // --- CONFIGURATION SERVEUR NORTHFLANK ---
@@ -41,10 +42,10 @@ class ApiConfig {
 
   static String handleNetworkError(dynamic error) {
     if (error.toString().contains('SocketException')) {
-      return "🌐 Impossible de joindre le serveur Northflank.";
+      return l10n.impossibleDeJoindreLeServeur2;
     } else if (error.toString().contains('Timeout')) {
-      return "⏳ Le serveur est trop lent à répondre.";
+      return l10n.leServeurEstTropLent;
     }
-    return "❌ Erreur : $error";
+    return l10n.erreur5('$error');
   }
 }

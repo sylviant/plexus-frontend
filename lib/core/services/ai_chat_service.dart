@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_product.dart';
 import '../api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ChatMessage {
   final String role; // 'user' ou 'assistant'
@@ -59,18 +60,18 @@ class AiChatService {
         }
 
         return AiChatResponse(
-          message: data['message'] ?? 'Désolé, je n\'ai pas compris.',
+          message: data['message'] ?? l10n.desoleJeNAiPas,
           products: (data['products'] as List? ?? [])
               .map((p) => AiProduct.fromJson(p))
               .toList(),
           hasResults: data['has_results'] ?? false,
         );
       } else {
-        throw Exception('Erreur serveur: ${response.statusCode}');
+        throw Exception(l10n.erreurServeur3('${response.statusCode}'));
       }
     } catch (e) {
       return AiChatResponse(
-        message: 'Connexion impossible. Vérifie ta connexion internet.',
+        message: l10n.connexionImpossibleVerifieTaConnexion,
         products: [],
         hasResults: false,
       );

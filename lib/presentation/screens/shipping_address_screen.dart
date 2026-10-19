@@ -7,6 +7,7 @@ import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/constants/countries.dart';
 import 'dart:convert';
+import 'package:plexus/l10n/l10n.dart';
 
 class ShippingAddressScreen extends StatefulWidget {
   const ShippingAddressScreen({super.key});
@@ -82,13 +83,13 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
     setState(() => _isGettingLocation = true);
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw 'Services de localisation désactivés.';
+      if (!serviceEnabled) throw l10n.servicesDeLocalisationDesactives;
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied)
-          throw 'Permissions refusées.';
+          throw l10n.permissionsRefusees;
       }
 
       Position position = await Geolocator.getCurrentPosition();
@@ -121,7 +122,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
     if (_addressController.text.isEmpty) return;
     if (_countryCode == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Sélectionnez votre pays.")),
+        SnackBar(content: Text(l10n.selectionnezVotrePays)),
       );
       return;
     }
@@ -147,8 +148,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Adresse enregistrée !"),
+            SnackBar(
+              content: Text(l10n.adresseEnregistree),
               backgroundColor: Color(0xFF00B386),
             ),
           );
@@ -156,7 +157,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur de sauvegarde.")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.erreurDeSauvegarde)));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -180,7 +181,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
                   children: [
                     _buildHeader(),
                     const SizedBox(height: 32),
-                    _fieldLabel("ADRESSE COMPLÈTE"),
+                    _fieldLabel(l10n.adresseComplete),
                     const SizedBox(height: 10),
                     _buildAddressField(),
                     const SizedBox(height: 16),
@@ -219,8 +220,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
               size: 16, color: _navy),
         ),
       ),
-      title: const Text(
-        "ADRESSE DE LIVRAISON",
+      title: Text(
+        l10n.adresseDeLivraison2,
         style: TextStyle(
           color: _navy,
           fontWeight: FontWeight.w800,
@@ -263,8 +264,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Où souhaitez-vous\nêtre livré ?",
+                Text(
+                  l10n.ouSouhaitezVousEtreLivre,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -274,7 +275,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Adresse par défaut pour vos commandes",
+                  l10n.adresseParDefautPourVos,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.6),
                     fontSize: 11,
@@ -344,8 +345,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
             fontWeight: FontWeight.w500,
             height: 1.5,
           ),
-          decoration: const InputDecoration(
-            hintText: "Ex: 12 Rue de la Paix, Yaoundé, Cameroun",
+          decoration: InputDecoration(
+            hintText: l10n.ex12RueDeLa,
             hintStyle: TextStyle(color: _textMuted, fontSize: 13),
             contentPadding: EdgeInsets.all(20),
             border: InputBorder.none,
@@ -369,9 +370,9 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
           value: _countryCode,
           isExpanded: true,
           icon: const Icon(Icons.expand_more_rounded, color: _accent),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             border: InputBorder.none,
-            hintText: "Sélectionnez votre pays",
+            hintText: l10n.selectionnezVotrePays2,
           ),
           style: const TextStyle(
             color: _navy,
@@ -381,7 +382,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
           items: kCountries.entries
               .map((e) => DropdownMenuItem(
             value: e.key,
-            child: Text(e.value),
+            child: Text(trCountry(e.key)),
           ))
               .toList(),
           onChanged: (value) => setState(() => _countryCode = value),
@@ -422,8 +423,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
               const Icon(Icons.my_location_rounded,
                   size: 18, color: _accent),
             const SizedBox(width: 10),
-            const Text(
-              "Utiliser ma position actuelle",
+            Text(
+              l10n.utiliserMaPositionActuelle,
               style: TextStyle(
                 color: _navy,
                 fontWeight: FontWeight.w700,
@@ -448,9 +449,9 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
         children: [
           Icon(Icons.info_outline_rounded, size: 18, color: _accent.withOpacity(0.8)),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              "Cette adresse sera utilisée par défaut pour toutes vos commandes futures.",
+              l10n.cetteAdresseSeraUtiliseePar,
               style: TextStyle(
                 color: _textMuted,
                 fontSize: 12,
@@ -497,14 +498,14 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
               child: CircularProgressIndicator(
                   strokeWidth: 2, color: Colors.white),
             )
-                : const Row(
+                : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.check_rounded,
                     color: Colors.white, size: 18),
                 SizedBox(width: 10),
                 Text(
-                  "CONFIRMER L'ADRESSE",
+                  l10n.confirmerLAdresse,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

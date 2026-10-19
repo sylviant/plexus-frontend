@@ -4,6 +4,7 @@ import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ConversationsScreen extends StatelessWidget {
   const ConversationsScreen({super.key});
@@ -29,8 +30,8 @@ class ConversationsScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: _primary.withOpacity(0.08),
-        title: const Text(
-          'Messages',
+        title: Text(
+          l10n.messages,
           style: TextStyle(
             color: _textMain,
             fontWeight: FontWeight.w800,
@@ -88,12 +89,12 @@ class ConversationsScreen extends StatelessWidget {
                             color: Color(0xFFFECACA), width: 1)),
                   ),
                   child: Row(
-                    children: const [
+                    children: [
                       Icon(Icons.wifi_off_rounded,
                           size: 14, color: Color(0xFFEF4444)),
                       SizedBox(width: 8),
                       Text(
-                        'Mode hors-ligne — Serveur introuvable',
+                        l10n.modeHorsLigneServeurIntrouvable,
                         style: TextStyle(
                           color: Color(0xFFEF4444),
                           fontSize: 12,
@@ -134,7 +135,7 @@ class ConversationsScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Conversations récentes',
+                              l10n.conversationsRecentes,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -205,8 +206,8 @@ class ConversationsScreen extends StatelessWidget {
           child: const Icon(Icons.support_agent_rounded,
               color: Colors.white, size: 24),
         ),
-        title: const Text(
-          'Support PLEXUS',
+        title: Text(
+          l10n.supportPlexus,
           style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 14,
@@ -214,7 +215,7 @@ class ConversationsScreen extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          'Assistant IA disponible 24h/24',
+          l10n.assistantIaDisponible24h24,
           style: TextStyle(
               color: _accent, fontSize: 12, fontWeight: FontWeight.w500),
         ),
@@ -241,7 +242,7 @@ class ConversationsScreen extends StatelessWidget {
     final String initial =
         name.isNotEmpty ? name[0].toUpperCase() : '?';
     final String time =
-        DateFormat('HH:mm').format(lastMsg.createdAt);
+        DateFormat.jm().format(lastMsg.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -293,7 +294,7 @@ class ConversationsScreen extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          lastMsg.text,
+          trChatText(lastMsg.text),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(color: _textSub, fontSize: 12),
@@ -315,7 +316,7 @@ class ConversationsScreen extends StatelessWidget {
           '/messages/chat/$roomId',
           extra: {
             'otherName': name,
-            'productTitle': 'Discussion',
+            'productTitle': l10n.discussion,
           },
         ),
         shape: RoundedRectangleBorder(
@@ -347,16 +348,16 @@ class ConversationsScreen extends StatelessWidget {
                   size: 36, color: Color(0xFFCBD5E1)),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Aucune discussion active',
+            Text(
+              l10n.aucuneDiscussionActive,
               style: TextStyle(
                   color: _textMain,
                   fontWeight: FontWeight.w700,
                   fontSize: 15),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Vos échanges avec les vendeurs\napparaîtront ici.',
+            Text(
+              l10n.vosEchangesAvecLesVendeurs,
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: _textSub, fontSize: 12, height: 1.5),

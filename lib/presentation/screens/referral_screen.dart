@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ReferralScreen extends StatelessWidget {
   const ReferralScreen({super.key});
@@ -37,8 +38,8 @@ class ReferralScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // ── Title ──────────────────────────────────────────────────
-            const Text(
-              "Invitez vos amis & Gagnez !",
+            Text(
+              l10n.invitezVosAmisGagnez,
               style: TextStyle(
                 color: _textPri,
                 fontSize: 24,
@@ -48,8 +49,8 @@ class ReferralScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            const Text(
-              "Partagez votre code et profitez de réductions sur vos frais de transaction et gagnez des commissions sur les ventes de vos amis.",
+            Text(
+              l10n.partagezVotreCodeEtProfitez,
               style: TextStyle(
                   color: _textSec, fontSize: 14, height: 1.6),
               textAlign: TextAlign.center,
@@ -60,10 +61,10 @@ class ReferralScreen extends StatelessWidget {
             // ── Stats Row ──────────────────────────────────────────────
             Row(
               children: [
-                _buildStatCard("Amis invités", "0", const Color(0xFF4F6EF7)),
+                _buildStatCard(l10n.amisInvites, "0", const Color(0xFF4F6EF7)),
                 const SizedBox(width: 12),
                 _buildStatCard(
-                    "Gains cumulés",
+                    l10n.gainsCumules,
                     "${auth.referralEarnings.toStringAsFixed(2)}\$",
                     _green),
               ],
@@ -72,7 +73,7 @@ class ReferralScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // ── Referral Code ──────────────────────────────────────────
-            _buildSectionLabel("Votre code unique"),
+            _buildSectionLabel(l10n.votreCodeUnique),
             const SizedBox(height: 12),
             _buildCodeCard(context, referralCode),
 
@@ -86,14 +87,14 @@ class ReferralScreen extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(
                       text:
-                          "Rejoins-moi sur PLEXUS ! Utilise mon code : $referralCode pour bénéficier de réductions sur tes achats. Télécharge ici : $shareLink"));
+                          l10n.rejoinsMoiSurPlexusUtilise('$referralCode', '$shareLink')));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Row(children: [
+                      content: Row(children: [
                         Icon(Icons.check_circle_outline,
                             color: Colors.white, size: 16),
                         SizedBox(width: 8),
-                        Text("Lien de partage copié !"),
+                        Text(l10n.lienDePartageCopie),
                       ]),
                       backgroundColor: _accent,
                       behavior: SnackBarBehavior.floating,
@@ -104,7 +105,7 @@ class ReferralScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.share_rounded, size: 18),
-                label: const Text("Inviter des amis",
+                label: Text(l10n.inviterDesAmis,
                     style: TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 15)),
                 style: ElevatedButton.styleFrom(
@@ -134,8 +135,8 @@ class ReferralScreen extends StatelessWidget {
       elevation: 0,
       centerTitle: false,
       titleSpacing: 20,
-      title: const Text(
-        'Parrainage',
+      title: Text(
+        l10n.parrainage,
         style: TextStyle(
           color: _textPri,
           fontSize: 22,
@@ -248,10 +249,10 @@ class ReferralScreen extends StatelessWidget {
               Clipboard.setData(ClipboardData(text: code));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Row(children: [
+                  content: Row(children: [
                     Icon(Icons.copy, color: Colors.white, size: 14),
                     SizedBox(width: 8),
-                    Text("Code copié !"),
+                    Text(l10n.codeCopie),
                   ]),
                   backgroundColor: _surface,
                   behavior: SnackBarBehavior.floating,
@@ -293,8 +294,8 @@ class ReferralScreen extends StatelessWidget {
               text: TextSpan(
                 style: const TextStyle(fontSize: 13, height: 1.4),
                 children: [
-                  const TextSpan(
-                      text: "Économies réalisées grâce au parrainage : ",
+                  TextSpan(
+                      text: l10n.economiesRealiseesGraceAuParrainage,
                       style: TextStyle(color: _textSec)),
                   TextSpan(
                     text:

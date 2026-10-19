@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -63,10 +64,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   // ─── Backend logic (unchanged) ───────────────────────────────────────────
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Entrez un mot de passe';
-    if (value.length < 8) return 'Minimum 8 caractères';
+    if (value == null || value.isEmpty) return l10n.entrezUnMotDePasse;
+    if (value.length < 8) return l10n.minimum8Caracteres;
     if (!RegExp(r'(?=.*[a-z])(?=.*[0-9])').hasMatch(value)) {
-      return 'Lettres et chiffres requis';
+      return l10n.lettresEtChiffresRequis;
     }
     return null;
   }
@@ -75,7 +76,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      _showSnack("Les mots de passe ne correspondent pas",
+      _showSnack(l10n.lesMotsDePasseNe,
           const Color(0xFFF59E0B), Icons.warning_amber_rounded);
       return;
     }
@@ -87,7 +88,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           .resetPassword(_codeController.text, _passwordController.text);
 
       if (mounted) {
-        _showSnack("Mot de passe mis à jour avec succès !",
+        _showSnack(l10n.motDePasseMisA,
             const Color(0xFF10B981), Icons.check_circle_outline_rounded);
         context.go('/login');
       }
@@ -231,8 +232,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Title
-                              const Text(
-                                'Nouveau mot de passe',
+                              Text(
+                                l10n.nouveauMotDePasse,
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -241,8 +242,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              const Text(
-                                'Créez un mot de passe sécurisé pour votre compte.',
+                              Text(
+                                l10n.creezUnMotDePasse,
                                 style:
                                     TextStyle(fontSize: 13, color: _textSub),
                               ),
@@ -255,7 +256,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                               const SizedBox(height: 28),
 
                               // Code field
-                              const _FieldLabel(label: 'Code reçu par e-mail'),
+                              _FieldLabel(label: l10n.codeRecuParEMail),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _codeController,
@@ -271,13 +272,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                   icon: Icons.security_rounded,
                                 ),
                                 validator: (v) =>
-                                    v!.length < 5 ? 'Code invalide' : null,
+                                    v!.length < 5 ? l10n.codeInvalide2 : null,
                               ),
 
                               const SizedBox(height: 20),
 
                               // New password
-                              const _FieldLabel(label: 'Nouveau mot de passe'),
+                              _FieldLabel(label: l10n.nouveauMotDePasse),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _passwordController,
@@ -310,11 +311,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                               Row(
                                 children: [
                                   _PasswordRule(
-                                      label: '8+ caractères',
+                                      label: l10n.t8Caracteres,
                                       met: _passwordController.text.length >= 8),
                                   const SizedBox(width: 12),
                                   _PasswordRule(
-                                      label: 'Lettres & chiffres',
+                                      label: l10n.lettresChiffres,
                                       met: RegExp(r'(?=.*[a-z])(?=.*[0-9])')
                                           .hasMatch(_passwordController.text)),
                                 ],
@@ -323,8 +324,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                               const SizedBox(height: 20),
 
                               // Confirm password
-                              const _FieldLabel(
-                                  label: 'Confirmer le mot de passe'),
+                              _FieldLabel(
+                                  label: l10n.confirmerLeMotDePasse),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _confirmPasswordController,
@@ -350,7 +351,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                 ),
                                 validator: (v) =>
                                     v != _passwordController.text
-                                        ? 'Les mots de passe diffèrent'
+                                        ? l10n.lesMotsDePasseDifferent
                                         : null,
                               ),
 
@@ -401,8 +402,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                                               strokeWidth: 2.5,
                                             ),
                                           )
-                                        : const Text(
-                                            'RÉINITIALISER',
+                                        : Text(
+                                            l10n.reinitialiser,
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.w700,
@@ -426,12 +427,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                           onTap: () => context.go('/login'),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Icon(Icons.arrow_back_rounded,
                                   size: 14, color: _primaryMid),
                               SizedBox(width: 6),
                               Text(
-                                'Retour à la connexion',
+                                l10n.retourALaConnexion,
                                 style: TextStyle(
                                   color: _primaryMid,
                                   fontWeight: FontWeight.w600,
@@ -504,11 +505,11 @@ class _StepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _Step(number: '1', label: 'Email', done: true),
+        _Step(number: '1', label: l10n.email, done: true),
         _StepLine(),
-        _Step(number: '2', label: 'Code', done: true),
+        _Step(number: '2', label: l10n.code2, done: true),
         _StepLine(),
-        _Step(number: '3', label: 'Nouveau MDP', done: false, active: true),
+        _Step(number: '3', label: l10n.nouveauMdp, done: false, active: true),
       ],
     );
   }

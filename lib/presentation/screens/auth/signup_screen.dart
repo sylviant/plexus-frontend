@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
 import 'package:plexus/core/providers/notification_provider.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 enum UserRole { client, seller }
 
@@ -96,30 +97,30 @@ class _SignupScreenState extends State<SignupScreen>
       builder: (context) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          "Documents Légaux — PLEXUS",
+        title: Text(
+          l10n.documentsLegauxPlexus,
           style: TextStyle(
               fontWeight: FontWeight.w800, color: _primary, fontSize: 16),
         ),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("1. MENTIONS LÉGALES",
+              Text(l10n.t1MentionsLegales,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
-              Text("© 2026 PLEXUS GLOBAL SOLUTIONS FZ-LLC.\n",
+              Text(l10n.t2026PlexusGlobalSolutionsFz,
                   style: TextStyle(fontSize: 13)),
-              Text("2. CONDITIONS GÉNÉRALES (CGV)",
+              Text(l10n.t2ConditionsGeneralesCgv,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
               Text(
-                  "- Paiement Escrow sécurisé.\n- Commission de 3% sur les ventes.\n- Livraison responsable du vendeur.\n",
+                  l10n.paiementEscrowSecuriseCommissionDe,
                   style: TextStyle(fontSize: 13)),
-              Text("3. CONFIDENTIALITÉ",
+              Text(l10n.t3Confidentialite,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
               SizedBox(height: 4),
-              Text("PLEXUS ne stocke jamais vos clés privées.",
+              Text(l10n.plexusNeStockeJamaisVos,
                   style: TextStyle(fontSize: 13)),
             ],
           ),
@@ -139,7 +140,7 @@ class _SignupScreenState extends State<SignupScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text("J'ACCEPTE",
+            child: Text(l10n.jAccepte,
                 style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -151,7 +152,7 @@ class _SignupScreenState extends State<SignupScreen>
     setState(() => _isGettingLocation = true);
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw 'Services désactivés';
+      if (!serviceEnabled) throw l10n.servicesDesactives;
       LocationPermission p = await Geolocator.checkPermission();
       if (p == LocationPermission.denied)
         p = await Geolocator.requestPermission();
@@ -165,7 +166,7 @@ class _SignupScreenState extends State<SignupScreen>
         });
       }
     } catch (e) {
-      _showError("Localisation impossible");
+      _showError(l10n.localisationImpossible);
     } finally {
       if (mounted) setState(() => _isGettingLocation = false);
     }
@@ -185,7 +186,7 @@ class _SignupScreenState extends State<SignupScreen>
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
-                  isSelfie ? "Prendre un selfie" : "Ajouter un document",
+                  isSelfie ? l10n.prendreUnSelfie : l10n.ajouterUnDocument,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -203,7 +204,7 @@ class _SignupScreenState extends State<SignupScreen>
                       color: _primary, size: 20),
                 ),
                 title: Text(
-                    isSelfie ? "Prendre un selfie" : "Prendre une photo",
+                    isSelfie ? l10n.prendreUnSelfie : l10n.prendreUnePhoto,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
                 onTap: () {
                   Navigator.pop(context);
@@ -221,7 +222,7 @@ class _SignupScreenState extends State<SignupScreen>
                     child: const Icon(Icons.photo_library_rounded,
                         color: Colors.orange, size: 20),
                   ),
-                  title: const Text("Choisir depuis la galerie",
+                  title: Text(l10n.choisirDepuisLaGalerie,
                       style: TextStyle(fontWeight: FontWeight.w500)),
                   onTap: () {
                     Navigator.pop(context);
@@ -267,7 +268,7 @@ class _SignupScreenState extends State<SignupScreen>
   // ✅ Inchangé — délègue au AuthProvider qui gère Web/Mobile
   Future<void> _handleGoogleSignIn() async {
     if (!_acceptedTerms) {
-      _showError("Veuillez accepter les conditions légales");
+      _showError(l10n.veuillezAccepterLesConditionsLegales);
       return;
     }
     setState(() => _isGoogleLoading = true);
@@ -284,7 +285,7 @@ class _SignupScreenState extends State<SignupScreen>
         notifP.fetchNotifications(userId);
       }
     } catch (e) {
-      _showError("Échec de la connexion Google");
+      _showError(l10n.echecDeLaConnexionGoogle);
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -319,14 +320,14 @@ class _SignupScreenState extends State<SignupScreen>
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
-      _showError("Vous devez accepter les conditions légales");
+      _showError(l10n.vousDevezAccepterLesConditions);
       return;
     }
     if (_selectedRole.first == UserRole.seller) {
       if (_idFrontBytes == null ||
           _idBackBytes == null ||
           _selfieBytes == null) {
-        _showError("Dossier KYC incomplet");
+        _showError(l10n.dossierKycIncomplet);
         return;
       }
     }
@@ -435,8 +436,8 @@ class _SignupScreenState extends State<SignupScreen>
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Créez votre compte en quelques étapes',
+                            Text(
+                              l10n.creezVotreCompteEnQuelques,
                               style: TextStyle(
                                   color: _textSub,
                                   fontSize: 12,
@@ -506,7 +507,7 @@ class _SignupScreenState extends State<SignupScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isSeller ? 'Compte Vendeur' : 'Compte Client',
+                                isSeller ? l10n.compteVendeur : l10n.compteClient,
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -517,8 +518,8 @@ class _SignupScreenState extends State<SignupScreen>
                               const SizedBox(height: 4),
                               Text(
                                 isSeller
-                                    ? 'Complétez votre dossier pour ouvrir une boutique.'
-                                    : 'Rejoignez la plateforme en quelques secondes.',
+                                    ? l10n.completezVotreDossierPourOuvrir
+                                    : l10n.rejoignezLaPlateformeEnQuelques,
                                 style: const TextStyle(
                                     fontSize: 13, color: _textSub),
                               ),
@@ -559,9 +560,9 @@ class _SignupScreenState extends State<SignupScreen>
                                                   color: _primary,
                                                   size: 30),
                                               const SizedBox(width: 12),
-                                              const Flexible(
+                                              Flexible(
                                                 child: Text(
-                                                  'Continuer avec Google',
+                                                  l10n.continuerAvecGoogle,
                                                   style: TextStyle(
                                                     color: _textMain,
                                                     fontWeight: FontWeight.w600,
@@ -599,38 +600,38 @@ class _SignupScreenState extends State<SignupScreen>
                               ],
 
                               // Nom complet
-                              const _FieldLabel(label: 'Nom complet'),
+                              _FieldLabel(label: l10n.nomComplet),
                               const SizedBox(height: 8),
                               _styledField(
                                   controller: _nameController,
-                                  hint: 'Jean Dupont',
+                                  hint: l10n.jeanDupont,
                                   icon: Icons.person_outline_rounded),
 
                               const SizedBox(height: 18),
 
                               // Email
-                              const _FieldLabel(label: 'Adresse e-mail'),
+                              _FieldLabel(label: l10n.adresseEMail),
                               const SizedBox(height: 8),
                               _styledField(
                                   controller: _emailController,
-                                  hint: 'exemple@domaine.com',
+                                  hint: l10n.exempleDomaineCom,
                                   icon: Icons.alternate_email_rounded,
                                   keyboardType: TextInputType.emailAddress),
 
                               // Seller-specific fields
                               if (isSeller) ...[
                                 const SizedBox(height: 18),
-                                const _FieldLabel(label: 'Téléphone'),
+                                _FieldLabel(label: l10n.telephone),
                                 const SizedBox(height: 8),
                                 _styledField(
                                     controller: _phoneController,
-                                    hint: '+237 6XX XXX XXX',
+                                    hint: l10n.t2376xxXxxXxx,
                                     icon: Icons.phone_android_rounded,
                                     keyboardType: TextInputType.phone),
 
                                 const SizedBox(height: 18),
-                                const _FieldLabel(
-                                    label: 'Localisation de la boutique'),
+                                _FieldLabel(
+                                    label: l10n.localisationDeLaBoutique),
                                 const SizedBox(height: 8),
                                 TextFormField(
                                   controller: _addressController,
@@ -638,7 +639,7 @@ class _SignupScreenState extends State<SignupScreen>
                                       color: _textMain,
                                       fontWeight: FontWeight.w500),
                                   decoration: _inputDecoration(
-                                    hint: 'Rue, Ville, Pays',
+                                    hint: l10n.rueVillePays,
                                     icon: Icons.location_on_outlined,
                                     suffix: _isGettingLocation
                                         ? const Padding(
@@ -660,7 +661,7 @@ class _SignupScreenState extends State<SignupScreen>
                                           ),
                                   ),
                                   validator: (v) =>
-                                      v!.isEmpty ? 'Requis' : null,
+                                      v!.isEmpty ? l10n.requis : null,
                                 ),
 
                                 const SizedBox(height: 28),
@@ -674,8 +675,8 @@ class _SignupScreenState extends State<SignupScreen>
                                       color: _primary.withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Text(
-                                      'DOCUMENTS KYC REQUIS',
+                                    child: Text(
+                                      l10n.documentsKycRequis,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         color: _primary,
@@ -686,8 +687,8 @@ class _SignupScreenState extends State<SignupScreen>
                                   ),
                                 ]),
                                 const SizedBox(height: 6),
-                                const Text(
-                                  'Ces documents sont nécessaires pour valider votre boutique.',
+                                Text(
+                                  l10n.cesDocumentsSontNecessairesPour,
                                   style:
                                       TextStyle(fontSize: 11, color: _textSub),
                                 ),
@@ -697,7 +698,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     Expanded(
                                       child: _UploadBox(
                                         label: "SELFIE",
-                                        sublabel: "Votre visage",
+                                        sublabel: l10n.votreVisage,
                                         icon:
                                             Icons.face_retouching_natural,
                                         bytes: _selfieBytes,
@@ -710,7 +711,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     Expanded(
                                       child: _UploadBox(
                                         label: "RECTO",
-                                        sublabel: "CNI / Passeport",
+                                        sublabel: l10n.cniPasseport,
                                         icon: Icons.credit_card_rounded,
                                         bytes: _idFrontBytes,
                                         onTap: () =>
@@ -721,7 +722,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     Expanded(
                                       child: _UploadBox(
                                         label: "VERSO",
-                                        sublabel: "Dos du doc.",
+                                        sublabel: l10n.dosDuDoc,
                                         icon: Icons.flip_rounded,
                                         bytes: _idBackBytes,
                                         onTap: () =>
@@ -734,7 +735,7 @@ class _SignupScreenState extends State<SignupScreen>
                               ],
 
                               // Password
-                              const _FieldLabel(label: 'Mot de passe'),
+                              _FieldLabel(label: l10n.motDePasse),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _passwordController,
@@ -762,8 +763,8 @@ class _SignupScreenState extends State<SignupScreen>
                               const SizedBox(height: 18),
 
                               // Referral
-                              const _FieldLabel(
-                                  label: 'Code parrainage (optionnel)'),
+                              _FieldLabel(
+                                  label: l10n.codeParrainageOptionnel),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _referralController,
@@ -771,7 +772,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     color: _textMain,
                                     fontWeight: FontWeight.w500),
                                 decoration: _inputDecoration(
-                                  hint: 'XXXX-XXXX',
+                                  hint: l10n.xxxxXxxx,
                                   icon: Icons.card_giftcard_rounded,
                                 ),
                                 validator: null,
@@ -807,8 +808,8 @@ class _SignupScreenState extends State<SignupScreen>
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: _showLegalDocs,
-                                        child: const Text(
-                                          "J'accepte les conditions légales et la politique de confidentialité",
+                                        child: Text(
+                                          l10n.jAccepteLesConditionsLegales,
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: _primaryMid,
@@ -879,8 +880,8 @@ class _SignupScreenState extends State<SignupScreen>
                                               strokeWidth: 2.5,
                                             ),
                                           )
-                                        : const Text(
-                                            'CRÉER MON COMPTE',
+                                        : Text(
+                                            l10n.creerMonCompte,
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.w700,
@@ -903,15 +904,15 @@ class _SignupScreenState extends State<SignupScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Déjà un compte ? ',
+                            Text(
+                              l10n.dejaUnCompte,
                               style:
                                   TextStyle(color: _textSub, fontSize: 14),
                             ),
                             GestureDetector(
                               onTap: () => context.go('/login'),
-                              child: const Text(
-                                'Se connecter',
+                              child: Text(
+                                l10n.seConnecter2,
                                 style: TextStyle(
                                   color: _primary,
                                   fontWeight: FontWeight.w700,
@@ -951,7 +952,7 @@ class _SignupScreenState extends State<SignupScreen>
       style:
           const TextStyle(color: _textMain, fontWeight: FontWeight.w500),
       decoration: _inputDecoration(hint: hint, icon: icon),
-      validator: (v) => v!.isEmpty ? 'Requis' : null,
+      validator: (v) => v!.isEmpty ? l10n.requis : null,
     );
   }
 

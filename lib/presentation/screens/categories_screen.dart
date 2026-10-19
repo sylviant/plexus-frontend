@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/providers/category_provider.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -76,8 +77,8 @@ class _CategoriesScreenState extends State<CategoriesScreen>
         elevation: 0,
         scrolledUnderElevation: 1,
         shadowColor: _primary.withOpacity(0.08),
-        title: const Text(
-          'Catégories',
+        title: Text(
+          l10n.categories,
           style: TextStyle(
             color: _textMain,
             fontWeight: FontWeight.w800,
@@ -96,7 +97,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                 children: [
                   const CircularProgressIndicator(color: _primary),
                   const SizedBox(height: 16),
-                  Text('Chargement des catégories...',
+                  Text(l10n.chargementDesCategories,
                       style: TextStyle(color: _textSub, fontSize: 13)),
                 ],
               ),
@@ -125,7 +126,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         size: 40, color: Color(0xFFCBD5E1)),
                   ),
                   const SizedBox(height: 20),
-                  const Text('Aucune catégorie trouvée.',
+                  Text(l10n.aucuneCategorieTrouvee,
                       style: TextStyle(
                           color: _textSub,
                           fontSize: 15,
@@ -170,7 +171,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                             fontWeight: FontWeight.w500,
                             fontSize: 14),
                         decoration: InputDecoration(
-                          hintText: 'Rechercher une catégorie...',
+                          hintText: l10n.rechercherUneCategorie,
                           hintStyle: TextStyle(
                               color: _textSub.withOpacity(0.5),
                               fontSize: 14),
@@ -227,7 +228,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${filtered.length} catégorie${filtered.length > 1 ? 's' : ''}',
+                          l10n.categoriesCount(filtered.length),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -236,7 +237,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         ),
                         if (_searchQuery.isNotEmpty) ...[
                           const SizedBox(width: 6),
-                          Text('pour "$_searchQuery"',
+                          Text(l10n.pour('$_searchQuery'),
                               style: const TextStyle(
                                   fontSize: 13, color: _textSub)),
                         ],
@@ -252,7 +253,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                           padding: const EdgeInsets.only(top: 60),
                           child: Center(
                             child: Text(
-                              'Aucun résultat pour "$_searchQuery"',
+                              l10n.aucunResultatPour('$_searchQuery'),
                               style: const TextStyle(
                                   color: _textSub, fontSize: 14),
                             ),
@@ -267,7 +268,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                             (context, index) {
                               final cat = filtered[index];
                               final String name =
-                                  cat['name'] ?? 'Inconnu';
+                                  cat['name'] ?? l10n.inconnu;
                               final String imageUrl =
                                   ApiConfig.getImageUrl(cat['imageUrl']);
                               final List<Color> grad = _gradients[
@@ -415,7 +416,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.name.toUpperCase(),
+                          trData(widget.name).toUpperCase(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
@@ -444,11 +445,11 @@ class _CategoryCardState extends State<_CategoryCard> {
                                 color: Colors.white.withOpacity(0.3),
                                 width: 1),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Explorer',
+                                l10n.explorer,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,

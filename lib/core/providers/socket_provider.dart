@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:plexus/core/services/notification_service.dart';
 import 'package:plexus/core/providers/notification_provider.dart';
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class SocketProvider with ChangeNotifier {
   IO.Socket? _socket;
@@ -52,7 +53,7 @@ class SocketProvider with ChangeNotifier {
               user: ChatUser(id: lastMsg['senderId'], firstName: lastMsg['senderName']),
               createdAt: DateTime.parse(lastMsg['createdAt']),
             ),
-            'name': conv['otherUserName'] ?? 'Utilisateur',
+            'name': conv['otherUserName'] ?? l10n.utilisateur,
           };
         }
         safeNotify();
@@ -98,7 +99,7 @@ class SocketProvider with ChangeNotifier {
         try {
           final message = ChatMessage.fromJson(data);
           final String roomId = data['conversationId'] ?? 'default';
-          final String senderName = data['senderName'] ?? 'Utilisateur';
+          final String senderName = data['senderName'] ?? l10n.utilisateur;
 
           _conversations[roomId] = {'message': message, 'name': senderName};
 
@@ -106,8 +107,8 @@ class SocketProvider with ChangeNotifier {
             _unreadCount++;
             NotificationService.showNotification(
               id: roomId.hashCode,
-              title: "Nouveau message de $senderName",
-              body: message.text,
+              title: l10n.nouveauMessageDe('$senderName'),
+              body: trChatText(message.text),
             );
           }
           _messageController.add(message);
@@ -119,7 +120,7 @@ class SocketProvider with ChangeNotifier {
         notifProvider.addNotification(data);
         NotificationService.showNotification(
           id: (data['_id'] ?? data['id']).hashCode,
-          title: (data['title'] ?? "Alerte").toString(),
+          title: (data['title'] ?? l10n.alerte).toString(),
           body: (data['message'] ?? "").toString(),
         );
       });
@@ -145,7 +146,7 @@ class SocketProvider with ChangeNotifier {
       data['conversationId'] = roomId;
       data['senderName'] = senderName; 
       _socket!.emit('sendMessage', data);
-      _conversations[roomId] = {'message': message, 'name': 'Moi'};
+      _conversations[roomId] = {'message': message, 'name': l10n.moi};
       safeNotify();
     }
   }

@@ -5,6 +5,7 @@ import 'package:native_glass_navbar/native_glass_navbar.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 // ─── IMPORTANT : dans main.dart, définissez la couleur primaire PLEXUS ────────
 // MaterialApp(
@@ -79,12 +80,12 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   onTap: (index) => widget.navigationShell.goBranch(index),
 
                   // ✅ API exacte 1.0.2 : label + symbol uniquement
-                  tabs: const [
-                    NativeGlassNavBarItem(label: 'Accueil',    symbol: 'house'),
-                    NativeGlassNavBarItem(label: 'Catégories', symbol: 'square.grid.2x2'),
-                    NativeGlassNavBarItem(label: 'Panier',     symbol: 'bag'),
-                    NativeGlassNavBarItem(label: 'Messages',   symbol: 'message'),
-                    NativeGlassNavBarItem(label: 'Profil',     symbol: 'person'),
+                  tabs: [
+                    NativeGlassNavBarItem(label: l10n.accueil,    symbol: 'house'),
+                    NativeGlassNavBarItem(label: l10n.categories, symbol: 'square.grid.2x2'),
+                    NativeGlassNavBarItem(label: l10n.panier,     symbol: 'bag'),
+                    NativeGlassNavBarItem(label: l10n.messages,   symbol: 'message'),
+                    NativeGlassNavBarItem(label: l10n.profil,     symbol: 'person'),
                   ],
 
                   // Fallback Flutter pour Android + iOS < 26
@@ -121,12 +122,12 @@ class _FlutterFallbackNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  static const List<_FbItem> _items = [
-    _FbItem(label: 'Accueil',    icon: Icons.home_outlined,              activeIcon: Icons.home_rounded),
-    _FbItem(label: 'Catégories', icon: Icons.grid_view_outlined,          activeIcon: Icons.grid_view_rounded),
-    _FbItem(label: 'Panier',     icon: Icons.shopping_bag_outlined,       activeIcon: Icons.shopping_bag_rounded, isCenter: true),
-    _FbItem(label: 'Messages',   icon: Icons.chat_bubble_outline_rounded, activeIcon: Icons.chat_bubble_rounded,  hasBadge: true),
-    _FbItem(label: 'Profil',     icon: Icons.person_outline_rounded,      activeIcon: Icons.person_rounded),
+  static List<_FbItem> get _items => [
+    _FbItem(label: l10n.accueil,    icon: Icons.home_outlined,              activeIcon: Icons.home_rounded),
+    _FbItem(label: l10n.categories, icon: Icons.grid_view_outlined,          activeIcon: Icons.grid_view_rounded),
+    _FbItem(label: l10n.panier,     icon: Icons.shopping_bag_outlined,       activeIcon: Icons.shopping_bag_rounded, isCenter: true),
+    _FbItem(label: l10n.messages,   icon: Icons.chat_bubble_outline_rounded, activeIcon: Icons.chat_bubble_rounded,  hasBadge: true),
+    _FbItem(label: l10n.profil,     icon: Icons.person_outline_rounded,      activeIcon: Icons.person_rounded),
   ];
 
   @override

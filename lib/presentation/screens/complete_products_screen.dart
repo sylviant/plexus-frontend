@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
+import 'package:plexus/l10n/l10n.dart';
 
 class CompleteProductsScreen extends StatefulWidget {
   final String sellerId;
@@ -27,27 +28,27 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
   static const Color _green   = Color(0xFF16A34A);
   static const Color _red     = Color(0xFFEF4444);
 
-  static const List<DropdownMenuItem<String>> _countryItems = [
-    DropdownMenuItem(value: 'CM', child: Text('🇨🇲 CM')),
-    DropdownMenuItem(value: 'FR', child: Text('🇫🇷 FR')),
-    DropdownMenuItem(value: 'CN', child: Text('🇨🇳 CN')),
-    DropdownMenuItem(value: 'US', child: Text('🇺🇸 US')),
-    DropdownMenuItem(value: 'NG', child: Text('🇳🇬 NG')),
-    DropdownMenuItem(value: 'SN', child: Text('🇸🇳 SN')),
-    DropdownMenuItem(value: 'CI', child: Text('🇨🇮 CI')),
-    DropdownMenuItem(value: 'MA', child: Text('🇲🇦 MA')),
-    DropdownMenuItem(value: 'DZ', child: Text('🇩🇿 DZ')),
-    DropdownMenuItem(value: 'GH', child: Text('🇬🇭 GH')),
-    DropdownMenuItem(value: 'ZA', child: Text('🇿🇦 ZA')),
-    DropdownMenuItem(value: 'GB', child: Text('🇬🇧 GB')),
-    DropdownMenuItem(value: 'DE', child: Text('🇩🇪 DE')),
-    DropdownMenuItem(value: 'TR', child: Text('🇹🇷 TR')),
-    DropdownMenuItem(value: 'IN', child: Text('🇮🇳 IN')),
-    DropdownMenuItem(value: 'JP', child: Text('🇯🇵 JP')),
-    DropdownMenuItem(value: 'AE', child: Text('🇦🇪 AE')),
-    DropdownMenuItem(value: 'CD', child: Text('🇨🇩 CD')),
-    DropdownMenuItem(value: 'TG', child: Text('🇹🇬 TG')),
-    DropdownMenuItem(value: 'GA', child: Text('🇬🇦 GA')),
+  static List<DropdownMenuItem<String>> get _countryItems => [
+    DropdownMenuItem(value: 'CM', child: Text(l10n.cm)),
+    DropdownMenuItem(value: 'FR', child: Text(l10n.fr)),
+    DropdownMenuItem(value: 'CN', child: Text(l10n.cn)),
+    DropdownMenuItem(value: 'US', child: Text(l10n.us)),
+    DropdownMenuItem(value: 'NG', child: Text(l10n.ng)),
+    DropdownMenuItem(value: 'SN', child: Text(l10n.sn)),
+    DropdownMenuItem(value: 'CI', child: Text(l10n.ci)),
+    DropdownMenuItem(value: 'MA', child: Text(l10n.ma)),
+    DropdownMenuItem(value: 'DZ', child: Text(l10n.dz)),
+    DropdownMenuItem(value: 'GH', child: Text(l10n.gh)),
+    DropdownMenuItem(value: 'ZA', child: Text(l10n.za)),
+    DropdownMenuItem(value: 'GB', child: Text(l10n.gb)),
+    DropdownMenuItem(value: 'DE', child: Text(l10n.de)),
+    DropdownMenuItem(value: 'TR', child: Text(l10n.tr)),
+    DropdownMenuItem(value: 'IN', child: Text(l10n.inLabel)),
+    DropdownMenuItem(value: 'JP', child: Text(l10n.jp)),
+    DropdownMenuItem(value: 'AE', child: Text(l10n.ae)),
+    DropdownMenuItem(value: 'CD', child: Text(l10n.cd)),
+    DropdownMenuItem(value: 'TG', child: Text(l10n.tg)),
+    DropdownMenuItem(value: 'GA', child: Text(l10n.ga)),
   ];
 
   @override
@@ -82,8 +83,8 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
     for (final p in _products) {
       final id = p['_id'].toString();
       if (_statusMap[id] == null || _countryMap[id] == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Veuillez renseigner le statut et le pays pour tous les produits.'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.veuillezRenseignerLeStatutEt),
           backgroundColor: Colors.orange,
         ));
         return;
@@ -119,14 +120,14 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text('Compléter vos produits',
+        title: Text(l10n.completerVosProduits,
             style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w700, fontSize: 17)),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: _primary))
           : _products.isEmpty
-          ? Center(child: Text('Tout est à jour !',
+          ? Center(child: Text(l10n.toutEstAJour,
           style: TextStyle(color: _textSub, fontSize: 15)))
           : Column(children: [
         // Banner
@@ -134,12 +135,12 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           color: const Color(0xFFFFFBEB),
-          child: Row(children: const [
+          child: Row(children: [
             Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B), size: 20),
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Certains de vos produits nécessitent un statut et un pays. Veuillez les compléter pour continuer.',
+                l10n.certainsDeVosProduitsNecessitent,
                 style: TextStyle(color: Color(0xFF92400E), fontSize: 12, height: 1.4),
               ),
             ),
@@ -179,7 +180,7 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(p['title'] ?? 'Produit',
+                        Text(p['title'] ?? l10n.produit,
                             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: _textMain),
                             maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 8),
@@ -195,11 +196,11 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
                                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: _border)),
                                 filled: true, fillColor: _surface,
                               ),
-                              items: const [
+                              items: [
                                 DropdownMenuItem(value: 'En stock',
-                                    child: Text('En stock', style: TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w700, fontSize: 11))),
+                                    child: Text(l10n.enStock, style: TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w700, fontSize: 11))),
                                 DropdownMenuItem(value: 'Limité',
-                                    child: Text('Limité', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700, fontSize: 11))),
+                                    child: Text(l10n.limite, style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700, fontSize: 11))),
                               ],
                               onChanged: (v) => setState(() => _statusMap[id] = v!),
                               style: const TextStyle(fontSize: 12, color: _textMain),
@@ -250,7 +251,7 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
               ),
               child: _isSaving
                   ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                  : const Text('ENREGISTRER ET CONTINUER',
+                  : Text(l10n.enregistrerEtContinuer,
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1)),
             ),
           ),

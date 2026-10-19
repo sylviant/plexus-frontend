@@ -37,12 +37,12 @@ class ProductCardWidget extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: product.imageUrl.isNotEmpty
                   ? Image.network(
-                      product.imageUrl,
-                      height: 110,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
-                    )
+                product.imageUrl,
+                height: 110,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
                   : _placeholder(),
             ),
             Padding(
@@ -61,9 +61,9 @@ class ProductCardWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Prix
+                  // Prix en dollars
                   Text(
-                    '${product.price.toStringAsFixed(0)} FCFA',
+                    '\$${product.price.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -72,7 +72,6 @@ class ProductCardWidget extends StatelessWidget {
                   ),
                   if (product.color.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    // Couleur
                     Row(
                       children: [
                         const Icon(Icons.circle, size: 10, color: Colors.grey),
