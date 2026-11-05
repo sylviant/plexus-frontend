@@ -71,6 +71,27 @@ GoRouter createRouter(BuildContext context) {
         builder: (context, state) => const AiChatScreen(),
       ),
 
+      // ✅ Routes "hors barre de navigation" : utilisées depuis les pages qui sont
+      // elles-mêmes hors du shell (profil vendeur, chat IA). Pousser '/home/product/..'
+      // ou '/cart/payment' depuis ces pages créait un 2e shell => écran blanc.
+      GoRoute(
+        path: '/product-view/:id',
+        builder: (context, state) => ProductDetailScreen(
+          productId: state.pathParameters['id']!,
+          standalone: true,
+        ),
+      ),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) =>
+            PaymentScreen(productData: state.extra as Map<String, dynamic>?),
+      ),
+      GoRoute(
+        path: '/product-edit',
+        builder: (context, state) =>
+            AddProductScreen(initialProduct: state.extra as Map<String, dynamic>?),
+      ),
+
       // ✅ NOUVEAU : Page de succès de commande pour l'acheteur
       GoRoute(
         path: '/order-success/:orderId',

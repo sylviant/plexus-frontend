@@ -229,7 +229,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               itemCount: bubble.products.length,
               itemBuilder: (context, i) => ProductCardWidget(
                 product: bubble.products[i],
-                onTap: () => _openPayment(bubble.products[i].productId),
+                onTap: () => context.push('/product-view/${bubble.products[i].productId}'),
               ),
             ),
           ),

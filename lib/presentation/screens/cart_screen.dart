@@ -445,8 +445,8 @@ class _CartScreenState extends State<CartScreen> {
             ),
 
             // Code promo
-            _buildPromoField(cart),
-            const SizedBox(height: 16),
+      //      _buildPromoField(cart),
+        //    const SizedBox(height: 16),
 
             // Summary
             _SummaryRow(

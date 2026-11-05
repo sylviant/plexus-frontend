@@ -152,7 +152,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
                     mainAxisSpacing: 14,
                   ),
                   delegate: SliverChildBuilderDelegate(
-                        (context, i) => ProductCard(product: _products[i]),
+                        (context, i) => ProductCard(product: _products[i], standalone: true),
                     childCount: _products.length,
                   ),
                 ),

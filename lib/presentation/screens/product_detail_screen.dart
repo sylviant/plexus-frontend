@@ -13,7 +13,10 @@ import 'package:plexus/l10n/l10n.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
-  const ProductDetailScreen({required this.productId, super.key});
+  // true quand la page est ouverte hors de la barre de navigation
+  // (depuis le profil vendeur ou le chat IA).
+  final bool standalone;
+  const ProductDetailScreen({required this.productId, this.standalone = false, super.key});
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
@@ -574,7 +577,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const Spacer(),
                           if (isOwner)
                             GestureDetector(
-                              onTap: () => context.push('/profile/add-product', extra: product),
+                              onTap: () => context.push(widget.standalone ? '/product-edit' : '/profile/add-product', extra: product),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                 decoration: BoxDecoration(color: _orange.withOpacity(0.10), borderRadius: BorderRadius.circular(10), border: Border.all(color: _orange.withOpacity(0.3))),
@@ -640,7 +643,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     boxShadow: [BoxShadow(color: _primary.withOpacity(0.30), blurRadius: 14, offset: const Offset(0, 5))],
                                   ),
                                   child: ElevatedButton(
-                                    onPressed: () => context.push('/cart/payment', extra: {'singleProduct': product}),
+                                    onPressed: () => context.push(widget.standalone ? '/checkout' : '/cart/payment', extra: {'singleProduct': product}),
                                     style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
@@ -864,7 +867,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                             crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12,
                             itemCount: related.length,
-                            itemBuilder: (_, i) => RelatedProductCard(product: related[i]),
+                            itemBuilder: (_, i) => RelatedProductCard(product: related[i], standalone: widget.standalone),
                           ),
                         );
                       },

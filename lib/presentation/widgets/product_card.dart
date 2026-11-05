@@ -6,7 +6,10 @@ import 'package:plexus/l10n/l10n.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
-  const ProductCard({required this.product, super.key});
+  // true quand la carte est affichée hors de la barre de navigation
+  // (ex: profil vendeur) → ouvre la page détail via une route racine.
+  final bool standalone;
+  const ProductCard({required this.product, this.standalone = false, super.key});
 
   static const Color _navy     = Color(0xFF0D1B4B);
   static const Color _primary  = Color(0xFF1A237E);
@@ -36,7 +39,8 @@ class ProductCard extends StatelessWidget {
     final bool   hasStatus = status == 'En stock' || status == 'Limité';
 
     return GestureDetector(
-      onTap: () => context.push('/home/product/$productId'),
+      onTap: () => context.push(
+          standalone ? '/product-view/$productId' : '/home/product/$productId'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

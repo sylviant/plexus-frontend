@@ -7,8 +7,9 @@ import 'package:plexus/l10n/l10n.dart';
 
 class RelatedProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
+  final bool standalone;
 
-  const RelatedProductCard({required this.product, super.key});
+  const RelatedProductCard({required this.product, this.standalone = false, super.key});
 
   // ─── Palette (cohérente avec le thème de l'app) ───────────────────────────
   static const Color _primary = Color(0xFF1A237E);
@@ -18,14 +19,15 @@ class RelatedProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String productId =
-        (product['_id'] ?? product['id'] ?? '').toString();
+    (product['_id'] ?? product['id'] ?? '').toString();
     final String title = product['title'] ?? l10n.sansTitre;
     final double price = (product['price'] as num?)?.toDouble() ?? 0.0;
     final String imageUrl =
-        ApiConfig.getImageUrl(product['thumbnail'] ?? product['image']);
+    ApiConfig.getImageUrl(product['thumbnail'] ?? product['image']);
 
     return GestureDetector(
-      onTap: () => context.push('/home/product/$productId'),
+      onTap: () => context.push(
+          standalone ? '/product-view/$productId' : '/home/product/$productId'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -45,7 +47,7 @@ class RelatedProductCard extends StatelessWidget {
             // ── Image (hauteur libre → effet Masonry) ────────────────────
             ClipRRect(
               borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(14)),
+              const BorderRadius.vertical(top: Radius.circular(14)),
               child: Image.network(
                 imageUrl,
                 width: double.infinity,
@@ -123,7 +125,7 @@ class RelatedProductCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       // Achat direct → paiement
                       GestureDetector(
-                        onTap: () => context.push('/cart/payment', extra: {
+                        onTap: () => context.push(standalone ? '/checkout' : '/cart/payment', extra: {
                           'singleProduct': product,
                         }),
                         child: Container(
