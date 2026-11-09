@@ -378,6 +378,8 @@ contract PlexusEscrowV2 is Ownable2Step, ReentrancyGuard, Pausable, EIP712 {
     }
 
     /// Not shipped in time: full refund.
+
+
     function refundUnshipped(bytes32 orderRef) external nonReentrant {
         Order storage o = _order(orderRef);
         if (o.status != Status.Paid) revert WrongStatus();
@@ -409,6 +411,7 @@ contract PlexusEscrowV2 is Ownable2Step, ReentrancyGuard, Pausable, EIP712 {
     }
 
     /// Buyer confirms receipt: seller is paid.
+
     function confirmReceipt(bytes32 orderRef) external nonReentrant {
         Order storage o = _order(orderRef);
         if (msg.sender != o.buyer) revert NotBuyer();
@@ -437,6 +440,7 @@ contract PlexusEscrowV2 is Ownable2Step, ReentrancyGuard, Pausable, EIP712 {
         o.disputeDeadline = uint64(block.timestamp + DISPUTE_RESOLUTION_WINDOW);
         emit DisputeOpened(orderRef, reasonHash, o.disputeDeadline);
     }
+
 
     /// Buyer closes the dispute: seller is paid.
     function withdrawDispute(bytes32 orderRef) external nonReentrant {
@@ -468,6 +472,7 @@ contract PlexusEscrowV2 is Ownable2Step, ReentrancyGuard, Pausable, EIP712 {
         o.disputeDeadline += uint64(DISPUTE_EXTENSION);
         emit DisputeExtended(orderRef, o.disputeDeadline);
     }
+
 
     /// Owner decides the dispute with any split.
     function resolveDispute(bytes32 orderRef, uint256 productRefund, uint256 deliveryRefund)
