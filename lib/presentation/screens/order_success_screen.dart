@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
@@ -172,11 +172,11 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [_success.withOpacity(0.15), _success.withOpacity(0.05)],
+              colors: [_success.withValues(alpha: 0.15), _success.withValues(alpha: 0.05)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            border: Border.all(color: _success.withOpacity(0.3), width: 2),
+            border: Border.all(color: _success.withValues(alpha: 0.3), width: 2),
           ),
           child: Center(
             child: Container(
@@ -187,7 +187,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                 color: _success,
                 boxShadow: [
                   BoxShadow(
-                    color: _success.withOpacity(0.4),
+                    color: _success.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -236,9 +236,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: _success.withOpacity(0.08),
+              color: _success.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _success.withOpacity(0.2), width: 1),
+              border: Border.all(color: _success.withValues(alpha: 0.2), width: 1),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -279,7 +279,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
           border: Border.all(color: _border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: _accent.withOpacity(0.05),
+              color: _accent.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -363,9 +363,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.1),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.25), width: 1),
+                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:plexus/l10n/l10n.dart';
@@ -65,7 +65,7 @@ class ProductCard extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: const Color(0xFFF0F3FF),
                     child: const Center(
                       child: Icon(
@@ -235,7 +235,7 @@ class _VerticalTextTickerState extends State<_VerticalTextTicker> {
           },
           layoutBuilder: (currentChild, previousChildren) => Stack(
             alignment: Alignment.centerLeft,
-            children: [...previousChildren, if (currentChild != null) currentChild],
+            children: [...previousChildren, ?currentChild],
           ),
           child: Align(
             key: ValueKey(_index),

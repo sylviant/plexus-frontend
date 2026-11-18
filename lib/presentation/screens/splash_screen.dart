@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -157,8 +157,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 140 * _pulseAnimation.value,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: _accent.withOpacity(
-                                        0.15 * _pulseAnimation.value),
+                                    color: _accent.withValues(
+                                        alpha: 0.15 * _pulseAnimation.value),
                                   ),
                                 ),
                               ),
@@ -168,9 +168,9 @@ class _SplashScreenState extends State<SplashScreen>
                                 height: 110,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(0.08),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.15),
+                                    color: Colors.white.withValues(alpha: 0.15),
                                     width: 1.5,
                                   ),
                                 ),
@@ -207,7 +207,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   Container(
                                     width: 24,
                                     height: 1,
-                                    color: Colors.white.withOpacity(0.4),
+                                    color: Colors.white.withValues(alpha: 0.4),
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
@@ -216,14 +216,14 @@ class _SplashScreenState extends State<SplashScreen>
                                       fontSize: 30,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 8,
-                                      color: Colors.white.withOpacity(0.95),
+                                      color: Colors.white.withValues(alpha: 0.95),
                                     ),
                                   ),
                                   const SizedBox(width: 10),
                                   Container(
                                     width: 24,
                                     height: 1,
-                                    color: Colors.white.withOpacity(0.4),
+                                    color: Colors.white.withValues(alpha: 0.4),
                                   ),
                                 ],
                               ),
@@ -234,7 +234,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 5,
-                                  color: _accent.withOpacity(0.9),
+                                  color: _accent.withValues(alpha: 0.9),
                                 ),
                               ),
                             ],
@@ -255,14 +255,14 @@ class _SplashScreenState extends State<SplashScreen>
                               child: CircularProgressIndicator(
                                 strokeWidth: 1.5,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white.withOpacity(0.6)),
+                                    Colors.white.withValues(alpha: 0.6)),
                               ),
                             ),
                             const SizedBox(height: 14),
                             Text(
                               l10n.chargement,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
                                 fontSize: 11,
                                 letterSpacing: 1.5,
                                 fontWeight: FontWeight.w500,
@@ -288,7 +288,7 @@ class _SplashScreenState extends State<SplashScreen>
                   "v1.0.0",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     fontSize: 11,
                     letterSpacing: 1,
                   ),
@@ -307,7 +307,7 @@ class _SplashScreenState extends State<SplashScreen>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
+        color: color.withValues(alpha: opacity),
       ),
     );
   }
@@ -318,7 +318,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.04)
+      ..color = Colors.white.withValues(alpha: 0.04)
       ..strokeCap = StrokeCap.round;
 
     const spacing = 30.0;

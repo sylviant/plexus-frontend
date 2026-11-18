@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/models/cart_item.dart';
 import 'package:plexus/l10n/l10n.dart';
 

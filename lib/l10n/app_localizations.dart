@@ -1,9 +1,12 @@
 // GENERATED FILE – ne pas modifier à la main (traductions de l'application).
 // ignore_for_file: type=lint
 
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+// material_ui / cupertino_ui already provide the Material and Cupertino delegates.
+import 'package:flutter_localizations/flutter_localizations.dart' show GlobalWidgetsLocalizations;
+import 'package:material_ui/material_ui.dart';
 
 import 'app_localizations_fr.dart';
 import 'app_localizations_en.dart';

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -103,7 +103,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 fit: StackFit.expand,
                 children: [
                   Image.asset('assets/categories/${widget.categoryName.toLowerCase()}.png', fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(color: primaryColor)),
-                  Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.8)]))),
+                  Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)]))),
                   Positioned(bottom: 25, left: 20, child: Text(trData(widget.categoryName).toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2))),
                 ],
               ),

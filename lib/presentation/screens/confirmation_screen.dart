@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/l10n/l10n.dart';
 
@@ -88,17 +88,17 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
           Positioned(
             top: -60,
             right: -60,
-            child: _Blob(size: 220, color: _primaryMid.withOpacity(0.07)),
+            child: _Blob(size: 220, color: _primaryMid.withValues(alpha: 0.07)),
           ),
           Positioned(
             bottom: 60,
             left: -70,
-            child: _Blob(size: 200, color: _accent.withOpacity(0.06)),
+            child: _Blob(size: 200, color: _accent.withValues(alpha: 0.06)),
           ),
           Positioned(
             top: 160,
             left: -40,
-            child: _Blob(size: 130, color: _pending.withOpacity(0.06)),
+            child: _Blob(size: 130, color: _pending.withValues(alpha: 0.06)),
           ),
 
           // ── Content ─────────────────────────────────────────────────
@@ -124,7 +124,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             height: 130,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _pending.withOpacity(0.08),
+                              color: _pending.withValues(alpha: 0.08),
                             ),
                           ),
                           // Middle ring
@@ -133,7 +133,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             height: 104,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _pending.withOpacity(0.14),
+                              color: _pending.withValues(alpha: 0.14),
                             ),
                           ),
                           // Inner circle
@@ -198,7 +198,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                   Border.all(color: _border, width: 1.5),
                               boxShadow: [
                                 BoxShadow(
-                                  color: _primary.withOpacity(0.06),
+                                  color: _primary.withValues(alpha: 0.06),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
@@ -209,7 +209,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                 Container(
                                   padding: const EdgeInsets.all(9),
                                   decoration: BoxDecoration(
-                                    color: _primary.withOpacity(0.07),
+                                    color: _primary.withValues(alpha: 0.07),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: const Icon(
@@ -248,7 +248,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: _pending.withOpacity(0.12),
+                                    color: _pending.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -272,10 +272,10 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
-                              color: _accent.withOpacity(0.06),
+                              color: _accent.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: _accent.withOpacity(0.18),
+                                  color: _accent.withValues(alpha: 0.18),
                                   width: 1.2),
                             ),
                             child: Row(
@@ -283,7 +283,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                               children: [
                                 Icon(Icons.link_rounded,
                                     size: 14,
-                                    color: _accent.withOpacity(0.8)),
+                                    color: _accent.withValues(alpha: 0.8)),
                                 const SizedBox(width: 8),
                                 Text(
                                   l10n.confirmationEnCoursSurLa,
@@ -360,7 +360,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen>
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                  color: _primary.withOpacity(0.35),
+                                  color: _primary.withValues(alpha: 0.35),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),

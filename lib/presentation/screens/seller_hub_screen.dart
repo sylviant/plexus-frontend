@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -58,11 +58,13 @@ class _SellerHubScreenState extends State<SellerHubScreen>
           .get(Uri.parse('${ApiConfig.baseUrl}/users/${user.id}/balance'));
       if (mounted) {
         setState(() {
-          if (resP.statusCode == 200)
+          if (resP.statusCode == 200) {
             _myProducts = json.decode(resP.body)['products'];
-          if (resB.statusCode == 200)
+          }
+          if (resB.statusCode == 200) {
             _balance =
                 (json.decode(resB.body)['balance'] as num).toDouble();
+          }
           _isLoading = false;
         });
         _animController.forward();
@@ -345,7 +347,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
+                    color: Colors.white.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -397,7 +399,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -436,7 +438,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
+        color: color.withValues(alpha: opacity),
       ),
     );
   }
@@ -476,7 +478,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
         border: Border.all(color: const Color(0xFFEBEFF8), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4A6CF7).withOpacity(0.04),
+            color: const Color(0xFF4A6CF7).withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -496,7 +498,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -545,7 +547,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: _accent.withOpacity(0.3),
+                  color: _accent.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -623,7 +625,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
         border: Border.all(color: const Color(0xFFEBEFF8)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4A6CF7).withOpacity(0.05),
+            color: const Color(0xFF4A6CF7).withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -663,7 +665,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 6,
                             ),
                           ],
@@ -686,7 +688,7 @@ class _SellerHubScreenState extends State<SellerHubScreen>
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 6,
                             ),
                           ],

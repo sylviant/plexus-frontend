@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ─── Données ──────────────────────────────────────────────────────────────
   List<dynamic> _allProducts      = [];
   List<dynamic> _filteredProducts = [];
-  List<dynamic> _shuffledProducts = [];
+  final List<dynamic> _shuffledProducts = [];
   bool _isLoading = true;
   String? _error;
 
@@ -375,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                            color: _primary.withOpacity(0.06),
+                            color: _primary.withValues(alpha: 0.06),
                             blurRadius: 6,
                             offset: const Offset(0, 2))
                       ],
@@ -422,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                        color: _primary.withOpacity(0.4),
+                        color: _primary.withValues(alpha: 0.4),
                         blurRadius: 14,
                         offset: const Offset(0, 5))
                   ],
@@ -559,9 +559,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: _primary.withOpacity(0.06),
+                        color: _primary.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _primary.withOpacity(0.2)),
+                        border: Border.all(color: _primary.withValues(alpha: 0.2)),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         const Icon(Icons.category_outlined, size: 12, color: _primary),
@@ -609,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSpacing: 8,
             ),
             delegate: SliverChildBuilderDelegate(
-                  (_, __) => Container(
+                  (_, _) => Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEEEEE),
                   borderRadius: BorderRadius.circular(12),
@@ -654,7 +654,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: _primary.withOpacity(0.08), blurRadius: 20)
+                  BoxShadow(color: _primary.withValues(alpha: 0.08), blurRadius: 20)
                 ]),
             child: const Icon(Icons.wifi_off_rounded,
                 size: 36, color: Color(0xFFCBD5E1)),
@@ -692,7 +692,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFCBD5E1)),
           const SizedBox(height: 16),
           Text(
-            l10n.aucunResultatPour2('${_searchController.text}'),
+            l10n.aucunResultatPour2(_searchController.text),
             textAlign: TextAlign.center,
             style: const TextStyle(
                 color: _textMain, fontWeight: FontWeight.w600, height: 1.4),
@@ -894,13 +894,13 @@ class _InspirationCardState extends State<_InspirationCard>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [_primary.withOpacity(0.85), _primaryMid.withOpacity(0.7)],
+            colors: [_primary.withValues(alpha: 0.85), _primaryMid.withValues(alpha: 0.7)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-                color: _primary.withOpacity(0.25),
+                color: _primary.withValues(alpha: 0.25),
                 blurRadius: 16,
                 offset: const Offset(0, 6)),
           ],
@@ -915,7 +915,7 @@ class _InspirationCardState extends State<_InspirationCard>
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
+                  errorBuilder: (_, _, _) =>
                       _buildGradientFallback(category))
                   : _buildGradientFallback(category),
             ),
@@ -923,7 +923,7 @@ class _InspirationCardState extends State<_InspirationCard>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withOpacity(0.55),
+                    Colors.black.withValues(alpha: 0.55),
                     Colors.transparent
                   ],
                   begin: Alignment.bottomCenter,
@@ -943,10 +943,10 @@ class _InspirationCardState extends State<_InspirationCard>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border:
-                            Border.all(color: Colors.white.withOpacity(0.4)),
+                            Border.all(color: Colors.white.withValues(alpha: 0.4)),
                           ),
                           child: Text(
                             trData(category).toUpperCase(),
@@ -996,7 +996,7 @@ class _InspirationCardState extends State<_InspirationCard>
                       decoration: BoxDecoration(
                         color: _currentSlide == i
                             ? Colors.white
-                            : Colors.white.withOpacity(0.5),
+                            : Colors.white.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -1013,14 +1013,14 @@ class _InspirationCardState extends State<_InspirationCard>
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_primary.withOpacity(0.8), _primaryMid],
+          colors: [_primary.withValues(alpha: 0.8), _primaryMid],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: Center(
         child: Icon(Icons.store_rounded,
-            color: Colors.white.withOpacity(0.3), size: 80),
+            color: Colors.white.withValues(alpha: 0.3), size: 80),
       ),
     );
   }
@@ -1031,7 +1031,7 @@ class _NotifButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<NotificationProvider>(
-      builder: (_, notif, __) => GestureDetector(
+      builder: (_, notif, _) => GestureDetector(
         onTap: () => context.push('/home/notifications'),
         child: Container(
           padding: const EdgeInsets.all(10),
@@ -1145,7 +1145,7 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                  color: colors.first.withOpacity(0.4),
+                  color: colors.first.withValues(alpha: 0.4),
                   blurRadius: 16,
                   offset: const Offset(0, 6)),
             ],
@@ -1158,7 +1158,7 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
                   width: 130, height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -1168,7 +1168,7 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
                   width: 80, height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -1222,7 +1222,7 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
                         Text(
                           ad['sub'] as String,
                           style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 10,
                               letterSpacing: 0.5),
                         ),
@@ -1260,7 +1260,7 @@ class _LiveAdBannerState extends State<_LiveAdBanner>
                               decoration: BoxDecoration(
                                 color: _currentAd == i
                                     ? Colors.white
-                                    : Colors.white.withOpacity(0.4),
+                                    : Colors.white.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(3),
                               ),
                             ),
@@ -1392,7 +1392,7 @@ class _PromoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: gradientColors[0].withOpacity(0.35),
+              color: gradientColors[0].withValues(alpha: 0.35),
               blurRadius: 16,
               offset: const Offset(0, 6))
         ],
@@ -1422,7 +1422,7 @@ class _PromoCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(sub,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                        color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
                 const SizedBox(height: 16),
                 Container(
                   padding:
@@ -1611,9 +1611,9 @@ class _SearchPlaceholderTickerState extends State<_SearchPlaceholderTicker>
                         begin: Alignment.centerLeft,
                         end:   Alignment.centerRight,
                         colors: [
-                          _plexusBlue.withOpacity(0.0),
-                          _plexusBlue.withOpacity(0.20 * glow),
-                          _plexusBlue.withOpacity(0.0),
+                          _plexusBlue.withValues(alpha: 0.0),
+                          _plexusBlue.withValues(alpha: 0.20 * glow),
+                          _plexusBlue.withValues(alpha: 0.0),
                         ],
                         stops: const [0.0, 0.5, 1.0],
                       ),
@@ -1640,7 +1640,7 @@ class _SearchPlaceholderTickerState extends State<_SearchPlaceholderTicker>
                 },
                 layoutBuilder: (currentChild, previousChildren) => Stack(
                   alignment: Alignment.centerLeft,
-                  children: [...previousChildren, if (currentChild != null) currentChild],
+                  children: [...previousChildren, ?currentChild],
                 ),
                 child: Align(
                   key: ValueKey(_index),
@@ -1649,12 +1649,12 @@ class _SearchPlaceholderTickerState extends State<_SearchPlaceholderTicker>
                     widget.items[_index],
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: _textSub.withOpacity(0.55),
+                      color: _textSub.withValues(alpha: 0.55),
                       fontSize: 14,
                       shadows: glow > 0
                           ? [
                         Shadow(
-                          color: _plexusBlue.withOpacity(0.55 * glow),
+                          color: _plexusBlue.withValues(alpha: 0.55 * glow),
                           blurRadius: 8 * glow,
                         ),
                       ]

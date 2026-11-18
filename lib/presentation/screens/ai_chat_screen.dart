@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
@@ -206,7 +206,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -261,12 +261,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.4, end: 1.0),
       duration: Duration(milliseconds: 400 + index * 150),
-      builder: (_, val, __) => Container(
+      builder: (_, val, _) => Container(
         margin: const EdgeInsets.symmetric(horizontal: 3),
         width: 7,
         height: 7,
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(val),
+          color: Colors.grey.withValues(alpha: val),
           shape: BoxShape.circle,
         ),
       ),
@@ -280,7 +280,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

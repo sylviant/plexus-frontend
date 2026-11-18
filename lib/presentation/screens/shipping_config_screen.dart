@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
@@ -136,7 +136,7 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                value: country,
+                initialValue: country,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: l10n.pays2),
                 items: kCountries.entries
@@ -203,7 +203,7 @@ class _ShippingConfigScreenState extends State<ShippingConfigScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _accent.withOpacity(0.08),
+                color: _accent.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(

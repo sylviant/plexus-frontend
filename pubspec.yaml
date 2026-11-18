@@ -44,6 +44,10 @@ dependencies:
   native_glass_navbar: ^1.0.2
   shimmer: ^3.0.0
 
+  material_ui: any
+  cupertino_ui: any
+  http_parser: any
+  path: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

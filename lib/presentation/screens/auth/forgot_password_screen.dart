@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -116,7 +116,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: _primary.withOpacity(0.08),
+                  color: _primary.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -134,12 +134,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           Positioned(
             top: -60,
             right: -60,
-            child: _Blob(size: 240, color: _primaryMid.withOpacity(0.07)),
+            child: _Blob(size: 240, color: _primaryMid.withValues(alpha: 0.07)),
           ),
           Positioned(
             bottom: 80,
             left: -70,
-            child: _Blob(size: 200, color: _accent.withOpacity(0.06)),
+            child: _Blob(size: 200, color: _accent.withValues(alpha: 0.06)),
           ),
 
           // ── Content ────────────────────────────────────────────────────
@@ -172,7 +172,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 borderRadius: BorderRadius.circular(22),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _primary.withOpacity(0.28),
+                                    color: _primary.withValues(alpha: 0.28),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
@@ -212,7 +212,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.07),
+                              color: _primary.withValues(alpha: 0.07),
                               blurRadius: 30,
                               offset: const Offset(0, 10),
                             ),
@@ -247,17 +247,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 14, vertical: 12),
                                 decoration: BoxDecoration(
-                                  color: _accent.withOpacity(0.07),
+                                  color: _accent.withValues(alpha: 0.07),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: _accent.withOpacity(0.2),
+                                      color: _accent.withValues(alpha: 0.2),
                                       width: 1.2),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(Icons.info_outline_rounded,
                                         size: 16,
-                                        color: _accent.withOpacity(0.8)),
+                                        color: _accent.withValues(alpha: 0.8)),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
@@ -286,7 +286,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 decoration: InputDecoration(
                                   hintText: l10n.exempleDomaineCom,
                                   hintStyle: TextStyle(
-                                      color: _textSub.withOpacity(0.5),
+                                      color: _textSub.withValues(alpha: 0.5),
                                       fontSize: 14),
                                   prefixIcon: const Icon(
                                       Icons.alternate_email_rounded,
@@ -352,7 +352,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                         : [
                                             BoxShadow(
                                               color:
-                                                  _primary.withOpacity(0.35),
+                                                  _primary.withValues(alpha: 0.35),
                                               blurRadius: 16,
                                               offset: const Offset(0, 6),
                                             ),
@@ -475,12 +475,12 @@ class _Step extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color _primary = Color(0xFF1A237E);
-    const Color _textSub = Color(0xFF64748B);
+    const Color primary = Color(0xFF1A237E);
+    const Color textSub = Color(0xFF64748B);
 
     final bool highlighted = done || active;
-    final Color bg = highlighted ? _primary : const Color(0xFFE2E8F0);
-    final Color fg = highlighted ? Colors.white : _textSub;
+    final Color bg = highlighted ? primary : const Color(0xFFE2E8F0);
+    final Color fg = highlighted ? Colors.white : textSub;
 
     return Column(
       children: [
@@ -493,7 +493,7 @@ class _Step extends StatelessWidget {
             boxShadow: highlighted
                 ? [
                     BoxShadow(
-                      color: _primary.withOpacity(0.25),
+                      color: primary.withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     )
@@ -517,7 +517,7 @@ class _Step extends StatelessWidget {
           style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.w600,
-            color: highlighted ? _primary : _textSub,
+            color: highlighted ? primary : textSub,
           ),
         ),
       ],
@@ -533,7 +533,7 @@ class _StepLine extends StatelessWidget {
         height: 2,
         margin: const EdgeInsets.only(bottom: 16, left: 4, right: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A237E).withOpacity(0.15),
+          color: const Color(0xFF1A237E).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(2),
         ),
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
@@ -29,7 +29,7 @@ class ConversationsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: _primary.withOpacity(0.08),
+        shadowColor: _primary.withValues(alpha: 0.08),
         title: Text(
           l10n.messages,
           style: TextStyle(
@@ -148,8 +148,9 @@ class ConversationsScreen extends StatelessWidget {
                       ),
                       ...conversationsList.map((entry) {
                         final roomId = entry.key;
-                        if (roomId == "3")
+                        if (roomId == "3") {
                           return const SizedBox.shrink();
+                        }
 
                         final info = entry.value;
                         final lastMsg = info['message'];
@@ -176,7 +177,7 @@ class ConversationsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _primary.withOpacity(0.06),
+            color: _primary.withValues(alpha: 0.06),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -197,7 +198,7 @@ class ConversationsScreen extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: _accent.withOpacity(0.3),
+                color: _accent.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -251,7 +252,7 @@ class ConversationsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _primary.withOpacity(0.05),
+            color: _primary.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -266,7 +267,7 @@ class ConversationsScreen extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                _primary.withOpacity(0.8),
+                _primary.withValues(alpha: 0.8),
                 _primaryMid,
               ],
               begin: Alignment.topLeft,
@@ -339,7 +340,7 @@ class ConversationsScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: _primary.withOpacity(0.07),
+                    color: _primary.withValues(alpha: 0.07),
                     blurRadius: 20,
                   )
                 ],

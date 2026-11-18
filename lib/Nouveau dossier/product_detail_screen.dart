@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
@@ -410,8 +410,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: GestureDetector(
                     onTap: () => context.pop(),
                     child: Container(
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 8)]),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 8)]),
                       child: const Icon(Icons.arrow_back_ios_new_rounded, size: 17, color: _textMain),
                     ),
                   ),
@@ -422,8 +422,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: GestureDetector(
                       onTap: () => context.go('/cart'),
                       child: Container(
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 8)]),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), shape: BoxShape.circle,
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 8)]),
                         child: const Padding(padding: EdgeInsets.all(8),
                             child: Icon(Icons.shopping_bag_outlined, size: 20, color: _textMain)),
                       ),
@@ -444,11 +444,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           context,
                           PageRouteBuilder(
                             opaque: false,
-                            pageBuilder: (_, __, ___) => _FullScreenGallery(
+                            pageBuilder: (_, _, _) => _FullScreenGallery(
                               images:       _displayImages,
                               initialIndex: _currentPage,
                             ),
-                            transitionsBuilder: (_, anim, __, child) =>
+                            transitionsBuilder: (_, anim, _, child) =>
                                 FadeTransition(opacity: anim, child: child),
                             transitionDuration: const Duration(milliseconds: 300),
                           ),
@@ -458,7 +458,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           child: Image.network(
                             _displayImages[i],
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Center(
+                            errorBuilder: (_, _, _) => const Center(
                               child: Icon(Icons.broken_image_outlined,
                                   size: 60, color: Color(0xFF94A3B8)),
                             ),
@@ -487,7 +487,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             margin: const EdgeInsets.symmetric(horizontal: 3),
                             width: _currentPage == i ? 20 : 6, height: 6,
                             decoration: BoxDecoration(
-                              color: _currentPage == i ? _accent : _textMuted.withOpacity(0.4),
+                              color: _currentPage == i ? _accent : _textMuted.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(3),
                             ),
                           )),
@@ -512,7 +512,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           if (product['category'] != null)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: _accent.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                              decoration: BoxDecoration(color: _accent.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
                               child: Text((product['category'] as String).toUpperCase(),
                                   style: const TextStyle(color: _accent, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                             ),
@@ -565,7 +565,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const SizedBox(width: 10),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(color: _red.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                              decoration: BoxDecoration(color: _red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                               child: Text('Plus que $_variantStock !',
                                   style: const TextStyle(color: _red, fontSize: 11, fontWeight: FontWeight.w600)),
                             ),
@@ -576,7 +576,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               onTap: () => context.push('/profile/add-product', extra: product),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(color: _orange.withOpacity(0.10), borderRadius: BorderRadius.circular(10), border: Border.all(color: _orange.withOpacity(0.3))),
+                                decoration: BoxDecoration(color: _orange.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(10), border: Border.all(color: _orange.withValues(alpha: 0.3))),
                                 child: Row(mainAxisSize: MainAxisSize.min, children: const [
                                   Icon(Icons.edit_outlined, size: 14, color: _orange),
                                   SizedBox(width: 5),
@@ -636,7 +636,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(colors: [_primary, Color(0xFF3949AB)], begin: Alignment.centerLeft, end: Alignment.centerRight),
                                     borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [BoxShadow(color: _primary.withOpacity(0.30), blurRadius: 14, offset: const Offset(0, 5))],
+                                    boxShadow: [BoxShadow(color: _primary.withValues(alpha: 0.30), blurRadius: 14, offset: const Offset(0, 5))],
                                   ),
                                   child: ElevatedButton(
                                     onPressed: () => context.push('/cart/payment', extra: {'singleProduct': product}),
@@ -658,16 +658,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const SizedBox(height: 10),
 
                           Consumer<FavoriteProvider>(
-                            builder: (_, fav, __) {
+                            builder: (_, fav, _) {
                               final isFav = fav.isFavorite(id);
                               return GestureDetector(
                                 onTap: () => fav.toggleFavorite(currentUser!.id, id),
                                 child: Container(
                                   width: double.infinity, height: 48,
                                   decoration: BoxDecoration(
-                                    color: isFav ? _red.withOpacity(0.06) : _surface,
+                                    color: isFav ? _red.withValues(alpha: 0.06) : _surface,
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: isFav ? _red.withOpacity(0.25) : _border, width: 1.5),
+                                    border: Border.all(color: isFav ? _red.withValues(alpha: 0.25) : _border, width: 1.5),
                                   ),
                                   child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                                     Icon(isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded, color: isFav ? _red : _textSub, size: 18),
@@ -781,7 +781,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const Spacer(),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(color: _orange.withOpacity(0.10), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(color: _orange.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(8)),
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
                               const Icon(Icons.star_rounded, color: _orange, size: 14),
                               const SizedBox(width: 4),
@@ -911,20 +911,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   duration: const Duration(milliseconds: 150),
                   padding: EdgeInsets.fromLTRB(thumbUrl != null ? 4 : 14, 6, 14, 6),
                   decoration: BoxDecoration(
-                    color: selected ? _primary.withOpacity(0.06) : Colors.white,
+                    color: selected ? _primary.withValues(alpha: 0.06) : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: !available ? Colors.grey[300]! : selected ? _primary : _border,
                       width: selected ? 2.5 : 1.5,
                     ),
-                    boxShadow: selected ? [BoxShadow(color: _primary.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                    boxShadow: selected ? [BoxShadow(color: _primary.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 3))] : [],
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     if (thumbUrl != null) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: Image.network(thumbUrl, width: 30, height: 30, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox()),
+                            errorBuilder: (_, _, _) => const SizedBox()),
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -965,7 +965,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       color: !available ? Colors.grey[300]! : selected ? _primary : _border,
                       width: selected ? 2 : 1.5,
                     ),
-                    boxShadow: selected ? [BoxShadow(color: _primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))] : [],
+                    boxShadow: selected ? [BoxShadow(color: _primary.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 3))] : [],
                   ),
                   child: Text(size,
                     style: TextStyle(
@@ -989,13 +989,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: (_variantUnavailable || _variantId == null)
-                  ? _red.withOpacity(0.05)
-                  : _green.withOpacity(0.05),
+                  ? _red.withValues(alpha: 0.05)
+                  : _green.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: (_variantUnavailable || _variantId == null)
-                    ? _red.withOpacity(0.3)
-                    : _green.withOpacity(0.3),
+                    ? _red.withValues(alpha: 0.3)
+                    : _green.withValues(alpha: 0.3),
               ),
             ),
             child: Row(children: [
@@ -1043,7 +1043,7 @@ class _VideoPlayerWidget extends StatelessWidget {
           Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
               child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 48),
             ),
             const SizedBox(height: 12),
@@ -1074,7 +1074,7 @@ class _FeatureBadgesRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: features.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, i) {
           final f = features[i];
           return Container(
@@ -1206,7 +1206,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
                         ),
                       );
                     },
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, _, _) => const Icon(
                         Icons.broken_image_outlined,
                         color: Colors.white38,
                         size: 60),
@@ -1225,7 +1225,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
               child: Container(
                 width: 38, height: 38,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white24),
                 ),
@@ -1243,7 +1243,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -1288,7 +1288,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
                       child: Image.network(
                         widget.images[i],
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                             color: Colors.grey[900],
                             child: const Icon(Icons.image_outlined,
                                 color: Colors.white38, size: 20)),

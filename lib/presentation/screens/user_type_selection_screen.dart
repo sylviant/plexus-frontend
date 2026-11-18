@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/models/user_type.dart';
 import 'package:plexus/core/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -119,10 +119,10 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
+                            color: Colors.white.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 width: 1.5),
                           ),
                           child: const Icon(
@@ -146,7 +146,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                           l10n.commentSouhaitezVousUtiliserL,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.65),
+                            color: Colors.white.withValues(alpha: 0.65),
                             fontSize: 14,
                             height: 1.5,
                           ),
@@ -231,8 +231,8 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? accentColor.withOpacity(0.12)
-                  : Colors.black.withOpacity(0.04),
+                  ? accentColor.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.04),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -250,7 +250,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                   decoration: BoxDecoration(
                     color: isSelected
                         ? accentColor
-                        : accentColor.withOpacity(0.1),
+                        : accentColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
@@ -311,7 +311,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
               const SizedBox(height: 18),
               Container(
                 height: 1,
-                color: accentColor.withOpacity(0.1),
+                color: accentColor.withValues(alpha: 0.1),
               ),
               const SizedBox(height: 16),
               ...features.map(
@@ -323,7 +323,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                         width: 18,
                         height: 18,
                         decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.1),
+                          color: accentColor.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.check_rounded,
@@ -334,7 +334,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
                         f,
                         style: TextStyle(
                           fontSize: 12,
-                          color: _navy.withOpacity(0.8),
+                          color: _navy.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -355,7 +355,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
+        color: color.withValues(alpha: opacity),
       ),
     );
   }

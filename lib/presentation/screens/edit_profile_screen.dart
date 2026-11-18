@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -132,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               const SizedBox(width: 10),
               Expanded(
                   child: Text(
-                l10n.erreur2('${ApiConfig.handleNetworkError(e)}'),
+                l10n.erreur2(ApiConfig.handleNetworkError(e)),
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w500),
               )),
@@ -211,7 +211,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.28),
+                              color: _primary.withValues(alpha: 0.28),
                               blurRadius: 18,
                               offset: const Offset(0, 6),
                             ),
@@ -255,7 +255,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                   color: Colors.white, width: 2),
                               boxShadow: [
                                 BoxShadow(
-                                  color: _primary.withOpacity(0.3),
+                                  color: _primary.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                 )
                               ],
@@ -284,7 +284,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                     l10n.appuyezSurLaPhotoPour,
                     style: TextStyle(
                         fontSize: 11,
-                        color: _textSub.withOpacity(0.8)),
+                        color: _textSub.withValues(alpha: 0.8)),
                   ),
 
                   const SizedBox(height: 32),
@@ -296,7 +296,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: _primary.withOpacity(0.06),
+                          color: _primary.withValues(alpha: 0.06),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
                         ),
@@ -380,7 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                             ? []
                             : [
                                 BoxShadow(
-                                  color: _primary.withOpacity(0.35),
+                                  color: _primary.withValues(alpha: 0.35),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -438,7 +438,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return InputDecoration(
       hintText: hint,
       hintStyle:
-          TextStyle(color: _textSub.withOpacity(0.5), fontSize: 14),
+          TextStyle(color: _textSub.withValues(alpha: 0.5), fontSize: 14),
       prefixIcon: Icon(icon, color: _textSub, size: 20),
       filled: true,
       fillColor: _surface,

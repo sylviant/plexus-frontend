@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
@@ -156,17 +156,17 @@ class _LoginScreenState extends State<LoginScreen>
           Positioned(
             top: -90,
             right: -60,
-            child: _Blob(size: 220, color: _primaryMid.withOpacity(0.10)),
+            child: _Blob(size: 220, color: _primaryMid.withValues(alpha: 0.10)),
           ),
           Positioned(
             top: 120,
             left: -80,
-            child: _Blob(size: 180, color: _primarySoft.withOpacity(0.08)),
+            child: _Blob(size: 180, color: _primarySoft.withValues(alpha: 0.08)),
           ),
           Positioned(
             bottom: -100,
             right: -40,
-            child: _Blob(size: 240, color: _primary.withOpacity(0.06)),
+            child: _Blob(size: 240, color: _primary.withValues(alpha: 0.06)),
           ),
 
           SafeArea(
@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen>
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: _primary.withOpacity(0.30),
+                  color: _primary.withValues(alpha: 0.30),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
@@ -275,7 +275,7 @@ class _LoginScreenState extends State<LoginScreen>
         border: Border.all(color: _border, width: 1),
         boxShadow: [
           BoxShadow(
-            color: _primary.withOpacity(0.06),
+            color: _primary.withValues(alpha: 0.06),
             blurRadius: 40,
             offset: const Offset(0, 16),
           ),
@@ -402,12 +402,12 @@ class _LoginScreenState extends State<LoginScreen>
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
-          color: _isLoading ? _primary.withOpacity(0.6) : null,
+          color: _isLoading ? _primary.withValues(alpha: 0.6) : null,
           boxShadow: _isLoading
               ? []
               : [
             BoxShadow(
-              color: _primary.withOpacity(0.28),
+              color: _primary.withValues(alpha: 0.28),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -547,7 +547,7 @@ class _LoginScreenState extends State<LoginScreen>
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: _textSub.withOpacity(0.7), fontSize: 14),
+      hintStyle: TextStyle(color: _textSub.withValues(alpha: 0.7), fontSize: 14),
       prefixIcon: Icon(icon, color: _textSub, size: 20),
       suffixIcon: suffix,
       filled: true,

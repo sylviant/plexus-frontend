@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/l10n/l10n.dart';
 
 class CategoryList extends StatelessWidget {
@@ -56,7 +56,7 @@ class CategoryList extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: _navy.withOpacity(0.25),
+                          color: _navy.withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         )
@@ -72,7 +72,7 @@ class CategoryList extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Colors.white.withOpacity(0.15)
+                          ? Colors.white.withValues(alpha: 0.15)
                           : Colors.white,
                       shape: BoxShape.circle,
                     ),

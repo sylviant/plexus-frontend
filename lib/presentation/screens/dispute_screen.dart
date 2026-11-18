@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:http/http.dart' as http;
@@ -148,13 +148,14 @@ class _DisputeScreenState extends State<DisputeScreen>
         }
       } else {
         debugPrint("SERVER ERROR 500 BODY: ${res.body}");
-        throw Exception(l10n.erreur('${res.statusCode}', '${res.body}'));
+        throw Exception(l10n.erreur('${res.statusCode}', res.body));
       }
     } catch (e) {
       debugPrint("DISPUTE ERROR: $e");
-      if (mounted)
+      if (mounted) {
         _showSnack(l10n.echecVerifiezLesLogsBackend, _danger,
             Icons.error_outline_rounded);
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -323,7 +324,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                         hintText:
                             l10n.decrivezPrecisementLeProblemeRencontre,
                         hintStyle: TextStyle(
-                            color: _textSub.withOpacity(0.5),
+                            color: _textSub.withValues(alpha: 0.5),
                             fontSize: 13),
                         filled: true,
                         fillColor: _surface,
@@ -365,7 +366,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: _photoBytes.length >= 3
-                                ? _danger.withOpacity(0.10)
+                                ? _danger.withValues(alpha: 0.10)
                                 : _surface,
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -387,7 +388,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                       l10n.ajoutezJusquA3Photos,
                       style: TextStyle(
                           fontSize: 11,
-                          color: _textSub.withOpacity(0.8)),
+                          color: _textSub.withValues(alpha: 0.8)),
                     ),
                     const SizedBox(height: 14),
                     Wrap(
@@ -489,7 +490,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF3B82F6)
-                                    .withOpacity(0.10),
+                                    .withValues(alpha: 0.10),
                                 borderRadius: BorderRadius.circular(9),
                               ),
                               child: const Icon(
@@ -570,7 +571,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                         ? []
                         : [
                             BoxShadow(
-                              color: _danger.withOpacity(0.35),
+                              color: _danger.withValues(alpha: 0.35),
                               blurRadius: 16,
                               offset: const Offset(0, 6),
                             ),
@@ -634,7 +635,7 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A237E).withOpacity(0.05),
+            color: const Color(0xFF1A237E).withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),

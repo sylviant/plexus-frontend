@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
@@ -204,7 +204,7 @@ class NotificationsScreen extends StatelessWidget {
               color: isRead ? _surface : _surfaceAlt,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isRead ? _divider : typeColor.withOpacity(0.25),
+                color: isRead ? _divider : typeColor.withValues(alpha: 0.25),
                 width: 1,
               ),
             ),
@@ -216,7 +216,7 @@ class NotificationsScreen extends StatelessWidget {
                   Container(
                     width: 44, height: 44,
                     decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.12),
+                      color: typeColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(typeIcon, color: typeColor, size: 22),
@@ -250,7 +250,7 @@ class NotificationsScreen extends StatelessWidget {
                         Text(
                           notif['message'] ?? '',
                           style: TextStyle(
-                            color: isRead ? _textSec : _textPri.withOpacity(0.75),
+                            color: isRead ? _textSec : _textPri.withValues(alpha: 0.75),
                             fontSize: 13,
                             height: 1.4,
                           ),

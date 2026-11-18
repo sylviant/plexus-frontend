@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../admin_config.dart';
@@ -66,7 +66,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
           http.get(Uri.parse('${AdminConfig.baseUrl}/admin/promo'), headers: _headers), // NOUVEAU
         ]);
 
-        if (mounted) setState(() {
+        if (mounted) {
+          setState(() {
           _allUsers      = json.decode(usersRes.body);
           _orders        = json.decode(results[0].body);
           if (results[1].statusCode == 200) _disputes   = json.decode(results[1].body);
@@ -80,6 +81,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           _debugMessage   = "Administrateur Connecté";
           _isLoading      = false;
         });
+        }
       } else {
         setState(() { _debugMessage = "Erreur session"; _isLoading = false; });
         if (usersRes.statusCode == 401) _logout();
@@ -327,14 +329,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 DataCell(Text(p['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1.2))),
                 DataCell(Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                   child: Text('−${p['discount']}%', style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
                 )),
                 DataCell(Text(usage, style: const TextStyle(fontSize: 12))),
                 DataCell(Text(expiration, style: const TextStyle(fontSize: 12))),
                 DataCell(Switch(
                   value: isActive,
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                   onChanged: (_) => _togglePromo(p['_id'], isActive),
                 )),
                 DataCell(IconButton(
@@ -351,7 +353,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildPromoStat(String label, String value, Color color) {
     return Expanded(child: Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withOpacity(0.2))),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withValues(alpha: 0.2))),
       child: Column(children: [
         Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
         const SizedBox(height: 4),
@@ -543,7 +545,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       else
         ..._disputes.map((d) => Container(
           margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.red.withOpacity(0.2))),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.red.withValues(alpha: 0.2))),
           child: Column(children: [
             Text("Commande #${d['orderId']?.toString().substring(0, 8)}"),
             Text("Motif: ${d['reason'] ?? d['motif'] ?? ''}", style: const TextStyle(fontWeight: FontWeight.bold)),

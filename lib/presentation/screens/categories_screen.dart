@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/providers/category_provider.dart';
@@ -76,7 +76,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: _primary.withOpacity(0.08),
+        shadowColor: _primary.withValues(alpha: 0.08),
         title: Text(
           l10n.categories,
           style: TextStyle(
@@ -117,7 +117,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: _primary.withOpacity(0.08),
+                          color: _primary.withValues(alpha: 0.08),
                           blurRadius: 20,
                         )
                       ],
@@ -156,7 +156,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: _primary.withOpacity(0.06),
+                            color: _primary.withValues(alpha: 0.06),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -173,7 +173,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         decoration: InputDecoration(
                           hintText: l10n.rechercherUneCategorie,
                           hintStyle: TextStyle(
-                              color: _textSub.withOpacity(0.5),
+                              color: _textSub.withValues(alpha: 0.5),
                               fontSize: 14),
                           prefixIcon: const Icon(Icons.search_rounded,
                               color: _textSub, size: 20),
@@ -237,7 +237,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                         ),
                         if (_searchQuery.isNotEmpty) ...[
                           const SizedBox(width: 6),
-                          Text(l10n.pour('$_searchQuery'),
+                          Text(l10n.pour(_searchQuery),
                               style: const TextStyle(
                                   fontSize: 13, color: _textSub)),
                         ],
@@ -253,7 +253,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                           padding: const EdgeInsets.only(top: 60),
                           child: Center(
                             child: Text(
-                              l10n.aucunResultatPour('$_searchQuery'),
+                              l10n.aucunResultatPour(_searchQuery),
                               style: const TextStyle(
                                   color: _textSub, fontSize: 14),
                             ),
@@ -341,7 +341,7 @@ class _CategoryCardState extends State<_CategoryCard> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: widget.gradientColors[0].withOpacity(0.18),
+                color: widget.gradientColors[0].withValues(alpha: 0.18),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
@@ -377,7 +377,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.55),
+                        Colors.black.withValues(alpha: 0.55),
                       ],
                       stops: const [0.45, 1.0],
                     ),
@@ -396,7 +396,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.12),
+                          Colors.black.withValues(alpha: 0.12),
                           Colors.transparent,
                         ],
                       ),
@@ -439,10 +439,10 @@ class _CategoryCardState extends State<_CategoryCard> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 1),
                           ),
                           child: Row(

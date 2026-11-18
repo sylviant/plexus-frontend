@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
 
 class FavoriteProvider with ChangeNotifier {
   final Set<String> _favoriteIds = {}; 
-  List<dynamic> _favoriteProducts = [];
+  final List<dynamic> _favoriteProducts = [];
   bool _isLoading = false;
 
   Set<String> get favoriteIds => _favoriteIds;

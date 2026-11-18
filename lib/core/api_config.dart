@@ -1,10 +1,13 @@
-import 'package:flutter/foundation.dart';
 import 'package:plexus/l10n/l10n.dart';
 
 class ApiConfig {
   // --- CONFIGURATION SERVEUR NORTHFLANK ---
   // CORRIGÉ : Ajout du protocole https://
-  static const String serverUrl = 'https://site--plexus-backend--pgpb968tdsqh.code.run';
+  // Override for local testing: flutter run --dart-define=API_URL=http://localhost:5000
+  static const String serverUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://site--plexus-backend--pgpb968tdsqh.code.run',
+  );
 
   static const String baseUrl = '$serverUrl/api';
   static const String socketUrl = serverUrl;

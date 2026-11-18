@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/providers/cart_provider.dart';
 import 'package:plexus/core/models/cart_item.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +54,7 @@ class _CartScreenState extends State<CartScreen> {
         final double discount = (body['discount'] as num).toDouble();
         Provider.of<CartProvider>(context, listen: false)
             .applyPromo(code, discount);
-        _showSnack(l10n.codeApplique('$code', '${discount.toStringAsFixed(0)}'),
+        _showSnack(l10n.codeApplique(code, discount.toStringAsFixed(0)),
             _green, Icons.check_circle_outline);
       } else {
         _showSnack(body['msg'] ?? l10n.codeInvalide, _red, Icons.error_outline);
@@ -96,7 +96,7 @@ class _CartScreenState extends State<CartScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: _primary.withOpacity(0.08),
+        shadowColor: _primary.withValues(alpha: 0.08),
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -223,7 +223,7 @@ class _CartScreenState extends State<CartScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                      color: _primary.withOpacity(0.08),
+                      color: _primary.withValues(alpha: 0.08),
                       blurRadius: 24,
                       offset: const Offset(0, 8))
                 ],
@@ -255,7 +255,7 @@ class _CartScreenState extends State<CartScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                        color: _primary.withOpacity(0.3),
+                        color: _primary.withValues(alpha: 0.3),
                         blurRadius: 14,
                         offset: const Offset(0, 5))
                   ],
@@ -293,7 +293,7 @@ class _CartScreenState extends State<CartScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-              color: _primary.withOpacity(0.05),
+              color: _primary.withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4))
         ],
@@ -346,17 +346,17 @@ class _CartScreenState extends State<CartScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _primary.withOpacity(0.06),
+                        color: _primary.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                            color: _primary.withOpacity(0.15)),
+                            color: _primary.withValues(alpha: 0.15)),
                       ),
                       child: Text(
                         item.variantLabel,
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: _primary.withOpacity(0.8),
+                          color: _primary.withValues(alpha: 0.8),
                           letterSpacing: 0.3,
                         ),
                       ),
@@ -375,9 +375,9 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l10n.sousTotal('${(item.price * item.quantity).toStringAsFixed(2)}'),
+                    l10n.sousTotal((item.price * item.quantity).toStringAsFixed(2)),
                     style: TextStyle(
-                        color: _textSub.withOpacity(0.7),
+                        color: _textSub.withValues(alpha: 0.7),
                         fontSize: 11),
                   ),
                 ],
@@ -424,7 +424,7 @@ class _CartScreenState extends State<CartScreen> {
             topRight: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-              color: _primary.withOpacity(0.08),
+              color: _primary.withValues(alpha: 0.08),
               blurRadius: 24,
               offset: const Offset(0, -6))
         ],
@@ -459,7 +459,7 @@ class _CartScreenState extends State<CartScreen> {
               const SizedBox(height: 6),
               _SummaryRow(
                 label:
-                l10n.reduction('${cart.appliedPromoCode}', '${cart.discountPercentage.toStringAsFixed(0)}'),
+                l10n.reduction('${cart.appliedPromoCode}', cart.discountPercentage.toStringAsFixed(0)),
                 value:
                 '−\$${cart.discountAmount.toStringAsFixed(2)}',
                 isSubtle: true,
@@ -497,7 +497,7 @@ class _CartScreenState extends State<CartScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                        color: _primary.withOpacity(0.35),
+                        color: _primary.withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 6))
                   ],
@@ -545,12 +545,12 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 Icon(Icons.shield_outlined,
                     size: 12,
-                    color: _textSub.withOpacity(0.6)),
+                    color: _textSub.withValues(alpha: 0.6)),
                 const SizedBox(width: 5),
                 Text(l10n.paiementSecuriseViaEscrowPlexus,
                     style: TextStyle(
                         fontSize: 11,
-                        color: _textSub.withOpacity(0.7))),
+                        color: _textSub.withValues(alpha: 0.7))),
               ],
             ),
           ],
@@ -566,9 +566,9 @@ class _CartScreenState extends State<CartScreen> {
         padding:
         const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: _green.withOpacity(0.08),
+          color: _green.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _green.withOpacity(0.3)),
+          border: Border.all(color: _green.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -586,9 +586,9 @@ class _CartScreenState extends State<CartScreen> {
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                   Text(
-                      l10n.surVotreCommande('${cart.discountPercentage.toStringAsFixed(0)}'),
+                      l10n.surVotreCommande(cart.discountPercentage.toStringAsFixed(0)),
                       style: TextStyle(
-                          color: _green.withOpacity(0.8),
+                          color: _green.withValues(alpha: 0.8),
                           fontSize: 11)),
                 ],
               ),
@@ -601,7 +601,7 @@ class _CartScreenState extends State<CartScreen> {
               child: Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                    color: _red.withOpacity(0.1),
+                    color: _red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8)),
                 child: const Icon(Icons.close_rounded,
                     color: _red, size: 16),
@@ -626,7 +626,7 @@ class _CartScreenState extends State<CartScreen> {
             decoration: InputDecoration(
               hintText: l10n.codePromoExPlexus20,
               hintStyle: TextStyle(
-                  color: _textSub.withOpacity(0.5),
+                  color: _textSub.withValues(alpha: 0.5),
                   fontSize: 13,
                   letterSpacing: 0,
                   fontWeight: FontWeight.normal),

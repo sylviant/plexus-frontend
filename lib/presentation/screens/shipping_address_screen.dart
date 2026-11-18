@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -88,8 +88,9 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied)
+        if (permission == LocationPermission.denied) {
           throw l10n.permissionsRefusees;
+        }
       }
 
       Position position = await Geolocator.getCurrentPosition();
@@ -253,7 +254,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.location_on_rounded,
@@ -277,7 +278,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
                 Text(
                   l10n.adresseParDefautPourVos,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 11,
                   ),
                 ),
@@ -327,8 +328,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
         boxShadow: [
           BoxShadow(
             color: _isFocused
-                ? _accent.withOpacity(0.08)
-                : Colors.black.withOpacity(0.03),
+                ? _accent.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.03),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -367,7 +368,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<String>(
-          value: _countryCode,
+          initialValue: _countryCode,
           isExpanded: true,
           icon: const Icon(Icons.expand_more_rounded, color: _accent),
           decoration: InputDecoration(
@@ -403,7 +404,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
           border: Border.all(color: const Color(0xFFEBEFF8)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -441,13 +442,13 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _accent.withOpacity(0.06),
+        color: _accent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _accent.withOpacity(0.12)),
+        border: Border.all(color: _accent.withValues(alpha: 0.12)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, size: 18, color: _accent.withOpacity(0.8)),
+          Icon(Icons.info_outline_rounded, size: 18, color: _accent.withValues(alpha: 0.8)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -484,7 +485,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: _navy.withOpacity(0.3),
+                color: _navy.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 5),
               ),

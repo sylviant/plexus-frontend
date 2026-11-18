@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:plexus/core/api_config.dart';
@@ -35,7 +35,7 @@ class RelatedProductCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFFEBEFF8), width: 1),
           boxShadow: [
             BoxShadow(
-              color: _primary.withOpacity(0.05),
+              color: _primary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -102,7 +102,7 @@ class RelatedProductCard extends StatelessWidget {
                               .add(product);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(l10n.ajouteAuPanier2('$title')),
+                              content: Text(l10n.ajouteAuPanier2(title)),
                               backgroundColor: const Color(0xFF00B386),
                               duration: const Duration(seconds: 1),
                               behavior: SnackBarBehavior.floating,
@@ -115,7 +115,7 @@ class RelatedProductCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: _primary.withOpacity(0.08),
+                            color: _primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(9),
                           ),
                           child: const Icon(Icons.shopping_cart_outlined,

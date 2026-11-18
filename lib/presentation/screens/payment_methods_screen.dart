@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
@@ -141,14 +141,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         decoration: BoxDecoration(
           color: _surfaceAlt,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _accent.withOpacity(0.2)),
+          border: Border.all(color: _accent.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
-                color: _accent.withOpacity(0.1),
+                color: _accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.account_balance_wallet_outlined,
@@ -443,7 +443,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: _accent.withOpacity(0.25),
+            color: _accent.withValues(alpha: 0.25),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -457,7 +457,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.account_balance_wallet_outlined,
@@ -565,7 +565,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   Container(
                     width: 38, height: 38,
                     decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.1),
+                      color: _accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.account_balance_wallet_outlined,
@@ -638,7 +638,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.1),
+                      color: _accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.copy_rounded, size: 14, color: _accent),
@@ -664,7 +664,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         style: OutlinedButton.styleFrom(
           foregroundColor: _accent,
-          side: BorderSide(color: _accent.withOpacity(0.4), width: 1),
+          side: BorderSide(color: _accent.withValues(alpha: 0.4), width: 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),

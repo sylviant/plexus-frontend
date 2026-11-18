@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -87,7 +87,7 @@ class ReferralScreen extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(
                       text:
-                          l10n.rejoinsMoiSurPlexusUtilise('$referralCode', '$shareLink')));
+                          l10n.rejoinsMoiSurPlexusUtilise(referralCode, shareLink)));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Row(children: [
@@ -158,12 +158,12 @@ class ReferralScreen extends StatelessWidget {
       height: 100,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_orange.withOpacity(0.2), _orange.withOpacity(0.05)],
+          colors: [_orange.withValues(alpha: 0.2), _orange.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shape: BoxShape.circle,
-        border: Border.all(color: _orange.withOpacity(0.25), width: 1.5),
+        border: Border.all(color: _orange.withValues(alpha: 0.25), width: 1.5),
       ),
       child: const Icon(Icons.card_giftcard_rounded, size: 46, color: _orange),
     );
@@ -192,7 +192,7 @@ class ReferralScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: _surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -220,7 +220,7 @@ class ReferralScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: _surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _accent.withOpacity(0.25)),
+        border: Border.all(color: _accent.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -240,7 +240,7 @@ class ReferralScreen extends StatelessWidget {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _accent.withOpacity(0.1),
+                color: _accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.copy_rounded, color: _accent, size: 18),
@@ -274,16 +274,16 @@ class ReferralScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _green.withOpacity(0.07),
+        color: _green.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _green.withOpacity(0.2)),
+        border: Border.all(color: _green.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _green.withOpacity(0.12),
+              color: _green.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.savings_outlined, color: _green, size: 20),

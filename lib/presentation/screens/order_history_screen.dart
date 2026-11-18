@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
@@ -196,7 +196,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: statusInfo.color.withOpacity(0.12),
+                      color: statusInfo.color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -284,9 +284,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: _red.withOpacity(0.1),
+                color: _red.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
-                border: Border.all(color: _red.withOpacity(0.3)),
+                border: Border.all(color: _red.withValues(alpha: 0.3)),
               ),
               child: const Icon(Icons.cloud_off_rounded, size: 36, color: _red),
             ),

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
@@ -154,8 +154,9 @@ class _SignupScreenState extends State<SignupScreen>
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) throw l10n.servicesDesactives;
       LocationPermission p = await Geolocator.checkPermission();
-      if (p == LocationPermission.denied)
+      if (p == LocationPermission.denied) {
         p = await Geolocator.requestPermission();
+      }
       Position pos = await Geolocator.getCurrentPosition();
       List<Placemark> marks =
           await placemarkFromCoordinates(pos.latitude, pos.longitude);
@@ -197,7 +198,7 @@ class _SignupScreenState extends State<SignupScreen>
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _primary.withOpacity(0.08),
+                    color: _primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.camera_alt_rounded,
@@ -216,7 +217,7 @@ class _SignupScreenState extends State<SignupScreen>
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.08),
+                      color: Colors.orange.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.photo_library_rounded,
@@ -367,12 +368,12 @@ class _SignupScreenState extends State<SignupScreen>
           Positioned(
             top: -80,
             right: -60,
-            child: _Blob(size: 280, color: _primaryMid.withOpacity(0.08)),
+            child: _Blob(size: 280, color: _primaryMid.withValues(alpha: 0.08)),
           ),
           Positioned(
             bottom: 80,
             left: -80,
-            child: _Blob(size: 240, color: _accent.withOpacity(0.06)),
+            child: _Blob(size: 240, color: _accent.withValues(alpha: 0.06)),
           ),
 
           // ── Main content ─────────────────────────────────────────────────
@@ -407,7 +408,7 @@ class _SignupScreenState extends State<SignupScreen>
                                   borderRadius: BorderRadius.circular(22),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: _primary.withOpacity(0.30),
+                                      color: _primary.withValues(alpha: 0.30),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
@@ -456,7 +457,7 @@ class _SignupScreenState extends State<SignupScreen>
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.06),
+                              color: _primary.withValues(alpha: 0.06),
                               blurRadius: 20,
                               offset: const Offset(0, 6),
                             ),
@@ -494,7 +495,7 @@ class _SignupScreenState extends State<SignupScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.07),
+                              color: _primary.withValues(alpha: 0.07),
                               blurRadius: 30,
                               offset: const Offset(0, 10),
                             ),
@@ -586,7 +587,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     child: Text(
                                       'OU',
                                       style: TextStyle(
-                                        color: _textSub.withOpacity(0.7),
+                                        color: _textSub.withValues(alpha: 0.7),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 1,
@@ -672,7 +673,7 @@ class _SignupScreenState extends State<SignupScreen>
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: _primary.withOpacity(0.08),
+                                      color: _primary.withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -784,12 +785,12 @@ class _SignupScreenState extends State<SignupScreen>
                               Container(
                                 decoration: BoxDecoration(
                                   color: _acceptedTerms
-                                      ? _primary.withOpacity(0.04)
+                                      ? _primary.withValues(alpha: 0.04)
                                       : _surface,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: _acceptedTerms
-                                        ? _primary.withOpacity(0.2)
+                                        ? _primary.withValues(alpha: 0.2)
                                         : _border,
                                     width: 1.5,
                                   ),
@@ -853,7 +854,7 @@ class _SignupScreenState extends State<SignupScreen>
                                             : [
                                                 BoxShadow(
                                                   color: _primary
-                                                      .withOpacity(0.35),
+                                                      .withValues(alpha: 0.35),
                                                   blurRadius: 16,
                                                   offset: const Offset(0, 6),
                                                 ),
@@ -964,7 +965,7 @@ class _SignupScreenState extends State<SignupScreen>
     return InputDecoration(
       hintText: hint,
       hintStyle:
-          TextStyle(color: _textSub.withOpacity(0.5), fontSize: 14),
+          TextStyle(color: _textSub.withValues(alpha: 0.5), fontSize: 14),
       prefixIcon: Icon(icon, color: _textSub, size: 20),
       suffixIcon: suffix,
       filled: true,
@@ -1046,7 +1047,7 @@ class _RoleTab extends StatelessWidget {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF1A237E).withOpacity(0.25),
+                      color: const Color(0xFF1A237E).withValues(alpha: 0.25),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     )
@@ -1110,7 +1111,7 @@ class _UploadBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: hasImage
-                ? const Color(0xFF3949AB).withOpacity(0.4)
+                ? const Color(0xFF3949AB).withValues(alpha: 0.4)
                 : const Color(0xFFE2E8F0),
             width: hasImage ? 2 : 1.5,
           ),
@@ -1132,7 +1133,7 @@ class _UploadBox extends StatelessWidget {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.5),
+                              Colors.black.withValues(alpha: 0.5),
                               Colors.transparent
                             ],
                             begin: Alignment.bottomCenter,
@@ -1161,12 +1162,12 @@ class _UploadBox extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color:
-                          const Color(0xFF1A237E).withOpacity(0.07),
+                          const Color(0xFF1A237E).withValues(alpha: 0.07),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(icon,
                         size: 20,
-                        color: const Color(0xFF1A237E).withOpacity(0.5)),
+                        color: const Color(0xFF1A237E).withValues(alpha: 0.5)),
                   ),
                   const SizedBox(height: 6),
                   Text(

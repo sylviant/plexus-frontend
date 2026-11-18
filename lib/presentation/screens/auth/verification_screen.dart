@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -78,8 +78,12 @@ class _VerificationScreenState extends State<VerificationScreen>
   void dispose() {
     _timer?.cancel();
     _animController.dispose();
-    for (var c in _controllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+    for (var c in _controllers) {
+      c.dispose();
+    }
+    for (var f in _focusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -169,7 +173,7 @@ class _VerificationScreenState extends State<VerificationScreen>
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: _primary.withOpacity(0.08),
+                  color: _primary.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -187,12 +191,12 @@ class _VerificationScreenState extends State<VerificationScreen>
           Positioned(
             top: -60,
             right: -60,
-            child: _Blob(size: 240, color: _primaryMid.withOpacity(0.07)),
+            child: _Blob(size: 240, color: _primaryMid.withValues(alpha: 0.07)),
           ),
           Positioned(
             bottom: 80,
             left: -70,
-            child: _Blob(size: 200, color: _accent.withOpacity(0.06)),
+            child: _Blob(size: 200, color: _accent.withValues(alpha: 0.06)),
           ),
 
           // ── Content ────────────────────────────────────────────────────
@@ -221,7 +225,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                           borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.28),
+                              color: _primary.withValues(alpha: 0.28),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -256,7 +260,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: _primary.withOpacity(0.07),
+                              color: _primary.withValues(alpha: 0.07),
                               blurRadius: 30,
                               offset: const Offset(0, 10),
                             ),
@@ -290,10 +294,10 @@ class _VerificationScreenState extends State<VerificationScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 7),
                               decoration: BoxDecoration(
-                                color: _primary.withOpacity(0.06),
+                                color: _primary.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color: _primary.withOpacity(0.12),
+                                    color: _primary.withValues(alpha: 0.12),
                                     width: 1.2),
                               ),
                               child: Row(
@@ -354,7 +358,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                                       : [
                                           BoxShadow(
                                             color:
-                                                _primary.withOpacity(0.35),
+                                                _primary.withValues(alpha: 0.35),
                                             blurRadius: 16,
                                             offset: const Offset(0, 6),
                                           ),
@@ -414,12 +418,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                                     horizontal: 20, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: _canResend
-                                      ? _primary.withOpacity(0.06)
+                                      ? _primary.withValues(alpha: 0.06)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: _canResend
-                                        ? _primary.withOpacity(0.2)
+                                        ? _primary.withValues(alpha: 0.2)
                                         : Colors.transparent,
                                     width: 1.2,
                                   ),
@@ -554,8 +558,8 @@ class _TimerIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color _primary = Color(0xFF1A237E);
-    const Color _textSub = Color(0xFF64748B);
+    const Color primary = Color(0xFF1A237E);
+    const Color textSub = Color(0xFF64748B);
 
     return Column(
       children: [
@@ -572,7 +576,7 @@ class _TimerIndicator extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(
                   canResend
                       ? const Color(0xFF10B981)
-                      : _primary,
+                      : primary,
                 ),
               ),
               Center(
@@ -584,7 +588,7 @@ class _TimerIndicator extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: _primary,
+                          color: primary,
                         ),
                       ),
               ),
@@ -596,7 +600,7 @@ class _TimerIndicator extends StatelessWidget {
           canResend
               ? l10n.vousPouvezRenvoyerLeCode
               : l10n.expirationDuCode,
-          style: const TextStyle(fontSize: 11, color: _textSub),
+          style: const TextStyle(fontSize: 11, color: textSub),
         ),
       ],
     );

@@ -202,12 +202,15 @@ class AuthProvider with ChangeNotifier {
       if (role == 'seller') {
         request.fields['phone'] = phone ?? '';
         request.fields['address'] = address ?? '';
-        if (idFront != null)
+        if (idFront != null) {
           request.files.add(await http.MultipartFile.fromPath('idFront', idFront.path));
-        if (idBack != null)
+        }
+        if (idBack != null) {
           request.files.add(await http.MultipartFile.fromPath('idBack', idBack.path));
-        if (selfie != null)
+        }
+        if (selfie != null) {
           request.files.add(await http.MultipartFile.fromPath('selfie', selfie.path));
+        }
       }
       var streamedResponse =
           await request.send().timeout(const Duration(seconds: 30));

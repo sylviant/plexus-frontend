@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart'; 
+import 'package:material_ui/material_ui.dart'; 
 import 'package:flutter/scheduler.dart'; // Import indispensable ajouté
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:dash_chat_2/dash_chat_2.dart';
@@ -107,7 +107,7 @@ class SocketProvider with ChangeNotifier {
             _unreadCount++;
             NotificationService.showNotification(
               id: roomId.hashCode,
-              title: l10n.nouveauMessageDe('$senderName'),
+              title: l10n.nouveauMessageDe(senderName),
               body: trChatText(message.text),
             );
           }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/favorite_provider.dart';
 import 'package:plexus/presentation/widgets/product_card.dart';
@@ -57,7 +57,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: _primary.withOpacity(0.08),
+        shadowColor: _primary.withValues(alpha: 0.08),
         title: Text(
           l10n.mesFavoris,
           style: TextStyle(
@@ -138,8 +138,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                         (context, index) {
                           final product =
                               favProvider.favoriteProducts[index];
-                          if (product == null)
+                          if (product == null) {
                             return const SizedBox.shrink();
+                          }
                           return ProductCard(product: product);
                         },
                         childCount:
@@ -172,7 +173,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   height: 110,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFEF4444).withOpacity(0.06),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.06),
                   ),
                 ),
                 Container(
@@ -183,7 +184,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFEF4444).withOpacity(0.12),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
                       ),
@@ -230,7 +231,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: _primary.withOpacity(0.3),
+                      color: _primary.withValues(alpha: 0.3),
                       blurRadius: 14,
                       offset: const Offset(0, 5),
                     ),

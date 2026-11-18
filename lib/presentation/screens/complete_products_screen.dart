@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:plexus/core/api_config.dart';
@@ -17,8 +17,8 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
   List<dynamic>         _products    = [];
   bool                  _isLoading   = true;
   bool                  _isSaving    = false;
-  Map<String, String>   _statusMap   = {};
-  Map<String, String>   _countryMap  = {};
+  final Map<String, String>   _statusMap   = {};
+  final Map<String, String>   _countryMap  = {};
 
   static const Color _primary = Color(0xFF1A237E);
   static const Color _surface = Color(0xFFF4F6FB);
@@ -188,7 +188,7 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
                           // Statut
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _statusMap[id],
+                              initialValue: _statusMap[id],
                               isDense: true,
                               decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -212,7 +212,7 @@ class _CompleteProductsScreenState extends State<CompleteProductsScreen> {
                           SizedBox(
                             width: 90,
                             child: DropdownButtonFormField<String>(
-                              value: _countryMap[id],
+                              initialValue: _countryMap[id],
                               isDense: true,
                               decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),

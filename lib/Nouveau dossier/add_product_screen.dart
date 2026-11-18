@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -201,9 +201,15 @@ class _AddProductScreenState extends State<AddProductScreen>
     _nameCtrl.dispose(); _descCtrl.dispose();
     _priceCtrl.dispose(); _oldPriceCtrl.dispose();
     _colorNameCtrl.dispose(); _sizeNameCtrl.dispose();
-    for (final v in _colorVariants) v.dispose();
-    for (final v in _sizeVariants)  v.dispose();
-    for (final v in _comboVariants) v.dispose();
+    for (final v in _colorVariants) {
+      v.dispose();
+    }
+    for (final v in _sizeVariants) {
+      v.dispose();
+    }
+    for (final v in _comboVariants) {
+      v.dispose();
+    }
     super.dispose();
   }
 
@@ -290,8 +296,9 @@ class _AddProductScreenState extends State<AddProductScreen>
     if (!hasVariants) return true;
 
     List<_VLocal> toCheck;
-    if (_hasColors && _hasSizes) toCheck = _comboVariants;
-    else if (_hasColors)         toCheck = _colorVariants;
+    if (_hasColors && _hasSizes) {
+      toCheck = _comboVariants;
+    } else if (_hasColors)         toCheck = _colorVariants;
     else                         toCheck = _sizeVariants;
 
     if (toCheck.isEmpty) {
@@ -346,8 +353,9 @@ class _AddProductScreenState extends State<AddProductScreen>
 
       // Construire la liste des variantes à envoyer
       List<_VLocal> allVariants = [];
-      if (_hasColors && _hasSizes)  allVariants = _comboVariants;
-      else if (_hasColors)          allVariants = _colorVariants;
+      if (_hasColors && _hasSizes) {
+        allVariants = _comboVariants;
+      } else if (_hasColors)          allVariants = _colorVariants;
       else if (_hasSizes)           allVariants = _sizeVariants;
 
       if (allVariants.isNotEmpty) {
@@ -462,7 +470,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               padding: const EdgeInsets.only(right: 12),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: _primaryMid.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: _primaryMid.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                 child: const Text('Édition', style: TextStyle(color: _primaryMid, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ),
@@ -555,7 +563,9 @@ class _AddProductScreenState extends State<AddProductScreen>
             onChanged: (v) {
               setState(() {
                 _hasColors = v;
-                if (!v) { for (final x in _colorVariants) x.dispose(); _colorVariants.clear(); _comboVariants.clear(); }
+                if (!v) { for (final x in _colorVariants) {
+                  x.dispose();
+                } _colorVariants.clear(); _comboVariants.clear(); }
               });
             },
           ),
@@ -588,7 +598,9 @@ class _AddProductScreenState extends State<AddProductScreen>
             onChanged: (v) {
               setState(() {
                 _hasSizes = v;
-                if (!v) { for (final x in _sizeVariants) x.dispose(); _sizeVariants.clear(); _comboVariants.clear(); }
+                if (!v) { for (final x in _sizeVariants) {
+                  x.dispose();
+                } _sizeVariants.clear(); _comboVariants.clear(); }
               });
             },
           ),
@@ -633,7 +645,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         const SizedBox(height: 2),
         Text(sub, style: TextStyle(color: _textSub, fontSize: 11)),
       ])),
-      Switch(value: value, activeColor: _primary, onChanged: onChanged),
+      Switch(value: value, activeThumbColor: _primary, onChanged: onChanged),
     ]);
   }
 
@@ -653,7 +665,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.06),
+              color: _primary.withValues(alpha: 0.06),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(13), topRight: Radius.circular(13)),
             ),
             child: Row(children: [
@@ -670,7 +682,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                 }),
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(color: _red.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                  decoration: BoxDecoration(color: _red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                   child: Icon(Icons.close, color: _red, size: 14),
                 ),
               ),
@@ -712,9 +724,9 @@ class _AddProductScreenState extends State<AddProductScreen>
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: variant.available ? _green.withOpacity(0.1) : _red.withOpacity(0.1),
+                          color: variant.available ? _green.withValues(alpha: 0.1) : _red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: variant.available ? _green.withOpacity(0.3) : _red.withOpacity(0.3)),
+                          border: Border.all(color: variant.available ? _green.withValues(alpha: 0.3) : _red.withValues(alpha: 0.3)),
                         ),
                         child: Icon(variant.available ? Icons.check_circle_outline : Icons.block,
                             color: variant.available ? _green : _red, size: 20),
@@ -765,7 +777,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
                 clipBehavior: Clip.antiAlias,
                 child: Image.network(e.value, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: _surface, child: const Icon(Icons.broken_image_outlined, size: 24, color: Colors.grey))),
+                    errorBuilder: (_, _, _) => Container(color: _surface, child: const Icon(Icons.broken_image_outlined, size: 24, color: Colors.grey))),
               ),
               Positioned(
                 top: -4, right: 4,
@@ -823,13 +835,13 @@ class _AddProductScreenState extends State<AddProductScreen>
           Row(children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: _primary.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(color: _primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
               child: Text(combo.color, style: TextStyle(color: _primary, fontSize: 11, fontWeight: FontWeight.w700)),
             ),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
               child: Text(combo.size, style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w700)),
             ),
             const Spacer(),
@@ -838,7 +850,7 @@ class _AddProductScreenState extends State<AddProductScreen>
               child: Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: combo.available ? _green.withOpacity(0.1) : _red.withOpacity(0.1),
+                  color: combo.available ? _green.withValues(alpha: 0.1) : _red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Icon(combo.available ? Icons.check_circle_outline : Icons.block,
@@ -993,15 +1005,15 @@ class _AddProductScreenState extends State<AddProductScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _primary.withOpacity(0.04),
+                color: _primary.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _primary.withOpacity(0.15)),
+                border: Border.all(color: _primary.withValues(alpha: 0.15)),
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: _primary.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: _primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                     child: Icon(Icons.videocam_rounded, color: _primary, size: 20),
                   ),
                   const SizedBox(width: 12),
@@ -1015,7 +1027,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                     onTap: () => setState(() => _removeExistingVideo = true),
                     child: Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: _red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(color: _red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                       child: Icon(Icons.delete_outline_rounded, color: _red, size: 18),
                     ),
                   ),
@@ -1042,7 +1054,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                 icon: const Icon(Icons.swap_horiz_rounded, size: 16),
                 label: const Text('Remplacer la vidéo'),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: _primary.withOpacity(0.4)),
+                  side: BorderSide(color: _primary.withValues(alpha: 0.4)),
                   foregroundColor: _primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -1056,14 +1068,14 @@ class _AddProductScreenState extends State<AddProductScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: _green.withOpacity(0.05),
+                color: _green.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _green.withOpacity(0.2)),
+                border: Border.all(color: _green.withValues(alpha: 0.2)),
               ),
               child: Row(children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: _green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: _green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                   child: Icon(Icons.check_circle_outline, color: _green, size: 20),
                 ),
                 const SizedBox(width: 12),
@@ -1078,7 +1090,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                   onTap: () => setState(() => _pickedVideo = null),
                   child: Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: _red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: _red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                     child: Icon(Icons.delete_outline_rounded, color: _red, size: 18),
                   ),
                 ),
@@ -1143,7 +1155,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           const _FieldLabel(label: 'Sous-catégorie'),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _selectedSubCategory,
+            initialValue: _selectedSubCategory,
             decoration: _inputDeco(hint: 'Choisir une sous-catégorie', icon: Icons.subdirectory_arrow_right_rounded),
             items: currentSubCats.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
             onChanged: (val) => setState(() => _selectedSubCategory = val),
@@ -1213,14 +1225,14 @@ class _AddProductScreenState extends State<AddProductScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.05),
+              color: _primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _primary.withOpacity(0.15)),
+              border: Border.all(color: _primary.withValues(alpha: 0.15)),
             ),
             child: Row(children: [
-              Icon(Icons.info_outline, color: _primary.withOpacity(0.7), size: 14),
+              Icon(Icons.info_outline, color: _primary.withValues(alpha: 0.7), size: 14),
               const SizedBox(width: 8),
-              Expanded(child: Text('Le prix est défini dans chaque variante.', style: TextStyle(color: _primary.withOpacity(0.8), fontSize: 11))),
+              Expanded(child: Text('Le prix est défini dans chaque variante.', style: TextStyle(color: _primary.withValues(alpha: 0.8), fontSize: 11))),
             ]),
           ),
         ],
@@ -1237,7 +1249,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         const _FieldLabel(label: 'Adresse du portefeuille'),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedWalletAddress,
+          initialValue: _selectedWalletAddress,
           decoration: _inputDeco(hint: 'Choisir un portefeuille', icon: Icons.account_balance_wallet_outlined),
           items: _userWallets.map((w) => DropdownMenuItem<String>(
             value: w['address'],
@@ -1253,9 +1265,9 @@ class _AddProductScreenState extends State<AddProductScreen>
         ),
         const SizedBox(height: 10),
         Row(children: [
-          Icon(Icons.shield_outlined, size: 13, color: _accent.withOpacity(0.8)),
+          Icon(Icons.shield_outlined, size: 13, color: _accent.withValues(alpha: 0.8)),
           const SizedBox(width: 6),
-          Text('Paiements sécurisés via Escrow PLEXUS.', style: TextStyle(fontSize: 11, color: _textSub.withOpacity(0.8))),
+          Text('Paiements sécurisés via Escrow PLEXUS.', style: TextStyle(fontSize: 11, color: _textSub.withValues(alpha: 0.8))),
         ]),
       ]),
     );
@@ -1271,7 +1283,7 @@ class _AddProductScreenState extends State<AddProductScreen>
           gradient: disabled ? null : const LinearGradient(colors: [_primary, _primaryMid], begin: Alignment.centerLeft, end: Alignment.centerRight),
           color: disabled ? _border : null,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: disabled ? [] : [BoxShadow(color: _primary.withOpacity(0.35), blurRadius: 16, offset: const Offset(0, 6))],
+          boxShadow: disabled ? [] : [BoxShadow(color: _primary.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6))],
         ),
         child: ElevatedButton(
           onPressed: disabled ? null : _submitProduct,
@@ -1295,7 +1307,7 @@ class _AddProductScreenState extends State<AddProductScreen>
   BoxDecoration _card() => BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(18),
-    boxShadow: [BoxShadow(color: _primary.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4))],
+    boxShadow: [BoxShadow(color: _primary.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4))],
   );
 
   Widget _buildSmallField({required TextEditingController ctrl, required String hint, String? prefix}) {
@@ -1317,7 +1329,7 @@ class _AddProductScreenState extends State<AddProductScreen>
 
   InputDecoration _inputDeco({required String hint, required IconData icon, String? prefixText}) {
     return InputDecoration(
-      hintText: hint, hintStyle: TextStyle(color: _textSub.withOpacity(0.5), fontSize: 14),
+      hintText: hint, hintStyle: TextStyle(color: _textSub.withValues(alpha: 0.5), fontSize: 14),
       prefixIcon: Icon(icon, color: _textSub, size: 20),
       prefixText: prefixText,
       filled: true, fillColor: _surface,

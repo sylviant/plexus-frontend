@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -104,10 +104,12 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
         _animController.forward();
       }
     } catch (e) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _isLoading = false;
         _hasError = true;
       });
+      }
     }
   }
 
@@ -176,7 +178,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           onTap: () => context.pop(),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -211,14 +213,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
             height: 84,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
             ),
             child: ClipOval(
               child: profileImage != null && profileImage.isNotEmpty
                   ? Image.network(
                 ApiConfig.getImageUrl(profileImage),
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildAvatarFallback(name),
+                errorBuilder: (_, _, _) => _buildAvatarFallback(name),
               )
                   : _buildAvatarFallback(name),
             ),
@@ -259,9 +261,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           ),
           const SizedBox(height: 6),
           Text(
-            isApproved ? l10n.vendeurVerifie('$memberSince') : memberSince,
+            isApproved ? l10n.vendeurVerifie(memberSince) : memberSince,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.65),
+              color: Colors.white.withValues(alpha: 0.65),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -314,14 +316,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: Colors.white.withOpacity(0.8)),
+          Icon(icon, size: 15, color: Colors.white.withValues(alpha: 0.8)),
           const SizedBox(width: 7),
           Text(value,
               style: const TextStyle(
@@ -329,7 +331,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
           const SizedBox(width: 4),
           Text(label,
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.65),
+                  color: Colors.white.withValues(alpha: 0.65),
                   fontWeight: FontWeight.w500,
                   fontSize: 12)),
         ],
@@ -341,9 +343,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -360,7 +362,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen>
             Text(
               '($_ratingCount)',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.65),
+                  color: Colors.white.withValues(alpha: 0.65),
                   fontWeight: FontWeight.w500,
                   fontSize: 12),
             ),

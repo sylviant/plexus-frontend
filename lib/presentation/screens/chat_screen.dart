@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
@@ -222,7 +222,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: _textSub)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: selectedCarrier,
+                  initialValue: selectedCarrier,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -400,7 +400,7 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: _primary.withOpacity(0.08),
+        shadowColor: _primary.withValues(alpha: 0.08),
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(8),
@@ -584,7 +584,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: _primary.withOpacity(0.05),
+            color: _primary.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -603,10 +603,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.10),
+                  color: statusColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: statusColor.withOpacity(0.25),
+                      color: statusColor.withValues(alpha: 0.25),
                       width: 1),
                 ),
                 child: Row(
@@ -636,11 +636,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.10),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                         color: const Color(0xFF10B981)
-                            .withOpacity(0.25),
+                            .withValues(alpha: 0.25),
                         width: 1),
                   ),
                   child: Text(
@@ -719,7 +719,7 @@ class _ChatScreenState extends State<ChatScreen> {
       return _ActionButton(
         label: !isPriceLoaded
             ? l10n.attentePrix
-            : l10n.payerLivraison('${fee.toStringAsFixed(2)}'),
+            : l10n.payerLivraison(fee.toStringAsFixed(2)),
         icon: isPriceLoaded
             ? Icons.local_shipping_outlined
             : Icons.hourglass_top_rounded,
@@ -798,7 +798,7 @@ class _ActionButton extends StatelessWidget {
               ? []
               : [
             BoxShadow(
-              color: color.withOpacity(0.25),
+              color: color.withValues(alpha: 0.25),
               blurRadius: 8,
               offset: const Offset(0, 3),
             )

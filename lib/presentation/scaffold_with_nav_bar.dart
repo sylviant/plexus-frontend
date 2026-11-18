@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:native_glass_navbar/native_glass_navbar.dart';
 import 'package:plexus/core/providers/socket_provider.dart';
@@ -145,18 +145,18 @@ class _FlutterFallbackNavBar extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.10)
-                  : Colors.white.withOpacity(0.55),
+                  ? Colors.white.withValues(alpha: 0.10)
+                  : Colors.white.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.18)
-                    : Colors.white.withOpacity(0.85),
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : Colors.white.withValues(alpha: 0.85),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color:        Colors.black.withOpacity(isDark ? 0.30 : 0.10),
+                  color:        Colors.black.withValues(alpha: isDark ? 0.30 : 0.10),
                   blurRadius:   28,
                   spreadRadius: -4,
                   offset:       const Offset(0, 6),
@@ -238,8 +238,8 @@ class _FbNavItemState extends State<_FbNavItem>
     final accent     = widget.accent;
     final isDark     = widget.isDark;
 
-    final Color iconC = isSelected ? accent : (isDark ? Colors.white.withOpacity(0.45) : Colors.black.withOpacity(0.35));
-    final Color lblC  = isSelected ? accent : (isDark ? Colors.white.withOpacity(0.40) : Colors.black.withOpacity(0.32));
+    final Color iconC = isSelected ? accent : (isDark ? Colors.white.withValues(alpha: 0.45) : Colors.black.withValues(alpha: 0.35));
+    final Color lblC  = isSelected ? accent : (isDark ? Colors.white.withValues(alpha: 0.40) : Colors.black.withValues(alpha: 0.32));
 
     // ── Bouton central Panier ─────────────────────────────────────────────
     if (item.isCenter) {
@@ -270,7 +270,7 @@ class _FbNavItemState extends State<_FbNavItem>
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color:      (isSelected ? const Color(0xFF0D1B4B) : accent).withOpacity(0.40),
+                  color:      (isSelected ? const Color(0xFF0D1B4B) : accent).withValues(alpha: 0.40),
                   blurRadius: 12,
                   offset:     const Offset(0, 4),
                 ),
@@ -321,7 +321,7 @@ class _FbNavItemState extends State<_FbNavItem>
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? accent.withOpacity(isDark ? 0.20 : 0.11)
+                          ? accent.withValues(alpha: isDark ? 0.20 : 0.11)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -345,7 +345,7 @@ class _FbNavItemState extends State<_FbNavItem>
                         decoration: BoxDecoration(
                           color:         const Color(0xFFE53935),
                           borderRadius:  BorderRadius.circular(9),
-                          border:        Border.all(color: Colors.white.withOpacity(0.9), width: 1.5),
+                          border:        Border.all(color: Colors.white.withValues(alpha: 0.9), width: 1.5),
                         ),
                         child: Text(
                           widget.badgeCount > 99 ? '99+' : widget.badgeCount.toString(),

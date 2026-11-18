@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -93,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 14,
                               letterSpacing: 0.3)),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _red.withOpacity(0.35)),
+                        side: BorderSide(color: _red.withValues(alpha: 0.35)),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
@@ -221,9 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _green.withOpacity(0.1),
+                  color: _green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: _green.withOpacity(0.25)),
+                  border: Border.all(color: _green.withValues(alpha: 0.25)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -292,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           width: 38, height: 38,
                           decoration: BoxDecoration(
-                            color: t.color.withOpacity(0.12),
+                            color: t.color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(t.icon, color: t.color, size: 20),
