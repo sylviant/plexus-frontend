@@ -1,0 +1,17 @@
+{
+  "network": "bscTestnet",
+  "chainId": 97,
+  "deployer": "0x0043454395CA98508CE64E311c3456B850f6dbA2",
+  "owner": "0x0043454395CA98508CE64E311c3456B850f6dbA2",
+  "operator": "0x0043454395CA98508CE64E311c3456B850f6dbA2",
+  "treasury": "0x0043454395CA98508CE64E311c3456B850f6dbA2",
+  "token": "0x21c2Ecb70b260dB100c9ab44592739F4da6C8C14",
+  "mockDeployed": true,
+  "escrow": "0x9e7C2F8Fa9BfB341df08A50DA3377B88DB2DC82E",
+  "feeBps": 200,
+  "referrerBps": 3000,
+  "cashbackBps": 2000,
+  "minWithdrawal": "5000000000000000000",
+  "deployTx": "0xfb8eab02deabbaf1d564122cfa7a85eb2695e7fc853313422a349b799e3440bb",
+  "deployedAt": "2026-11-18T03:47:27.080Z"
+}

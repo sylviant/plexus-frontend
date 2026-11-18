@@ -1,0 +1,16 @@
+BscScan manual verification (bscTestnet)
+
+Compiler:   v0.8.24+commit.e11b9ed9
+License:    MIT
+Optimizer:  enabled, 200 runs (taken from standard-input.json)
+
+1. PlexusEscrowV2  0x9e7C2F8Fa9BfB341df08A50DA3377B88DB2DC82E
+   https://testnet.bscscan.com/verifyContract?a=0x9e7C2F8Fa9BfB341df08A50DA3377B88DB2DC82E
+   Compiler type: Solidity (Standard-Json-Input)
+   Upload standard-input.json, contract name: contracts/PlexusEscrowV2.sol:PlexusEscrowV2
+   Constructor arguments (ABI-encoded): contents of escrow-constructor-args.txt
+
+2. MockUSDT  0x21c2Ecb70b260dB100c9ab44592739F4da6C8C14
+   https://testnet.bscscan.com/verifyContract?a=0x21c2Ecb70b260dB100c9ab44592739F4da6C8C14
+   Same compiler and standard-input.json, contract name: contracts/MockUSDT.sol:MockUSDT
+   Constructor arguments: none
