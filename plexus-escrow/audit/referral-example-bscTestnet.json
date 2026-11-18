@@ -1,0 +1,18 @@
+{
+  "ranAt": "2026-11-18T08:43:18.615Z",
+  "contract": "0x9e7C2F8Fa9BfB341df08A50DA3377B88DB2DC82E",
+  "orderRef": "0xcb1725de124e6f715166a598b6b4583b748b03be6c72779c829991962a721fc9",
+  "passed": true,
+  "expected": {
+    "seller": "113.0",
+    "referrer": "0.6",
+    "buyerCashback": "0.4",
+    "plexus": "1.0"
+  },
+  "got": {
+    "seller": "113.0",
+    "referrer": "0.6",
+    "buyerCashback": "0.4",
+    "plexus": "1.0"
+  }
+}

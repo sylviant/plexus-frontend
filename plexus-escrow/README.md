@@ -1,13 +1,15 @@
-# Sample Hardhat Project
+# PLEXUS escrow (PlexusEscrowV2)
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+BSC USDT escrow contract, its tests, deployment scripts and audit.
 
-Try running some of the following tasks:
+| Command | What it does |
+|---|---|
+| `npm test` | 80 unit tests |
+| `npm run test:invariant` | randomised accounting test |
+| `npm run coverage`, `npm run analyze` | coverage, Slither |
+| `npm run deploy:local`, `npm run verify:local` | deploy to a local node, check the 39 business rules |
+| `npm run deploy:testnet`, `npm run verify:testnet` | deploy to BSC testnet, verify the source |
+| `npm run smoke:testnet`, `npm run fulltest:testnet` | on-chain tests |
+| `npm run export:app` | regenerate the app's ABI, deployment and golden test files |
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.js
-```
+The audit is in `audit/contract-audit.md`. The app's wallet module is in `../lib/blockchain/v2/`.

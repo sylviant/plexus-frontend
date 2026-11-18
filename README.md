@@ -1,7 +1,7 @@
 # PLEXUS Frontend (Flutter)
 
 Mobile and web client of the PLEXUS marketplace.
-Buyers and sellers browse products, chat, order and pay in BNB through an escrow smart contract on BNB Smart Chain.
+Buyers and sellers browse products, chat, order and pay in USDT through the PlexusEscrowV2 escrow smart contract on BNB Smart Chain. The user's own wallet signs every payment; the app never holds a key.
 
 - Framework: Flutter (Material 3), one codebase for Android, iOS and Web
 - Web deployment: Vercel (served from `build/web`)
@@ -64,9 +64,7 @@ lib/
     providers/                 auth, user, cart, favorite, category, notification, socket
     services/                  ai_chat_service, notification_service
   blockchain/
-    wallet_service.dart        WalletConnect v2 session + wallet deep links
-    escrow_contract.dart       web3dart wrapper of the escrow contract
-    escrow_abi.dart            partial ABI (JSON string)
+    v2/                        PlexusEscrowV2 wallet module (see v2/README.md)
   l10n/                        10 languages + l10n.dart helper
   presentation/
     scaffold_with_nav_bar.dart bottom navigation shell
@@ -158,74 +156,29 @@ Routes **inside** the bottom bar (5 branches):
 ## 8. Order flow in the UI
 
 1. Buyer picks a product (or the cart), enters a delivery address and country, optionally a promo code (`POST /promo/verify`).
-2. Payment screen: connect wallet, pay through escrow, then `POST /orders` with the transaction hash. Status `PENDING_ADMIN`.
-3. Admin (or the escrow event) moves it to `PENDING_SHIPPING`. Seller sees "Mark shipped" in the chat action bar (`PUT /orders/:id/ship`).
+2. Payment screen: connect wallet. The app creates the order (`POST /orders`, product ids and quantities only; the server sets all prices; status `PENDING_PAYMENT`), asks the server for a signed quote, and pays it on the V2 contract (approve USDT for the exact total, then create the order on-chain).
+3. The server's V2 listener sees the payment and moves the order forward. Seller sees "Mark shipped" in the chat action bar (`PUT /orders/:id/ship`).
 4. Status `SHIPPED`: buyer sees **Receipt** and **Dispute**; seller can set `DELIVERED_BY_SELLER`.
-5. Receipt: `OrderDetailScreen._confirmReceipt()` calls the contract `confirmerLivraison(escrowId)`, then `PUT /orders/:id/receive`.
-6. Dispute: `POST /disputes` (multipart). Admin resolves from the back office API.
+5. Receipt: `OrderDetailScreen._confirmReceipt()` sends `confirmReceipt` to the V2 contract through the buyer's wallet; the contract releases the money to the seller. Delivery-fee changes from the seller are accepted in the payment screen, which pays only the difference.
+6. Dispute: `POST /disputes` (multipart). The owner decides it on-chain; the contract refunds the buyer in full if nobody decides in time.
 
 The chat screen shows the status badge, the referral discount badge, and the action buttons by role and status.
-`WAITING_BUYER_CONFIRMATION` is legacy; the shipping fee is now computed server-side at order creation.
 
-Fees shown to the buyer: platform fee 3% of (items + shipping), minus the referral discount when the buyer was referred.
+Fees: the contract takes 2% of the product price only (not delivery); the buyer sees the amounts from the server's quote.
 
 ---
 
 ## 9. Blockchain: wallet and escrow
 
-### Files
-- `blockchain/wallet_service.dart`: WalletConnect v2 (`Web3App`). Project id is set in the file. Requires chain `eip155:56` with methods `eth_sendTransaction` and `personal_sign`. On web it shows a QR code. On mobile it lists installed wallets and opens a deep link.
-- `blockchain/escrow_contract.dart`: `web3dart` wrapper with `getCommande`, `creerCommande`, `confirmerLivraison`, `ouvrirLitige`. Read calls go through the RPC URL.
-- `blockchain/escrow_abi.dart`: ABI containing the constructor and these functions: `creerCommande`, `confirmerLivraison`, `demanderRemboursement`, `ouvrirLitige`, `getCommande`. **No events and no dispute-resolution function.**
+The app pays through **PlexusEscrowV2** (BSC USDT). The wallet module is `lib/blockchain/v2/`; read `lib/blockchain/v2/README.md`
+for the files, the one call a screen makes (`EscrowPaymentFlow.payOrder(orderId)`) and the quote format the backend must sign.
+The app never holds a private key. The chain, contract and token come from one setting (`EscrowV2Config`, generated from the
+deployment).
 
-### Current configuration in code
-
-| Item | Value in code |
-|---|---|
-| Contract address | `0x12B564Cb42C04B4258ED45c5FE42280f96B52bF7` (comment says BSC Testnet) |
-| RPC | `https://data-seed-prebsc-1-s1.binance.org:8545` (BSC **Testnet**) |
-| WalletConnect chain | `eip155:56` (BSC **Mainnet**) |
-| `creerCommande` chainId | `56` (comment says "BSC Testnet") |
-| `confirmerLivraison`, `ouvrirLitige` chainId | `97` (BSC Testnet) |
-| Backend listener | BSC Mainnet RPC |
-
-The same chain must be used everywhere. Make it one constant (chain id, RPC, explorer, contract address), switchable by build flavor.
-
-### Contract status codes
-`getCommande` returns `statut` as `uint8`. The meaning of each value is defined in `PlexusEscrow.sol` (not provided). Add a Dart enum once confirmed.
-
-### What happens today when the user taps "Pay via escrow"
-`PaymentScreen._payerAvecWallet()`:
-1. Requires a connected wallet and an address.
-2. Takes `displayPrice` (a **USD** price) and passes it as `montantBNB`.
-3. Calls `EscrowContract.creerCommande(privateKey: '', ...)`.
-4. Puts the returned hash in a field and calls `_confirmTransfer()`, which posts the order.
-
-### Gaps in the current implementation
-
-These explain why on-chain payment cannot work yet.
-
-1. **No signing path.** `EscrowContract` signs with `EthPrivateKey.fromHex(privateKey)` and every caller passes an empty string (comment: "handled by WalletConnect"). The WalletConnect session is created but never used to send a transaction, so the call fails. The app must never hold the user's private key. The transaction has to be sent **through the WalletConnect session** (`eth_sendTransaction` request with `from`, `to`, ABI-encoded `data`, `value`) and the wallet app signs it.
-2. **No USD to BNB conversion.** The UI prints `$12.00 BNB`. The amount must be converted with a price source (backend endpoint or oracle) and shown in BNB, with a slippage margin for volatile prices.
-3. **Float to wei.** `BigInt.from(montantBNB * 1e18)` loses precision. Use `EtherAmount.fromBigInt` from a decimal string, or `BigInt` math.
-4. **Zero-address fallback.** If the seller wallet is missing, the code uses `0x000...000`. Funds sent there are lost. Block checkout when the seller has no valid wallet address.
-5. **No receipt wait.** The app posts the order right after getting a hash, without waiting for confirmation or checking `status` of the receipt. Wait for the receipt, then call the backend.
-6. **Swallowed errors on release.** In `_confirmReceipt()` an on-chain failure is only logged, then `/orders/:id/receive` is called anyway. The UI says delivered while funds may still be locked.
-7. **`escrowId` is unknown to the client at pay time.** It comes from the `CommandeCreee` event (via the backend listener). Read it from the transaction receipt logs instead, or poll the order until `escrowId` is set before allowing "Receipt".
-8. **Disputes are off-chain.** `DisputeScreen` only posts to the API. `ouvrirLitige` exists in Dart but is not called, and `demanderRemboursement` has no Dart wrapper.
-9. **Session handling.** `WalletService` is created per screen and `init()` creates a new `Web3App` each time. Keep one app-wide instance, restore existing sessions, and handle `chainChanged` and `accountsChanged`.
-10. **Payout wallets are different.** The "payment methods" screen stores withdrawal wallets (name, network, address) through `/users/:id/wallets`. The seller wallet used by escrow is `Product.sellerWallet`, selected when adding a product. Validate the address format (`0x` + 40 hex) in both places.
-
-### Suggested target flow
-
-1. Connect wallet, check `chainId` equals the configured chain (request a switch if not).
-2. Get the BNB amount from the backend (server-side price and fee).
-3. Encode `creerCommande(seller, days)` with the ABI and send `eth_sendTransaction` through WalletConnect with `value`.
-4. Wait for the receipt, read the `CommandeCreee` event for `escrowId`.
-5. Send `transactionHash` and `escrowId` to `POST /orders`.
-6. On receipt: send `confirmerLivraison(escrowId)` through WalletConnect, wait, then let the backend listener mark the order delivered.
-
----
+### Screens
+`PaymentScreen` and `OrderDetailScreen` use the V2 module through `EscrowSession` (one wallet connection for the app).
+The old V1 files are deleted. Payment needs the backend quote endpoint (`POST /escrow/orders/:id/quote`);
+see the "How the screens use it" section of `lib/blockchain/v2/README.md`.
 
 ## 10. Localisation
 
@@ -248,21 +201,22 @@ These explain why on-chain payment cannot work yet.
 
 ## 12. Known issues and technical debt
 
-- The escrow payment gaps in section 9 (blocking).
-- Hard-coded values: WalletConnect project id, contract address, RPC, Firebase web options. Move to build-time configuration (`--dart-define` or flavors).
-- No central HTTP client: each screen builds its own `http` call, with no token header, no timeout and little error handling.
-- Prices are USD in the catalogue; the UI labels them with the crypto ticker. Define one currency model.
-- `print()` statements in providers and wallet service; replace with a logger.
+- Paying needs the backend quote endpoint (`POST /escrow/orders/:id/quote`) and its V2 listener (tasks 2.2, 2.4). Until then, a payment attempt fails with a server error.
+- WalletConnect from a phone has not been tried with a real device; the browser wallet (MetaMask) path has. `walletconnect_flutter_v2` is deprecated in favour of Reown AppKit.
+- Hard-coded values: WalletConnect project id (overridable with `--dart-define=WC_PROJECT_ID`), Firebase web options. The chain, contract, token and RPC come from `EscrowV2Config` (generated from the deployment, overridable with `--dart-define`).
+- No central HTTP client: most screens build their own `http` call, with no timeout and little error handling. The payment screen sends the token; others may not.
+- Prices are USD in the catalogue and USDT is treated as one dollar. Define one currency model.
+- `print()` statements in providers; replace with a logger.
 - Large screens (`home_screen`, `add_product_screen`, `cart_screen`, `chat_screen`) mix UI, API and business logic. Extract repositories and view models.
 - Duplicated or dead code (see section 3).
-- No automated tests.
+- Tests exist for the wallet module only (`flutter test test/blockchain`, 51 tests).
 
 ---
 
 ## 13. Suggested next steps
 
-1. Fix the escrow payment path (signing through WalletConnect, BNB amount, receipt, `escrowId`).
-2. Unify network configuration with the backend (one chain, one address).
-3. Add an API client with the auth header and token expiry handling.
-4. Wire disputes and refunds to the contract.
+1. Backend: quote endpoint and V2 listener, then pay a test order from the app end to end.
+2. Try WalletConnect from a phone.
+3. Wire disputes, delivery-fee changes and withdrawals (`withdraw`, `withdrawRefund`) to the V2 module.
+4. Add an API client with the auth header and token expiry handling.
 5. Clean the repository (section 3) and add tests for cart, pricing and order status logic.

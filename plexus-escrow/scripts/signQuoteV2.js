@@ -41,7 +41,7 @@ async function main() {
     deliveryAmount: ethers.parseEther(env.DELIVERY || "10"),
     feeBps,
     international: String(env.INTERNATIONAL).toLowerCase() === "true",
-    validUntil: now + Number(env.VALID_MINUTES || 60) * 60,
+    validUntil: env.VALID_UNTIL ? Number(env.VALID_UNTIL) : now + Number(env.VALID_MINUTES || 60) * 60,
   };
   const domain = { name: "PlexusEscrow", version: "2", chainId: (await ethers.provider.getNetwork()).chainId, verifyingContract: info.escrow };
   const signature = await signer.signTypedData(domain, TYPES, q);
@@ -57,6 +57,21 @@ async function main() {
   console.log(`Valid until ${new Date(q.validUntil * 1000).toISOString()}`);
   console.log(`Signature checked against the contract: OK (signer ${recovered})\n`);
   console.log(`orderRef (keep it, every later step needs it):\n${q.orderRef}\n`);
+  const appJson = {
+    orderRef: q.orderRef, buyer: q.buyer, seller: q.seller, referrer: q.referrer,
+    productAmount: q.productAmount.toString(), deliveryAmount: q.deliveryAmount.toString(),
+    feeBps: q.feeBps, international: q.international, validUntil: q.validUntil, signature,
+  };
+  console.log(`For the app (the JSON the backend will return), e.g. flutter run --dart-define=DEV_QUOTE_JSON='<this>':\n${JSON.stringify(appJson)}\n`);
+  if (env.OUT) {
+    // used to keep the Flutter tests honest: the app must encode exactly the same createOrder call as ethers
+    fs.writeFileSync(env.OUT, JSON.stringify({
+      note: "Signed by the real operator key for the deployed contract. Produced by plexus-escrow/scripts/signQuoteV2.js",
+      escrow: info.escrow, chainId: Number((await ethers.provider.getNetwork()).chainId),
+      quote: appJson, createOrderCalldata: escrow.interface.encodeFunctionData("createOrder", [q, signature]),
+    }, null, 2));
+    console.log(`Wrote ${env.OUT}\n`);
+  }
   console.log(`createOrder -> q (tuple), paste as one line:\n${JSON.stringify(tuple)}\n`);
   console.log(`createOrder -> signature:\n${signature}\n`);
   console.log(`The buyer must first approve at least ${ethers.formatEther(total)} USDT (${total}) for ${info.escrow}`);

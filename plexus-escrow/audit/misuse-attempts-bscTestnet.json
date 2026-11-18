@@ -1,0 +1,357 @@
+{
+  "contract": "0x9e7C2F8Fa9BfB341df08A50DA3377B88DB2DC82E",
+  "network": "bscTestnet",
+  "ranAt": "2026-11-18T08:42:14.540Z",
+  "results": [
+    {
+      "who": "stranger",
+      "attempt": "setOperator (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "setTreasury (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "pause (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "unpause (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "proposeFeeConfig (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "cancelFeeConfig (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "extendDispute (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "resolveDispute (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "approveReturn (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "resolveWrongAddress (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "rescueExcess (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "transferOwnership (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "setVerified (operator only)",
+      "expected": "NotOperator",
+      "got": "NotOperator",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "confirmReceipt",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "openDispute",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "withdrawDispute",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "acceptDeliveryAdjustment",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "declineDeliveryAdjustment",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "markReturnShipped",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "cancelBySeller",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "markShipped",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "proposeDeliveryAdjustment",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "concedeDispute",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "fundReturnPostage",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "confirmReturnReceived",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "contestReturn",
+      "expected": "NotSeller",
+      "got": "NotSeller",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "withdraw",
+      "expected": "NothingToWithdraw",
+      "got": "NothingToWithdraw",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "withdrawRefund",
+      "expected": "NothingToWithdraw",
+      "got": "NothingToWithdraw",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "withdrawRewards",
+      "expected": "NotVerified",
+      "got": "NotVerified",
+      "ok": true
+    },
+    {
+      "who": "non-owner account",
+      "attempt": "resolveDispute (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "non-owner account",
+      "attempt": "rescueExcess (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "non-owner account",
+      "attempt": "proposeFeeConfig (owner only)",
+      "expected": "OwnableUnauthorizedAccount",
+      "got": "OwnableUnauthorizedAccount",
+      "ok": true
+    },
+    {
+      "who": "non-operator account",
+      "attempt": "setVerified (operator only)",
+      "expected": "NotOperator",
+      "got": "NotOperator",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "fee above the 10% cap",
+      "expected": "InvalidFeeConfig",
+      "got": "InvalidFeeConfig",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "referral shares above 100% of the commission",
+      "expected": "InvalidFeeConfig",
+      "got": "InvalidFeeConfig",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "renounce ownership",
+      "expected": "RenounceDisabled",
+      "got": "RenounceDisabled",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "set the operator to nobody",
+      "expected": "ZeroAddress",
+      "got": "ZeroAddress",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "set the treasury to nobody",
+      "expected": "ZeroAddress",
+      "got": "ZeroAddress",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "apply a fee change that was never proposed",
+      "expected": "NoPendingFeeConfig",
+      "got": "NoPendingFeeConfig",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "cancel a fee change that does not exist",
+      "expected": "NoPendingFeeConfig",
+      "got": "NoPendingFeeConfig",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "take customer money with rescueExcess (nothing exceeds what is owed)",
+      "expected": "NothingToWithdraw",
+      "got": "NothingToWithdraw",
+      "ok": true
+    },
+    {
+      "who": "owner",
+      "attempt": "decide a dispute on an order that is not disputed",
+      "expected": "WrongStatus",
+      "got": "WrongStatus",
+      "ok": true
+    },
+    {
+      "who": "stranger",
+      "attempt": "pay a quote made for someone else",
+      "expected": "NotBuyer",
+      "got": "NotBuyer",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay an expired quote",
+      "expected": "QuoteExpired",
+      "got": "QuoteExpired",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay a quote whose amount was changed after signing",
+      "expected": "BadSignature",
+      "got": "BadSignature",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay a quote signed by an ordinary account, not the server key",
+      "expected": "BadSignature",
+      "got": "BadSignature",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay a quote with an outdated fee",
+      "expected": "FeeMismatch",
+      "got": "FeeMismatch",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "buy from yourself",
+      "expected": "InvalidSeller",
+      "got": "InvalidSeller",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay a quote with a zero price",
+      "expected": "InvalidAmount",
+      "got": "InvalidAmount",
+      "ok": true
+    },
+    {
+      "who": "buyer",
+      "attempt": "pay the same order number twice (replay)",
+      "expected": "OrderExists",
+      "got": "OrderExists",
+      "ok": true
+    }
+  ]
+}

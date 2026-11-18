@@ -1120,4 +1120,162 @@ describe("PlexusEscrowV2", function () {
       await expect(f.escrow.connect(f.other).withdrawRewards()).to.be.revertedWithCustomError(f.escrow, "NothingToWithdraw");
     });
   });
+
+  // ----------------------------------------------------------------- unusual tokens and smart-contract wallets
+  // Uses the test-only contracts in contracts/test/TestHelpers.sol.
+  describe("unusual tokens and smart-contract wallets", function () {
+    async function setup(tokenName) {
+      const [owner, operator, treasury, buyer, seller, other] = await ethers.getSigners();
+      const token = await (await ethers.getContractFactory(tokenName)).deploy();
+      const escrow = await (await ethers.getContractFactory("PlexusEscrowV2")).deploy(
+        await token.getAddress(), owner.address, operator.address, treasury.address, FEE, REF_BPS, CASHBACK_BPS, MIN_WD
+      );
+      const escrowAddr = await escrow.getAddress();
+      const domain = { name: "PlexusEscrow", version: "2", chainId: (await ethers.provider.getNetwork()).chainId, verifyingContract: escrowAddr };
+      let n = 0;
+      const quote = async (buyerAddr, sellerAddr, over = {}) => ({
+        orderRef: ref(`edge-${tokenName}-${n++}`), buyer: buyerAddr, seller: sellerAddr, referrer: ZERO,
+        productAmount: E(100), deliveryAmount: E(10), feeBps: FEE, international: false,
+        validUntil: (await time.latest()) + DAY, ...over,
+      });
+      const sign = (q) => operator.signTypedData(domain, QUOTE_TYPES, q);
+      const approveFor = async (signer) => {
+        await token.mint(signer.address, E(10_000));
+        await token.connect(signer).approve(escrowAddr, ethers.MaxUint256);
+      };
+      return { owner, operator, treasury, buyer, seller, other, token, escrow, escrowAddr, quote, sign, approveFor };
+    }
+    const enc = (contract, fn, args = []) => contract.interface.encodeFunctionData(fn, args);
+
+    it("a token that takes a fee on transfer is refused: the escrow never holds less than it owes", async function () {
+      const f = await setup("FeeOnTransferToken");
+      await f.approveFor(f.buyer);
+      const q = await f.quote(f.buyer.address, f.seller.address);
+      await expect(f.escrow.connect(f.buyer).createOrder(q, await f.sign(q)))
+        .to.be.revertedWithCustomError(f.escrow, "TransferMismatch");
+      expect(await f.escrow.totalHeld()).to.equal(0);
+      expect((await f.escrow.getOrder(q.orderRef)).status).to.equal(Status.None);
+    });
+
+    // The wallet is both a seller (earnings) and a buyer (refund). While the escrow pays one balance, the token
+    // calls the wallet back, and the wallet tries to withdraw the other balance. The reentrancy guard must stop it.
+    for (const [first, second] of [["withdrawRefund", "withdraw"], ["withdraw", "withdrawRefund"]]) {
+      it(`re-entering from a token payment is blocked: ${first} cannot call ${second}`, async function () {
+        const f = await setup("HookToken");
+        const wallet = await (await ethers.getContractFactory("ContractWallet")).deploy();
+        const w = await wallet.getAddress();
+        await f.approveFor(f.buyer);
+        await f.token.mint(w, E(10_000));
+        await wallet.exec(f.token.target, enc(f.token, "approve", [f.escrowAddr, ethers.MaxUint256]));
+
+        // as a seller: earn $108
+        const sale = await f.quote(f.buyer.address, w);
+        await f.escrow.connect(f.buyer).createOrder(sale, await f.sign(sale));
+        const paidAt = (await f.escrow.getOrder(sale.orderRef)).paidAt;
+        await wallet.exec(f.escrowAddr, enc(f.escrow, "markShipped", [sale.orderRef, H("c"), H("t"), H("p"), paidAt]));
+        await f.escrow.connect(f.buyer).confirmReceipt(sale.orderRef);
+        // as a buyer: a cancelled purchase leaves a $110 refund
+        const buy = await f.quote(w, f.seller.address);
+        await wallet.exec(f.escrowAddr, enc(f.escrow, "createOrder", [buy, await f.sign(buy)]));
+        await f.escrow.connect(f.seller).cancelBySeller(buy.orderRef);
+        const earnings = await f.escrow.balances(w), refund = await f.escrow.refunds(w);
+        expect(earnings).to.equal(E(108));
+        expect(refund).to.equal(E(110));
+
+        const walletBefore = await f.token.balanceOf(w);
+        await wallet.arm(f.escrowAddr, enc(f.escrow, second));
+        await wallet.exec(f.escrowAddr, enc(f.escrow, first));
+
+        expect(await wallet.reentered()).to.equal(false);
+        expect(await wallet.reentryBlocked()).to.equal(true);
+        // only the first balance was paid, the other is untouched, and the escrow stays solvent
+        const paid = first === "withdraw" ? earnings : refund;
+        const kept = first === "withdraw" ? refund : earnings;
+        expect((await f.token.balanceOf(w)) - walletBefore).to.equal(paid);
+        expect(first === "withdraw" ? await f.escrow.refunds(w) : await f.escrow.balances(w)).to.equal(kept);
+        expect(await f.token.balanceOf(f.escrowAddr)).to.equal(await f.escrow.totalHeld());
+        // the remaining balance is still withdrawable normally
+        await wallet.exec(f.escrowAddr, enc(f.escrow, second));
+        expect((await f.token.balanceOf(w)) - walletBefore).to.equal(earnings + refund);
+        expect(await f.token.balanceOf(f.escrowAddr)).to.equal(await f.escrow.totalHeld());
+      });
+    }
+
+    it("a smart-contract wallet can pay, sell, get refunded and withdraw like any other wallet", async function () {
+      const f = await setup("MockUSDT");
+      const Wallet = await ethers.getContractFactory("ContractWallet");
+      const buyerW = await Wallet.deploy(), sellerW = await Wallet.deploy();
+      const [bw, sw] = [await buyerW.getAddress(), await sellerW.getAddress()];
+      await f.token.mint(bw, E(1000));
+      await buyerW.exec(f.token.target, enc(f.token, "approve", [f.escrowAddr, ethers.MaxUint256]));
+
+      // a completed sale
+      const q = await f.quote(bw, sw);
+      await buyerW.exec(f.escrowAddr, enc(f.escrow, "createOrder", [q, await f.sign(q)]));
+      const paidAt = (await f.escrow.getOrder(q.orderRef)).paidAt;
+      await sellerW.exec(f.escrowAddr, enc(f.escrow, "markShipped", [q.orderRef, H("c"), H("t"), H("p"), paidAt]));
+      await buyerW.exec(f.escrowAddr, enc(f.escrow, "confirmReceipt", [q.orderRef]));
+      await sellerW.exec(f.escrowAddr, enc(f.escrow, "withdraw"));
+      expect(await f.token.balanceOf(sw)).to.equal(E(108));
+
+      // a cancelled purchase refunded to the wallet
+      const q2 = await f.quote(bw, sw);
+      await buyerW.exec(f.escrowAddr, enc(f.escrow, "createOrder", [q2, await f.sign(q2)]));
+      await sellerW.exec(f.escrowAddr, enc(f.escrow, "cancelBySeller", [q2.orderRef]));
+      await buyerW.exec(f.escrowAddr, enc(f.escrow, "withdrawRefund"));
+      expect(await f.token.balanceOf(bw)).to.equal(E(1000) - E(110));
+      expect(await f.token.balanceOf(f.escrowAddr)).to.equal(await f.escrow.totalHeld());
+    });
+
+    it("a seller whose wallet cannot receive the token blocks nobody else", async function () {
+      const f = await setup("BlockableToken");
+      await f.approveFor(f.buyer);
+      const orders = [];
+      for (const s of [f.seller, f.other]) {
+        const q = await f.quote(f.buyer.address, s.address);
+        await f.escrow.connect(f.buyer).createOrder(q, await f.sign(q));
+        const paidAt = (await f.escrow.getOrder(q.orderRef)).paidAt;
+        await f.escrow.connect(s).markShipped(q.orderRef, H("c"), H("t"), H("p"), paidAt);
+        await f.escrow.connect(f.buyer).confirmReceipt(q.orderRef);
+        orders.push(q);
+      }
+      const refundOrder = await f.quote(f.buyer.address, f.other.address);
+      await f.escrow.connect(f.buyer).createOrder(refundOrder, await f.sign(refundOrder));
+      await f.escrow.connect(f.other).cancelBySeller(refundOrder.orderRef);
+
+      await f.token.setBlocked(f.seller.address, true); // the first seller can no longer receive tokens
+      await expect(f.escrow.connect(f.seller).withdraw()).to.be.revertedWith("recipient blocked");
+
+      // everyone else is unaffected
+      await f.escrow.connect(f.other).withdraw();
+      await f.escrow.connect(f.buyer).withdrawRefund();
+      await f.escrow.connect(f.treasury).withdraw();
+      expect(await f.token.balanceOf(f.other.address)).to.equal(E(108));
+      // the blocked seller's money stays owed and the escrow stays solvent
+      expect(await f.escrow.balances(f.seller.address)).to.equal(E(108));
+      expect(await f.token.balanceOf(f.escrowAddr)).to.equal(await f.escrow.totalHeld());
+      // if the block is lifted, the seller can still withdraw
+      await f.token.setBlocked(f.seller.address, false);
+      await f.escrow.connect(f.seller).withdraw();
+      expect(await f.token.balanceOf(f.seller.address)).to.equal(E(108));
+    });
+  });
+
+  // ----------------------------------------------------------------- known limitations (see audit/contract-audit.md)
+  describe("known limitations", function () {
+    it("F-04: after the treasury address is changed, a balance of the OLD treasury below the $5 minimum cannot be withdrawn", async function () {
+      const f = await loadFixture(deploy);
+      const q = await f.payAndShip({ productAmount: E(100), deliveryAmount: 0 });
+      await f.escrow.connect(f.buyer).confirmReceipt(q.orderRef); // treasury is credited $2, below the $5 minimum
+      expect(await f.escrow.balances(f.treasury.address)).to.equal(E(2));
+      await f.escrow.setTreasury(f.other.address); // the owner moves the commission wallet
+      // the old treasury lost its exemption from the minimum: its $2 is stuck. Operational rule: withdraw the
+      // treasury balance BEFORE changing the treasury address (or the contract should migrate the balance).
+      await expect(f.escrow.connect(f.treasury).withdraw()).to.be.revertedWithCustomError(f.escrow, "BelowMinimum");
+      expect(await f.escrow.balances(f.treasury.address)).to.equal(E(2)); // still owed, still counted, never lost to someone else
+      await f.escrow.setTreasury(f.treasury.address); // changing back restores access to it
+      await f.escrow.connect(f.treasury).withdraw();
+      expect(await f.escrow.balances(f.treasury.address)).to.equal(0);
+    });
+  });
 });
