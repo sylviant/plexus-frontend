@@ -1,4 +1,4 @@
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -49,6 +49,7 @@ class AuthProvider with ChangeNotifier {
 
     if (savedToken != null && savedUserJson != null) {
       _token = savedToken;
+      http.AuthToken.value = _token;
       final userData = json.decode(savedUserJson);
       await _applyUserData(userData);
       notifyListeners();
@@ -117,7 +118,7 @@ class AuthProvider with ChangeNotifier {
         final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
         if (googleUser == null) return;
         final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
+        await googleUser.authentication;
         final fb.AuthCredential credential = fb.GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
@@ -131,10 +132,8 @@ class AuthProvider with ChangeNotifier {
           Uri.parse('${ApiConfig.baseUrl}/auth/google'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
+            'idToken': await firebaseUser.getIdToken(),
             'name': firebaseUser.displayName,
-            'email': firebaseUser.email,
-            'uid': firebaseUser.uid,
-            'photo': firebaseUser.photoURL,
             'referredByCode': referralCode,
             'role': role ?? 'client',
           }),
@@ -155,6 +154,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _handleAuthResponse(Map<String, dynamic> responseData) async {
     _token = responseData['token'] ?? _token;
+    http.AuthToken.value = _token;
     final user = responseData['user'];
     if (user != null) {
       await _applyUserData(user);
@@ -180,17 +180,17 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> signUp(
-    String name,
-    String email,
-    String password,
-    String role, {
-    String? phone,
-    String? address,
-    File? idFront,
-    File? idBack,
-    File? selfie,
-    String? referralCode,
-  }) async {
+      String name,
+      String email,
+      String password,
+      String role, {
+        String? phone,
+        String? address,
+        File? idFront,
+        File? idBack,
+        File? selfie,
+        String? referralCode,
+      }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/auth/register');
     try {
       var request = http.MultipartRequest('POST', url);
@@ -210,7 +210,7 @@ class AuthProvider with ChangeNotifier {
           request.files.add(await http.MultipartFile.fromPath('selfie', selfie.path));
       }
       var streamedResponse =
-          await request.send().timeout(const Duration(seconds: 30));
+      await request.send().timeout(const Duration(seconds: 30));
       var response = await http.Response.fromStream(streamedResponse);
       if (response.statusCode == 201) {
         _pendingEmail = email;
@@ -307,6 +307,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     _token = null;
+    http.AuthToken.value = null;
     _currentUser = null;
     _userProvider.setUserType(UserType.undefined);
     await _clearLocalData();

@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/cart_provider.dart';
-import 'package:plexus/blockchain/wallet_service.dart';
-import 'package:plexus/blockchain/escrow_contract.dart';
+import 'package:plexus/blockchain/v2/escrow_session.dart';
+import 'package:plexus/blockchain/v2/escrow_v2_errors.dart';
+import 'package:plexus/blockchain/v2/escrow_v2_models.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -23,30 +26,44 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  final _hashController    = TextEditingController(); // rempli automatiquement par l'escrow
   final _addressController = TextEditingController();
   String? _countryCode;
   bool _isSubmitting = false;
 
-  // Le paiement se fait uniquement en BNB via le smart contract escrow.
-  static const String _cryptoType = 'BNB';
+  // Payment is in USDT on BNB Smart Chain, through the V2 escrow contract and the user's own wallet.
+  static const String _cryptoType = 'USDT';
 
   // ── Blockchain ─────────────────────────────────────────────────────────────
-  final WalletService  _walletService  = WalletService();
-  final EscrowContract _escrowContract = EscrowContract();
+  final EscrowSession _session = EscrowSession.instance;
   bool    _walletConnecte = false;
   String? _adresseWallet;
   bool    _isPaying       = false;
+  PayStep? _step;
+
+  // One random key per checkout: a retry after a failed payment finds the same order, never a second one.
+  String? _idempotencyKey;
 
   Map<String, dynamic>? get _singleProduct =>
       widget.productData?['singleProduct'] as Map<String, dynamic>?;
 
   @override
+  void initState() {
+    super.initState();
+    if (_session.isConnected) {
+      _walletConnecte = true;
+      _adresseWallet = _session.address;
+    }
+  }
+
+  @override
   void dispose() {
-    _hashController.dispose();
     _addressController.dispose();
-    _escrowContract.dispose();
     super.dispose();
+  }
+
+  String _newKey() {
+    final r = Random.secure();
+    return List.generate(24, (_) => r.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
   }
 
   void _showSnack(String msg, Color color, IconData icon) {
@@ -63,289 +80,185 @@ class _PaymentScreenState extends State<PaymentScreen> {
     ));
   }
 
+  void _onWalletConnected() {
+    if (!mounted) return;
+    setState(() {
+      _walletConnecte = true;
+      _adresseWallet  = _session.address;
+    });
+    final a = _adresseWallet ?? '';
+    _showSnack(l10n.walletConnecte(a.length >= 8 ? a.substring(0, 8) : a), Colors.green, Icons.check_circle);
+  }
+
   // ── Connexion wallet ───────────────────────────────────────────────────────
   Future<void> _connecterWallet() async {
     try {
-      _walletService.onConnected = () {
-        if (mounted) {
-          setState(() {
-            _walletConnecte = true;
-            _adresseWallet  = _walletService.adresseConnectee;
-          });
-          _showSnack(
-            l10n.walletConnecte('${_adresseWallet?.substring(0, 8)}'),
-            Colors.green,
-            Icons.check_circle,
-          );
+      // On the web, a browser wallet (MetaMask...) is the simplest way when it is installed.
+      if (kIsWeb && _session.browserWalletAvailable) {
+        await _session.connectBrowserWallet();
+        _onWalletConnected();
+        return;
+      }
+
+      final uri = await _session.startWalletConnect(onConnected: _onWalletConnected);
+      if (uri == null || !mounted) return;
+
+      // On a phone, open the wallet app straight away; otherwise (or if none opens) show the QR code.
+      var opened = false;
+      if (!kIsWeb) {
+        try {
+          opened = await launchUrl(Uri.parse(uri), mode: LaunchMode.externalApplication);
+        } catch (_) {
+          opened = false;
         }
-      };
-
-      final uri = await _walletService.init();
-      if (uri == null) return;
-
-      if (kIsWeb) {
-        if (mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (ctx) => Dialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l10n.scannerAvecTonWallet,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(
-                        l10n.scanneCeQrCodeAvec,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                        width: 200,
-                        height: 200,
-                        child: QrImageView(data: uri, size: 200)),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(l10n.annuler),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-      } else {
-        final wallets = await _walletService.getWalletsDisponibles(uri);
-
-        if (!mounted) return;
-
-        if (wallets.isEmpty) {
-          _showSnack(
-            l10n.aucunWalletCompatibleInstalleInstalle,
-            Colors.orange,
-            Icons.warning,
-          );
-          return;
-        }
-
-        if (wallets.length == 1) {
-          await _walletService.ouvrirWallet(wallets.first['deeplink']!);
-        } else {
-          showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            builder: (ctx) => Padding(
+      }
+      if (!opened && mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (ctx) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(l10n.choisirTonWallet,
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  ...wallets.map((wallet) => ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        wallet['icon']!,
-                        width: 40, height: 40,
-                        errorBuilder: (_, __, ___) => Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.account_balance_wallet,
-                              color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                    title: Text(wallet['name']!,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 14, color: Colors.grey),
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      await _walletService.ouvrirWallet(wallet['deeplink']!);
-                    },
-                  )),
-                  const SizedBox(height: 10),
+                  Text(l10n.scannerAvecTonWallet,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(l10n.scanneCeQrCodeAvec,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  SizedBox(width: 200, height: 200, child: QrImageView(data: uri, size: 200)),
+                  const SizedBox(height: 12),
+                  TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.annuler)),
                 ],
               ),
             ),
-          );
-        }
+          ),
+        );
       }
+    } on EscrowException catch (e) {
+      _showSnack(e.message, Colors.red, Icons.error);
     } catch (e) {
-      _showSnack(l10n.erreur3('$e'), Colors.red, Icons.error);
+      _showSnack(interpretError(e).message, Colors.red, Icons.error);
     }
   }
 
-  // ── Paiement via escrow ────────────────────────────────────────────────────
+  String _stepText(PayStep? s) {
+    switch (s) {
+      case PayStep.checking:      return 'Checking the price...';
+      case PayStep.approving:     return 'Approve USDT in your wallet...';
+      case PayStep.creatingOrder: return 'Confirm the payment in your wallet...';
+      case PayStep.confirming:    return 'Waiting for the network...';
+      default:                    return l10n.transactionEnCours;
+    }
+  }
+
+  /// Creates the order on the server (the server sets every price) and returns it.
+  Future<Map<String, dynamic>> _createOrder(AuthProvider auth, CartProvider cart) async {
+    final isSingle = _singleProduct != null;
+    final List<Map<String, dynamic>> items = isSingle
+        ? [
+      {
+        'productId': (_singleProduct!['_id'] ?? _singleProduct!['id']).toString(),
+        'quantity': 1,
+        if (_singleProduct!['variantId'] != null) 'variantId': _singleProduct!['variantId'],
+        if (_singleProduct!['selectedColor'] != null) 'color': _singleProduct!['selectedColor'],
+        if (_singleProduct!['selectedSize'] != null) 'size': _singleProduct!['selectedSize'],
+      }
+    ]
+        : cart.items.values
+        .map((i) => {
+      'productId': i.id,
+      'quantity': i.quantity,
+      if (i.variantId != null) 'variantId': i.variantId,
+      if (i.color != null) 'color': i.color,
+      if (i.size != null) 'size': i.size,
+    })
+        .toList();
+    final String? promoCode = widget.productData?['promoCode'] as String?;
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/orders'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${auth.token}',
+        'Idempotency-Key': _idempotencyKey ??= _newKey(),
+      },
+      body: json.encode({
+        'items': items,
+        'deliveryAddress': _addressController.text.trim(),
+        'deliveryCountry': _countryCode,
+        if (promoCode != null) 'promoCode': promoCode,
+      }),
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      String msg = 'The order could not be created. Please try again.';
+      try {
+        final body = json.decode(response.body);
+        if (body is Map && body['error'] != null) msg = body['error'].toString();
+      } catch (_) {}
+      throw EscrowException('ORDER_NOT_CREATED', msg);
+    }
+    return json.decode(response.body) as Map<String, dynamic>;
+  }
+
+  // ── Paiement via escrow V2 ─────────────────────────────────────────────────
   Future<void> _payerAvecWallet() async {
-    if (!_walletConnecte) {
+    if (!_walletConnecte || !_session.isConnected) {
       _showSnack(l10n.connecteTonWalletDAbord, Colors.orange, Icons.warning);
       return;
     }
-    if (_addressController.text.isEmpty) {
-      _showSnack(l10n.entreUneAdresseDeLivraison,
-          Colors.orange, Icons.location_off);
+    if (_addressController.text.trim().isEmpty) {
+      _showSnack(l10n.entreUneAdresseDeLivraison, Colors.orange, Icons.location_off);
       return;
     }
-
-    final cart = Provider.of<CartProvider>(context, listen: false);
-    final dynamic passedPriceRaw = widget.productData?['price'];
-    final double passedPrice = (passedPriceRaw != null)
-        ? double.parse(passedPriceRaw.toString()) : 0.0;
-    final bool isFromChat    = widget.productData?['orderId'] != null;
+    final bool isFromChat     = widget.productData?['orderId'] != null;
     final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
-    final double displayPrice = (isFromChat || isShippingOnly)
-        ? passedPrice
-        : (_singleProduct != null)
-        ? ((_singleProduct!['price'] as num?)?.toDouble() ?? 0.0)
-        : cart.totalPrice;
-
-    setState(() => _isPaying = true);
-    try {
-      final String adresseVendeur = widget.productData?['sellerWallet']
-          ?? _singleProduct?['sellerWallet']
-          ?? '0x0000000000000000000000000000000000000000';
-
-      final txHash = await _escrowContract.creerCommande(
-        privateKey:     '',
-        adresseVendeur: adresseVendeur,
-        montantBNB:     displayPrice,
-        delaiJours:     7,
-      );
-
-      _hashController.text = txHash;
-      _showSnack(
-        l10n.paiementEnvoyeHash('${txHash.substring(0, 10)}'),
-        Colors.green,
-        Icons.check_circle,
-      );
-      await _confirmTransfer();
-    } catch (e) {
-      _showSnack(l10n.erreurPaiement('$e'), Colors.red, Icons.error);
-    } finally {
-      if (mounted) setState(() => _isPaying = false);
+    if (!isFromChat && _countryCode == null) {
+      _showSnack(l10n.veuillezSelectionnerUnPaysDe, Colors.orange, Icons.flag_outlined);
+      return;
     }
-  }
 
-  // ── Finalisation de la commande après transaction escrow ──────────────────
-  Future<void> _confirmTransfer() async {
     HapticFeedback.mediumImpact();
-    if (_hashController.text.length < 10) {
-      _showSnack(l10n.transactionIntrouvableReessaieLePaiement,
-          Colors.orange, Icons.warning_amber_rounded);
-      return;
-    }
-    if (_addressController.text.isEmpty) {
-      _showSnack(l10n.veuillezEntrerUneAdresseDe,
-          Colors.orange, Icons.location_off_outlined);
-      return;
-    }
-    final bool isFromChatCheck = widget.productData?['orderId'] != null;
-    if (!isFromChatCheck && _countryCode == null) {
-      _showSnack(l10n.veuillezSelectionnerUnPaysDe,
-          Colors.orange, Icons.flag_outlined);
-      return;
-    }
-
     final cart = Provider.of<CartProvider>(context, listen: false);
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    setState(() => _isSubmitting = true);
-
+    setState(() { _isPaying = true; _step = PayStep.checking; });
     try {
-      final bool isFromChat     = widget.productData?['orderId'] != null;
-      final bool isShippingOnly = widget.productData?['isShippingOnly'] == true;
+      if (isShippingOnly) {
+        // The seller changed the delivery fee: accepting it pays only the difference, on the existing order.
+        final orderId = widget.productData!['orderId'].toString();
+        setState(() => _step = PayStep.creatingOrder);
+        await _session.service.acceptDeliveryAdjustmentForOrder(EscrowSession.orderRefFor(orderId));
+        if (mounted) context.go('/profile/orders');
+        return;
+      }
 
+      // An order from a chat already exists; a cart or single product creates its order first.
+      final Map<String, dynamic>? created = isFromChat ? null : await _createOrder(auth, cart);
+      final String orderId = isFromChat ? widget.productData!['orderId'].toString() : created!['_id'].toString();
+
+      final flow = _session.paymentFlow(baseUrl: ApiConfig.baseUrl, authToken: () async => auth.token);
+      final outcome = await flow.payOrder(orderId, onStep: (s) {
+        if (mounted) setState(() => _step = s);
+      });
+
+      final tx = outcome.result.createOrderTx;
+      _showSnack(l10n.paiementEnvoyeHash(tx.length >= 10 ? tx.substring(0, 10) : tx), Colors.green, Icons.check_circle);
       if (isFromChat) {
-        final String orderId = widget.productData?['orderId'] ?? '';
-        final endpoint = isShippingOnly
-            ? '${ApiConfig.baseUrl}/orders/$orderId/approve'
-            : '${ApiConfig.baseUrl}/orders/$orderId/status';
-
-        await http.put(
-          Uri.parse(endpoint),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            if (!isShippingOnly) 'status': 'PAID',
-            'transactionHash': _hashController.text,
-            'cryptoType':      _cryptoType,
-            'deliveryAddress': _addressController.text,
-          }),
-        );
         if (mounted) context.go('/profile/orders');
       } else {
-        final String? promoCode = widget.productData?['promoCode'] as String?;
-        final double promoAmount =
-            (widget.productData?['promoAmount'] as num?)?.toDouble() ?? 0.0;
-
-        final bool isSingle = _singleProduct != null;
-        final double singlePrice =
-            (_singleProduct?['price'] as num?)?.toDouble() ?? 0.0;
-
-        final orderData = <String, dynamic>{
-          'userId':          auth.currentUser!.id,
-          'buyerName':       auth.currentUser!.firstName,
-          'deliveryAddress': _addressController.text,
-          'deliveryCountry': _countryCode,
-          'items': isSingle
-              ? [{
-            'title':    _singleProduct!['title'],
-            'price':    singlePrice,
-            'quantity': 1,
-          }]
-              : cart.items.values.map((item) => {
-            'title': item.title, 'price': item.price, 'quantity': item.quantity,
-          }).toList(),
-          'totalAmount': isSingle ? singlePrice : cart.totalPrice,
-          'sellerId': isSingle
-              ? (_singleProduct!['sellerId'] ?? 'Inconnu')
-              : (widget.productData?['sellerId'] ?? 'Inconnu'),
-          'sellerWallet': isSingle ? (_singleProduct!['sellerWallet'] ?? '') : '',
-          'transactionHash': _hashController.text,
-          'cryptoType':      _cryptoType,
-          'status':          'PENDING_ADMIN',
-        };
-        if (promoCode != null) orderData['promoCode']    = promoCode;
-        if (promoAmount > 0)   orderData['promoDiscount'] = promoAmount;
-
-        final response = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/orders'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(orderData),
-        );
-        if (response.statusCode == 201) {
-          if (!isSingle) cart.clear();
-          if (mounted) context.go(
-            '/cart/confirmation',
-            extra: json.decode(response.body),
-          );
-        }
+        if (_singleProduct == null) cart.clear();
+        if (mounted) context.go('/cart/confirmation', extra: created);
       }
+    } on EscrowException catch (e) {
+      _showSnack(e.message, Colors.red, Icons.error);
     } catch (e) {
-      _showSnack(l10n.erreur3('$e'), Colors.red, Icons.error_outline);
+      _showSnack(interpretError(e).message, Colors.red, Icons.error);
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) setState(() { _isPaying = false; _step = null; });
     }
   }
 
@@ -400,7 +313,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 color: primaryColor,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [BoxShadow(
-                  color: primaryColor.withOpacity(0.3),
+                  color: primaryColor.withValues(alpha: 0.3),
                   blurRadius: 15, offset: const Offset(0, 8),
                 )],
               ),
@@ -424,7 +337,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -462,7 +375,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             if (!isFromChat) ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _countryCode,
+                initialValue: _countryCode,
                 isExpanded: true,
                 decoration: InputDecoration(
                   hintText: l10n.paysDeLivraison,
@@ -526,9 +439,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.05),
+                    color: Colors.green.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Row(children: [
                     const Icon(Icons.check_circle, color: Colors.green, size: 16),
@@ -542,7 +455,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        _walletService.deconnecter();
+                        _session.disconnect();
                         setState(() {
                           _walletConnecte = false;
                           _adresseWallet  = null;
@@ -565,10 +478,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             color: Colors.white, strokeWidth: 2))
                         : const Icon(Icons.send_rounded),
                     label: Text((_isPaying || _isSubmitting)
-                        ? l10n.transactionEnCours
+                        ? _stepText(_step)
                         : l10n.payerViaEscrow),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
                     ),

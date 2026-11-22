@@ -4,7 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test test/PlexusEscrowV2.test.js",
+    "coverage": "hardhat coverage --testfiles test/PlexusEscrowV2.test.js",
+    "analyze": "slither .",
+    "test:invariant": "hardhat test test/PlexusEscrowV2.invariant.test.js",
+    "audit:misuse": "hardhat run scripts/misuseTestnet.js --network bscTestnet",
+    "audit:referral": "hardhat run scripts/referralExampleTestnet.js --network bscTestnet",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deployV2.js --network localhost",
+    "verify:local": "hardhat run scripts/verifyRulesV2.js --network localhost",
+    "deploy:testnet": "hardhat run scripts/deployV2.js --network bscTestnet",
+    "verify:testnet": "hardhat run scripts/verifyV2.js --network bscTestnet",
+    "mint:testnet": "hardhat run scripts/mintV2.js --network bscTestnet",
+    "quote:testnet": "hardhat run scripts/signQuoteV2.js --network bscTestnet",
+    "export:app": "node scripts/exportAppArtifacts.js",
+    "smoke:testnet": "hardhat run scripts/smokeV2.js --network bscTestnet",
+    "fulltest:testnet": "hardhat run scripts/fullTestV2.js --network bscTestnet"
   },
   "keywords": [],
   "author": "",

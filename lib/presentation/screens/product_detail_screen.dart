@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:plexus/core/providers/cart_provider.dart';
 import 'package:plexus/core/providers/favorite_provider.dart';
@@ -643,7 +643,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     boxShadow: [BoxShadow(color: _primary.withOpacity(0.30), blurRadius: 14, offset: const Offset(0, 5))],
                                   ),
                                   child: ElevatedButton(
-                                    onPressed: () => context.push(widget.standalone ? '/checkout' : '/cart/payment', extra: {'singleProduct': product}),
+                                    onPressed: () => context.push(widget.standalone ? '/checkout' : '/cart/payment', extra: {'singleProduct': {...product, 'variantId': _variantId, 'selectedColor': _selectedColor, 'selectedSize': _selectedSize}}),
                                     style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),

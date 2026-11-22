@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart'; // Import indispensable ajouté
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:dash_chat_2/dash_chat_2.dart';
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'package:plexus/core/services/notification_service.dart';
 import 'package:plexus/core/providers/notification_provider.dart';
 import 'package:plexus/core/api_config.dart';
@@ -13,9 +13,9 @@ import 'package:plexus/l10n/l10n.dart';
 class SocketProvider with ChangeNotifier {
   IO.Socket? _socket;
   final _messageController = StreamController<ChatMessage>.broadcast();
-  String? _currentActiveRoom; 
+  String? _currentActiveRoom;
   bool _isConnected = false;
-  
+
   int _unreadCount = 0;
   int get unreadCount => _unreadCount;
   bool get isConnected => _isConnected;
@@ -39,14 +39,14 @@ class SocketProvider with ChangeNotifier {
       print("📡 Messagerie: Chargement de l'historique...");
       final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/messages/history/$userId'))
           .timeout(const Duration(seconds: 5));
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         _conversations.clear();
         for (var conv in data) {
           final String roomId = conv['conversationId'];
           final lastMsg = conv['lastMessage'];
-          
+
           _conversations[roomId] = {
             'message': ChatMessage(
               text: lastMsg['text'],
@@ -72,6 +72,7 @@ class SocketProvider with ChangeNotifier {
       _socket = IO.io(ApiConfig.socketUrl, <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': false,
+        'auth': {'token': http.AuthToken.value}, // the server refuses sockets without a login token
       });
 
       _socket!.connect();
@@ -80,7 +81,7 @@ class SocketProvider with ChangeNotifier {
         print('✅ Connecté au Socket (ID: $userId)');
         _isConnected = true;
         _socket!.emit('joinUserRoom', userId);
-        loadConversations(userId); 
+        loadConversations(userId);
         safeNotify();
       });
 
@@ -130,7 +131,7 @@ class SocketProvider with ChangeNotifier {
 
   void enterChat(String roomId) {
     _currentActiveRoom = roomId;
-    _unreadCount = 0; 
+    _unreadCount = 0;
     _socket?.emit('joinRoom', roomId);
     safeNotify();
   }
@@ -144,7 +145,7 @@ class SocketProvider with ChangeNotifier {
     if (_socket != null && _socket!.connected) {
       Map<String, dynamic> data = message.toJson();
       data['conversationId'] = roomId;
-      data['senderName'] = senderName; 
+      data['senderName'] = senderName;
       _socket!.emit('sendMessage', data);
       _conversations[roomId] = {'message': message, 'name': l10n.moi};
       safeNotify();

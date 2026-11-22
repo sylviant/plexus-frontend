@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:plexus/core/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:plexus/core/api_config.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plexus/blockchain/escrow_contract.dart';
+import 'package:plexus/blockchain/v2/escrow_session.dart';
+import 'package:plexus/blockchain/v2/escrow_v2_errors.dart';
 import 'package:plexus/l10n/l10n.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   late String _status;
   bool _isUpdating = false;
-  final EscrowContract _escrowContract = EscrowContract();
+  final EscrowSession _session = EscrowSession.instance;
 
   static const Color _bg         = Color(0xFF0F1117);
   static const Color _surface    = Color(0xFF1A1D27);
@@ -35,51 +34,40 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     super.initState();
     _status = widget.order['status']?.toString() ?? "PENDING_SHIPPING";
   }
-  @override
-  void dispose() {
-    _escrowContract.dispose();
-    super.dispose();
+
+  void _snack(String msg, Color color, IconData icon) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(children: [
+        Icon(icon, color: Colors.white, size: 18),
+        const SizedBox(width: 10),
+        Expanded(child: Text(msg)),
+      ]),
+      backgroundColor: color,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.all(16),
+    ));
   }
 
+  /// Confirme la réception sur le contrat V2 avec le wallet de l'acheteur.
+  /// Le contrat libère l'argent au vendeur ; l'écran n'affiche « livré »
+  /// que si la transaction est passée.
   Future<void> _confirmReceipt() async {
+    if (!_session.isConnected) {
+      _snack(l10n.connecteTonWalletDAbord, Colors.orange, Icons.warning);
+      return;
+    }
     setState(() => _isUpdating = true);
     try {
-      // ── Étape 1 : Appel smart contract si escrowId existe ─────────────────
-      final String? escrowId = widget.order['escrowId']?.toString();
-      if (escrowId != null && escrowId != 'null') {
-        try {
-          await _escrowContract.confirmerLivraison(
-            privateKey: '',  // géré par WalletConnect
-            commandeId: int.parse(escrowId),
-          );
-        } catch (e) {
-          debugPrint('⚠️ Escrow non disponible, confirmation backend seulement: $e');
-        }
-      }
-
-      // ── Étape 2 : Appel backend (toujours) ────────────────────────────────
-      final response = await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/orders/${widget.order['_id']}/receive'),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() => _status = "DELIVERED");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Row(children: [
-              Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-              SizedBox(width: 10),
-              Text(l10n.merciLeVendeurAEte),
-            ]),
-            backgroundColor: _green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
-          ));
-        }
-      }
+      final orderId = widget.order['_id'].toString();
+      await _session.service.confirmReceipt(EscrowSession.orderRefFor(orderId));
+      if (mounted) setState(() => _status = "DELIVERED");
+      _snack(l10n.merciLeVendeurAEte, _green, Icons.check_circle_outline);
+    } on EscrowException catch (e) {
+      _snack(e.message, Colors.red, Icons.error_outline);
     } catch (e) {
-      debugPrint("Erreur réception: $e");
+      _snack(interpretError(e).message, Colors.red, Icons.error_outline);
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
@@ -316,10 +304,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: _isUpdating
             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
             : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(Icons.verified_outlined, size: 20),
-                SizedBox(width: 10),
-                Text(l10n.jAiBienRecuLe, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
-              ]),
+          Icon(Icons.verified_outlined, size: 20),
+          SizedBox(width: 10),
+          Text(l10n.jAiBienRecuLe, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+        ]),
       ),
     );
   }
