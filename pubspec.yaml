@@ -70,3 +70,8 @@ photo_view: ^0.15.0
 shimmer: ^3.0.0
 dependency_overrides:
   intl: ^0.20.2
+
+analyzer:
+  exclude:
+    - admin_portal/**
+    - _backup_v2_only/**
