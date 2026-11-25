@@ -1,5 +1,10 @@
 import 'dart:convert';
+<<<<<<< HEAD
 import 'package:material_ui/material_ui.dart';
+=======
+import 'dart:math';
+import 'package:flutter/material.dart';
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:plexus/core/providers/auth_provider.dart';
@@ -8,7 +13,7 @@ import 'package:plexus/blockchain/v2/escrow_session.dart';
 import 'package:plexus/blockchain/v2/escrow_v2_errors.dart';
 import 'package:plexus/blockchain/v2/escrow_v2_models.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'package:go_router/go_router.dart';
 import 'package:plexus/core/api_config.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -39,9 +44,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
   bool    _isPaying       = false;
   PayStep? _step;
 
+<<<<<<< HEAD
   // One key per checkout, so a retry after a failed payment finds the same order instead of creating another.
   final String _idempotencyKey =
       'pay-${DateTime.now().microsecondsSinceEpoch}-${UniqueKey().hashCode}';
+=======
+  // One random key per checkout: a retry after a failed payment finds the same order, never a second one.
+  String? _idempotencyKey;
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
 
   Map<String, dynamic>? get _singleProduct =>
       widget.productData?['singleProduct'] as Map<String, dynamic>?;
@@ -59,6 +69,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void dispose() {
     _addressController.dispose();
     super.dispose();
+  }
+
+  String _newKey() {
+    final r = Random.secure();
+    return List.generate(24, (_) => r.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
   }
 
   void _showSnack(String msg, Color color, IconData icon) {
@@ -155,16 +170,42 @@ class _PaymentScreenState extends State<PaymentScreen> {
   /// Creates the order on the server (the server sets every price) and returns it.
   Future<Map<String, dynamic>> _createOrder(AuthProvider auth, CartProvider cart) async {
     final isSingle = _singleProduct != null;
+<<<<<<< HEAD
     final items = isSingle
         ? [{'productId': (_singleProduct!['_id'] ?? _singleProduct!['id']).toString(), 'quantity': 1}]
         : cart.items.values.map((i) => {'productId': i.id, 'quantity': i.quantity}).toList();
+=======
+    final List<Map<String, dynamic>> items = isSingle
+        ? [
+      {
+        'productId': (_singleProduct!['_id'] ?? _singleProduct!['id']).toString(),
+        'quantity': 1,
+        if (_singleProduct!['variantId'] != null) 'variantId': _singleProduct!['variantId'],
+        if (_singleProduct!['selectedColor'] != null) 'color': _singleProduct!['selectedColor'],
+        if (_singleProduct!['selectedSize'] != null) 'size': _singleProduct!['selectedSize'],
+      }
+    ]
+        : cart.items.values
+        .map((i) => {
+      'productId': i.id,
+      'quantity': i.quantity,
+      if (i.variantId != null) 'variantId': i.variantId,
+      if (i.color != null) 'color': i.color,
+      if (i.size != null) 'size': i.size,
+    })
+        .toList();
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
     final String? promoCode = widget.productData?['promoCode'] as String?;
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/orders'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${auth.token}',
+<<<<<<< HEAD
         'Idempotency-Key': _idempotencyKey,
+=======
+        'Idempotency-Key': _idempotencyKey ??= _newKey(),
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
       },
       body: json.encode({
         'items': items,
@@ -461,6 +502,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         : l10n.payerViaEscrow),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
                     ),

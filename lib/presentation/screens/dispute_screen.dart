@@ -2,9 +2,12 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plexus/core/api_config.dart';
-import 'package:http/http.dart' as http;
+import 'package:plexus/core/http_auth.dart' as http;
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:plexus/core/providers/auth_provider.dart';
+import 'package:plexus/core/services/escrow_pay_service.dart';
 import 'package:plexus/l10n/l10n.dart';
 
 class DisputeScreen extends StatefulWidget {
@@ -82,7 +85,7 @@ class _DisputeScreenState extends State<DisputeScreen>
 
   Future<void> _pickVideo() async {
     final XFile? video =
-        await _picker.pickVideo(source: ImageSource.gallery);
+    await _picker.pickVideo(source: ImageSource.gallery);
     if (video != null) setState(() => _videoFile = video);
   }
 
@@ -97,7 +100,7 @@ class _DisputeScreenState extends State<DisputeScreen>
 
     try {
       final String orderId =
-          (widget.order['_id'] ?? widget.order['id'] ?? '').toString();
+      (widget.order['_id'] ?? widget.order['id'] ?? '').toString();
 
       var request = http.MultipartRequest(
           'POST', Uri.parse('${ApiConfig.baseUrl}/disputes'));
@@ -126,6 +129,22 @@ class _DisputeScreenState extends State<DisputeScreen>
       var res = await http.Response.fromStream(streamedResponse);
 
       if (res.statusCode == 201 || res.statusCode == 200) {
+        // Commande payée via escrow : on ouvre aussi le litige ON-CHAIN (page Thirdweb).
+        final String? escrowId = widget.order['escrowId']?.toString();
+        if (mounted && escrowId != null && escrowId != 'null' && escrowId.isNotEmpty) {
+          final auth = Provider.of<AuthProvider>(context, listen: false);
+          if (auth.token != null) {
+            try {
+              await EscrowPayService.open(
+                orderId: orderId,
+                token: auth.token!,
+                action: EscrowAction.dispute,
+              );
+            } catch (e) {
+              debugPrint('On-chain dispute not opened: $e');
+            }
+          }
+        }
         if (mounted) {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +195,7 @@ class _DisputeScreenState extends State<DisputeScreen>
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -290,7 +309,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color:
-                                    selected ? _danger : _border,
+                                selected ? _danger : _border,
                                 width: 1.5,
                               ),
                             ),
@@ -322,7 +341,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                           fontSize: 14),
                       decoration: InputDecoration(
                         hintText:
-                            l10n.decrivezPrecisementLeProblemeRencontre,
+                        l10n.decrivezPrecisementLeProblemeRencontre,
                         hintStyle: TextStyle(
                             color: _textSub.withValues(alpha: 0.5),
                             fontSize: 13),
@@ -332,12 +351,12 @@ class _DisputeScreenState extends State<DisputeScreen>
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                              const BorderSide(color: _border, width: 1.5),
+                          const BorderSide(color: _border, width: 1.5),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide:
-                              const BorderSide(color: _border, width: 1.5),
+                          const BorderSide(color: _border, width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -397,7 +416,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                       children: [
                         ...List.generate(
                           _photoBytes.length,
-                          (index) => Stack(
+                              (index) => Stack(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
@@ -442,7 +461,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                                 color: _surface,
                                 borderRadius: BorderRadius.circular(12),
                                 border:
-                                    Border.all(color: _border, width: 1.5),
+                                Border.all(color: _border, width: 1.5),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -482,7 +501,7 @@ class _DisputeScreenState extends State<DisputeScreen>
                           color: _surface,
                           borderRadius: BorderRadius.circular(12),
                           border:
-                              Border.all(color: _border, width: 1.5),
+                          Border.all(color: _border, width: 1.5),
                         ),
                         child: Row(
                           children: [
@@ -570,12 +589,21 @@ class _DisputeScreenState extends State<DisputeScreen>
                     boxShadow: _isSubmitting
                         ? []
                         : [
+<<<<<<< HEAD
                             BoxShadow(
                               color: _danger.withValues(alpha: 0.35),
                               blurRadius: 16,
                               offset: const Offset(0, 6),
                             ),
                           ],
+=======
+                      BoxShadow(
+                        color: _danger.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
                   ),
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submitDispute,
@@ -587,28 +615,28 @@ class _DisputeScreenState extends State<DisputeScreen>
                     ),
                     child: _isSubmitting
                         ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2.5),
-                          )
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2.5),
+                    )
                         : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.gavel_rounded,
-                                  color: Colors.white, size: 17),
-                              SizedBox(width: 10),
-                              Text(
-                                l10n.envoyerLeLitige,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.2,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.gavel_rounded,
+                            color: Colors.white, size: 17),
+                        SizedBox(width: 10),
+                        Text(
+                          l10n.envoyerLeLitige,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                            fontSize: 14,
                           ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

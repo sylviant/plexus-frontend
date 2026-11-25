@@ -34,6 +34,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     super.initState();
     _status = widget.order['status']?.toString() ?? "PENDING_SHIPPING";
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
   void _snack(String msg, Color color, IconData icon) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -49,8 +53,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     ));
   }
 
+<<<<<<< HEAD
   /// Confirms receipt on the V2 escrow contract through the buyer's own wallet. The contract releases the money to
   /// the seller; the screen shows "delivered" only when the transaction went through.
+=======
+  /// Confirme la réception sur le contrat V2 avec le wallet de l'acheteur.
+  /// Le contrat libère l'argent au vendeur ; l'écran n'affiche « livré »
+  /// que si la transaction est passée.
+>>>>>>> 68d7b98 (phase 1 & phase 4 final)
   Future<void> _confirmReceipt() async {
     if (!_session.isConnected) {
       _snack(l10n.connecteTonWalletDAbord, Colors.orange, Icons.warning);
@@ -302,10 +312,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: _isUpdating
             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
             : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(Icons.verified_outlined, size: 20),
-                SizedBox(width: 10),
-                Text(l10n.jAiBienRecuLe, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
-              ]),
+          Icon(Icons.verified_outlined, size: 20),
+          SizedBox(width: 10),
+          Text(l10n.jAiBienRecuLe, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+        ]),
       ),
     );
   }

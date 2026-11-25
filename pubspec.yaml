@@ -10,12 +10,11 @@ environment:
 
 
 dependencies:
+
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  walletconnect_flutter_v2: ^2.4.1
-  web3dart: ^2.7.3
   url_launcher: ^6.2.5
   http: ^1.2.1
   geolocator: ^12.0.0
@@ -27,7 +26,6 @@ dependencies:
   shared_preferences: ^2.2.3
   flutter_secure_storage: ^9.1.1
   image_picker: ^1.1.2
-  qr_flutter: ^4.1.0
   google_generative_ai: ^0.4.7
   intl: any
   flutter_local_notifications: ^17.2.2
@@ -48,6 +46,12 @@ dependencies:
   cupertino_ui: any
   http_parser: any
   path: any
+
+
+  walletconnect_flutter_v2: 2.4.1
+  qr_flutter: 4.1.0
+  web3dart: 2.7.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
